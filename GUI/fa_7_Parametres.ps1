@@ -118,15 +118,11 @@ $ListBoxInfos.Size = New-Object System.Drawing.Size(725,20)
 $ListBoxInfos.Height = 530
 $ListBoxInfos.Text = "plop ;-)"
 
-$ListForm.Controls.Add($ButtonADAdmin) 
-$ListForm.Controls.Add($ButtonPlateformes)
-$ListForm.Controls.Add($ButtonDefProfils)
-$ListForm.Controls.Add($ButtonAssProfils)
+
 $ListForm.Controls.Add($FormLabelText)
 $ListForm.Controls.Add($FormLabelDA)
-$ListForm.Controls.Add($ButtonAPropos)
-$ListForm.Controls.Add($ListBoxMenu)
-$ListForm.Controls.Add($ListBoxInfos)
+
+
 
 
 

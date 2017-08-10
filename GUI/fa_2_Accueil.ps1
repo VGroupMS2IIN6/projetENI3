@@ -175,6 +175,17 @@ $ListBoxHistorique.Location = '30,150'
 $ListBoxHistorique.Size = '920,20'
 $ListBoxHistorique.Height = 400
 
+#$ListBoxHistorique.
+#display popup help
+    #each value is the name of a control on the form. 
+ #    Switch ($this.name) {
+  #      "text1"  {$tip = "Enter the name of a computer"}
+   #     "check1" {$tip = "Query Win32_OperatingSystem"}
+    #    "check2" {$tip = "Query Win32_Computersystem"}
+     #   "check3" {$tip = "Query Win32_BIOS"}
+    #  }
+    # $tooltip1.SetToolTip($this,$tip)
+
 $ButtonRetourHistorique = New-Object System.Windows.Forms.Button
 $ButtonRetourHistorique.Location = '800,580'
 $ButtonRetourHistorique.Size = '150,60'
