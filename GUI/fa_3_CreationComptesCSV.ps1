@@ -37,7 +37,7 @@ $ButtonRetourCSV.Text = 'Retour'
 $ButtonRetourCSV.add_Click($ButtonRetourCSV_Click)
 $ButtonRetourCSV_Click = {
     $FenetreCreationCSV.Visible = $False
-    $FenetreAccueil.ShowDialog()
+    $FenetreAccueil.Visible = $True
 }
 
 $ButtonSuivantCSV = New-Object System.Windows.Forms.Button
@@ -56,9 +56,9 @@ $ButtonParcourirCSV.Location = '650,290'
 $ButtonParcourirCSV.Size = '150,60'
 $ButtonParcourirCSV.Text = 'Parcourir'
 $ButtonParcourirCSV.add_Click($ButtonParcourirCSV_Click)
-#$ButtonParcourirCSV_Click = {
-#   
-#}
+$ButtonParcourirCSV_Click = { 
+$csv = Import-Csv 'C:\Users\Olivier  - SP3\Documents\Visual Studio 2015\projetENI3\GUI\test.csv'
+}
 
 $ListBoxCreationCompteCSV = New-Object System.Windows.Forms.ListBox 
 $ListBoxCreationCompteCSV.Location = '400,292'
@@ -93,7 +93,7 @@ $ButtonRetourCSV2.Text = 'Retour'
 $ButtonRetourCSV2.add_Click($ButtonRetourCSV2_Click)
 $ButtonRetourCSV2_Click = {
     $FenetreSelection.Visible = $False
-    $FenetreCreationCSV.ShowDialog()
+    $FenetreCreationCSV.Visible = $True
 }
 
 
@@ -162,7 +162,7 @@ $ButtonRetourCSV3.Text = 'Retour'
 $ButtonRetourCSV3.add_Click($ButtonRetourCSV3_Click)
 $ButtonRetourCSV3_Click = {
     $FenetreCreationtab.Visible = $False
-	$FenetreSelection.Showdialog()
+	$FenetreSelection.Visible = $True
     
 }
 
@@ -173,7 +173,7 @@ $ButtonSuivantCSV3.Text = 'Suivant'
 $ButtonSuivantCSV3.add_Click($ButtonSuivantCSV3_Click)
 $ButtonSuivantCSV3_Click = {
     $FenetreCreationtab.Visible = $False
-    $FenetreValidation.Showdialog()
+    $FenetreValidation.Visible = $True
 }
 
 $ListBoxtab = New-Object System.Windows.Forms.ListBox 
@@ -186,6 +186,9 @@ $ListBoxtab.Height = 440
 ### ELEMENTS FENETRE VALIDATION   ###
 #####################################
 
+#[reflection.assembly]::loadwithpartialname("System.Windows.Forms") | Out-Null
+#[reflection.assembly]::loadwithpartialname("System.Drawing") | Out-Null
+
 $ButtonRetourCSV4 = New-Object System.Windows.Forms.Button
 $ButtonRetourCSV4.Location = '40,230'
 $ButtonRetourCSV4.Size = '150,40'
@@ -193,7 +196,7 @@ $ButtonRetourCSV4.Text = 'Annuler'
 $ButtonRetourCSV4.add_Click($ButtonRetourCSV4_Click)
 $ButtonRetourCSV4_Click = {
     $FenetreValidation.Visible = $False
-	$FenetreCreationtab.Showdialog()
+	$FenetreCreationCSV.Visible = $True
 }
     
 $FormLabelJ = New-Object System.Windows.Forms.Label
@@ -206,6 +209,28 @@ $FormLabelK = New-Object System.Windows.Forms.Label
 $FormLabelK.Location = '30,80'
 $FormLabelK.Size = '400,40'
 $FormLabelK.Text = "Creation de compte en cours..."
+
+
+
+
+#$progressBar = New-Object System.Windows.Forms.ProgressBar
+#$progressBar.Location = '30,140'
+#$progressBar.Size = '500,40'
+
+#$timer = New-Object System.Windows.Forms.Timer
+
+#$timer_OnTick = {
+#  $progressBar.PerformStep()
+#}
+
+#$progressBar.DataBindings.DefaultDataSourceUpdateMode = 0
+#$progressBar.Step = 20
+
+
+#$timer.Interval = 100
+#$timer.add_tick($timer_OnTick)
+#$timer.Start()
+
 
 
 ###########################################
@@ -234,10 +259,11 @@ $FenetreCreationtab.Controls.Add($ListBoxtab)
 $FenetreCreationtab.Controls.Add($FormLabelH)
 $FenetreCreationtab.Controls.Add($FormLabelI)
 
-
 $FenetreValidation.Controls.Add($ButtonRetourCSV4)
 $FenetreValidation.Controls.Add($FormLabelJ)
 $FenetreValidation.Controls.Add($FormLabelK)
+#$FenetreValidation.Controls.Add($timer)
+#$FenetreValidation.Controls.Add($progressBar)
 
 
 ############
