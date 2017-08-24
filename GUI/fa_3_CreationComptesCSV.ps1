@@ -59,7 +59,7 @@ $ButtonParcourirCSV.Location = '650,290'
 $ButtonParcourirCSV.Size = '150,60'
 $ButtonParcourirCSV.Text = 'Parcourir'
 $ButtonParcourirCSV.add_Click($ButtonParcourirCSV_Click)
-<<<<<<< HEAD
+
 $ButtonParcourirCSV_Click = {
 
 
@@ -87,13 +87,6 @@ $file = Select-FileDialog -Titre "Choisir le fichier CSV" -Dossier "C:\" -Filtre
 
 
 }
-
-=======
-$ButtonParcourirCSV_Click = { 
-Import-Csv -Delimiter ';' "C:\Users\Olivier  - SP3\Documents\Visual Studio 2015\projetENI3\GUI\test.csv"
-}
-
->>>>>>> 934b6a4cc48d7f9ee28286a5447f643f6ee74e81
 
 $ListBoxCreationCompteCSV = New-Object System.Windows.Forms.ListBox 
 $ListBoxCreationCompteCSV.Location = '400,292'
@@ -245,17 +238,6 @@ $FormLabelK = New-Object System.Windows.Forms.Label
 $FormLabelK.Location = '30,80'
 $FormLabelK.Size = '400,40'
 $FormLabelK.Text = "Creation de compte en cours..."
-
-
-<<<<<<< HEAD
-
-
-
-=======
-$progressBar = New-Object System.Windows.Forms.ProgressBar
-$progressBar.Location = '30,140'
-$progressBar.Size = '940,30'
->>>>>>> 934b6a4cc48d7f9ee28286a5447f643f6ee74e81
 
 
 ###########################################
