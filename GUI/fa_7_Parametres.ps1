@@ -1,6 +1,6 @@
 # Chargement du pilote .NET pour MySQL 
-[system.reflection.Assembly]::LoadWithPartialName("MySql.Data")
-Add-Type -Path 'MySql.Data.dll'
+#[system.reflection.Assembly]::LoadWithPartialName("MySql.Data")
+Add-Type -Path '../libs/MySql.Data.dll
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
