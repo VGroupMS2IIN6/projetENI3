@@ -56,14 +56,40 @@ $ButtonParcourirCSV.Location = '650,290'
 $ButtonParcourirCSV.Size = '150,60'
 $ButtonParcourirCSV.Text = 'Parcourir'
 $ButtonParcourirCSV.add_Click($ButtonParcourirCSV_Click)
-$ButtonParcourirCSV_Click = { 
-$csv = Import-Csv 'C:\Users\Olivier  - SP3\Documents\Visual Studio 2015\projetENI3\GUI\test.csv'
+$ButtonParcourirCSV_Click = {
+
+
+function Select-FileDialog
+{
+    param([string]$Titre,[string]$Dossier,[string]$Filtre="Tous les fichiers *.*|*.*")
+    [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
+    $objForm = New-Object System.Windows.Forms.OpenFileDialog
+    $objForm.InitialDirectory = $Directory
+    $objForm.Filter = $Filter
+    $objForm.Title = $Title
+    $Show = $objForm.ShowDialog()
+    If ($Show -eq "OK")
+    {
+        Return $objForm.FileName
+    }
+    Else
+    {
+        Write-Error "Opération annulé"
+        return exit
+    }
 }
+
+$file = Select-FileDialog -Titre "Choisir le fichier CSV" -Dossier "C:\" -Filtre "Fichier CSV (*.csv) |*.csv"
+
+
+}
+
 
 $ListBoxCreationCompteCSV = New-Object System.Windows.Forms.ListBox 
 $ListBoxCreationCompteCSV.Location = '400,292'
 $ListBoxCreationCompteCSV.Size = '250,400'
 $ListBoxCreationCompteCSV.Height = 60
+
 
 $FormLabelA = New-Object System.Windows.Forms.Label
 $FormLabelA.Location = '30,30'
@@ -213,23 +239,6 @@ $FormLabelK.Text = "Creation de compte en cours..."
 
 
 
-#$progressBar = New-Object System.Windows.Forms.ProgressBar
-#$progressBar.Location = '30,140'
-#$progressBar.Size = '500,40'
-
-#$timer = New-Object System.Windows.Forms.Timer
-
-#$timer_OnTick = {
-#  $progressBar.PerformStep()
-#}
-
-#$progressBar.DataBindings.DefaultDataSourceUpdateMode = 0
-#$progressBar.Step = 20
-
-
-#$timer.Interval = 100
-#$timer.add_tick($timer_OnTick)
-#$timer.Start()
 
 
 
