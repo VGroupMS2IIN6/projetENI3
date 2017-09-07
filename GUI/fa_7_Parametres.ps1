@@ -60,10 +60,10 @@ $ButtonAssProfils.Size = New-Object System.Drawing.Size(200,50)
 $ButtonAssProfils.Text = "Assignation des profils"
 $ButtonAssProfils.Add_Click({makeMenuAssProfils})
 
-$ButtonAPropos = New-Object System.Windows.Forms.Button
-$ButtonAPropos.Location = New-Object System.Drawing.Point(30,580)
-$ButtonAPropos.Size = New-Object System.Drawing.Size(150,60)
-$ButtonAPropos.Text = "A propos"
+$ButtonRetour = New-Object System.Windows.Forms.Button
+$ButtonRetour.Location = New-Object System.Drawing.Point(30,580)
+$ButtonRetour.Size = New-Object System.Drawing.Size(150,60)
+$ButtonRetour.Text = "Retour"
 
 $ListBoxMenu = New-Object System.Windows.Forms.ListBox 
 $ListBoxMenu.Location = New-Object System.Drawing.Size(30,30) 
@@ -86,7 +86,7 @@ $ListForm.Controls.Add($ButtonADAdmin)
 $ListForm.Controls.Add($ButtonPlateformes)
 $ListForm.Controls.Add($ButtonDefProfils)
 $ListForm.Controls.Add($ButtonAssProfils)
-$ListForm.Controls.Add($ButtonAPropos)
+$ListForm.Controls.Add($ButtonRetour)
 $ListForm.Controls.Add($ListBoxMenu)
 $ListForm.Controls.Add($ListBoxMenuDeux)
 $ListForm.Controls.Add($ListBoxMenuTrois)
