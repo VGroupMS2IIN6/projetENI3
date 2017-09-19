@@ -1,5 +1,20 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+Add-Type -Path '..\libs\MySql.Data.dll'
+
+# Initialisation des variables  
+$serv = "127.0.0.1" # Addresse du serveur
+$port = "3306" # Port de connexion (3306 par dÃ©faut)
+$user = "vgroup"  # nom d'utilisateur pour la connexion
+$password = "vgrouproxx" # mot de passe
+$db = "projet_eni" # nom de la base de donnÃ©e
+
+# Creation de l'instance, connexion Ã  la base de donnÃ©es  
+$mysql = New-Object MySql.Data.MySqlClient.MySqlConnection("server=" + $serv + ";port=" + $port + ";uid=" + $user + ";pwd=" + $password + ";database=" + $db + ";Pooling=False")  
+$mysql.Open()
+# recuperation de la liste des formations
+$formation = MakeRequest "SELECT * FROM formation"
+$site = MakeRequest "SELECT * FROM site"
 
 #########################
 ### FENETRES     CSV  ###
@@ -28,6 +43,38 @@ $FenetreValidation.StartPosition = "CenterScreen"
 $FenetreValidation.ClientSize = '1000,290'
 $FenetreValidation.Text = "Application de creation de comptes stagiaires"
 
+
+# Raccourcis clavier : entrée pour valider ; Esc pour quitter
+
+$FenetreCreationCSV.KeyPreview = $True
+$FenetreCreationCSV.Add_KeyDown({if ($_.KeyCode -eq "Enter") 
+    {$x=$FenetreCreationCSV.Text;$FenetreCreationCSV.Close()}})
+$FenetreCreationCSV.Add_KeyDown({if ($_.KeyCode -eq "Escape") 
+    {$FenetreCreationCSV.Close()}})
+
+# Raccourcis clavier : entrée pour valider ; Esc pour quitter
+
+$FenetreSelection.KeyPreview = $True
+$FenetreSelection.Add_KeyDown({if ($_.KeyCode -eq "Enter") 
+    {$x=$FenetreSelection.Text;$FenetreSelection.Close()}})
+$FenetreSelection.Add_KeyDown({if ($_.KeyCode -eq "Escape") 
+    {$FenetreSelection.Close()}})
+
+# Raccourcis clavier : entrée pour valider ; Esc pour quitter
+
+$FenetreCreationtab.KeyPreview = $True
+$FenetreCreationtab.Add_KeyDown({if ($_.KeyCode -eq "Enter") 
+    {$x=$FenetreCreationtab.Text;$FenetreCreationtab.Close()}})
+$FenetreCreationtab.Add_KeyDown({if ($_.KeyCode -eq "Escape") 
+    {$FenetreCreationtab.Close()}})
+
+# Raccourcis clavier : entrée pour valider ; Esc pour quitter
+
+$FenetreValidation.KeyPreview = $True
+$FenetreValidation.Add_KeyDown({if ($_.KeyCode -eq "Enter") 
+    {$x=$FenetreValidation.Text;$FenetreValidation.Close()}})
+$FenetreValidation.Add_KeyDown({if ($_.KeyCode -eq "Escape") 
+    {$FenetreValidation.Close()}})
 
 #####################################
 ### ELEMENTS FENETRES CREATION CSV###
@@ -59,27 +106,7 @@ $ButtonParcourirCSV.Location = '650,290'
 $ButtonParcourirCSV.Size = '150,60'
 $ButtonParcourirCSV.Text = 'Parcourir'
 $ButtonParcourirCSV.add_Click($ButtonParcourirCSV_Click)
-<<<<<<< HEAD
-$ButtonParcourirCSV_Click = {
- 
-Function Get-FileName
-# Open file dialog box and select a file to import
-{   
-    [void][System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")
 
-    $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
-    $OpenFileDialog.filter = "Text Files (*.txt)| *.txt" # Set the file types visible to dialog
-
-    # Alternate filters include:
-    # "CSV files (*.csv) | *.csv"
-
-    $OpenFileDialog.initialDirectory = "c:\"
-    
-    $OpenFileDialog.ShowDialog() | Out-Null
-    $OpenFileDialog.filename
-}
-
-=======
 
 $ButtonParcourirCSV_Click = {
 
@@ -102,7 +129,7 @@ function Select-FileDialog
         Write-Error "Opération annulé"
         return exit
     }
->>>>>>> 43378510dfdf28f321d3171b2226f85c9a877ede
+
 }
 
 $file = Select-FileDialog -Titre "Choisir le fichier CSV" -Dossier "C:\" -Filtre "Fichier CSV (*.csv) |*.csv"
@@ -136,6 +163,58 @@ $FormLabelC.Text = "Fichier à importer "
 #####################################
 ### ELEMENTS FENETRES SELECTION   ###
 #####################################
+
+function FillComboBoxFormation {
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colNom = New-Object system.Data.DataColumn "nom",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colNom)
+
+    # alimentation de la datatable avec les formations
+    foreach($formation in $script:formation) {
+        $ligne = $table.NewRow()
+        $ligne.id = $formation.ID
+        $ligne.nom = $formation.nom
+        $table.Rows.Add($ligne)
+    }
+
+    $script:ComboBoxFormation.DisplayMember = "nom"
+    $script:ComboBoxFormation.ValueMember = "id"
+    $script:ComboBoxFormation.DataSource = $table
+}
+
+function FillComboBoxSite {
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colNom = New-Object system.Data.DataColumn "nom",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colNom)
+
+    # alimentation de la datatable avec les sites
+    foreach($site in $script:site) {
+        $ligne = $table.NewRow()
+        $ligne.id = $site.ID
+        $ligne.nom = $site.nom
+        $table.Rows.Add($ligne)
+    }
+
+    $script:ComboBoxSite.DisplayMember = "nom"
+    $script:ComboBoxSite.ValueMember = "id"
+    $script:ComboBoxSite.DataSource = $table
+}
+
+
 
 $ButtonRetourCSV2 = New-Object System.Windows.Forms.Button
 $ButtonRetourCSV2.Location = '40,600'
@@ -173,22 +252,25 @@ $FormLabelF = New-Object System.Windows.Forms.Label
 $FormLabelF.Location = '260,310'
 $FormLabelF.Size = '150,60'
 $FormLabelF.Text = "Formation"
-#Formation
-$ListBoxFormation = New-Object System.Windows.Forms.ListBox 
-$ListBoxFormation.Location = '430,295'
-$ListBoxFormation.Size = '250,400'
-$ListBoxFormation.Height = 60
 
+#Formation
+$ComboBoxFormation = New-Object System.Windows.Forms.ComboBox
+$ComboBoxFormation.Location = '430,295'
+$ComboBoxFormation.Size = '250,400'
+$ComboBoxFormation.Height = 60
+FillComboBoxFormation
 
 $FormLabelG = New-Object System.Windows.Forms.Label
 $FormLabelG.Location = '260,410'
 $FormLabelG.Size = '150,60'
 $FormLabelG.Text = "Site"
+
 #Site
-$ListBoxSite = New-Object System.Windows.Forms.ListBox 
-$ListBoxSite.Location = '430,390'
-$ListBoxSite.Size = '250,400'
-$ListBoxSite.Height = 60
+$ComboBoxSite = New-Object System.Windows.Forms.ComboBox
+$ComboBoxSite.Location = '430,390'
+$ComboBoxSite.Size = '150,60'
+$ComboBoxSite.Height = 60
+FillComboBoxSite
 
 #####################################
 ### ELEMENTS FENETRES CREATIONTAB ###
@@ -279,8 +361,8 @@ $FenetreSelection.Controls.Add($FormLabelD)
 $FenetreSelection.Controls.Add($FormLabelE)
 $FenetreSelection.Controls.Add($FormLabelF)
 $FenetreSelection.Controls.Add($FormLabelG)
-$FenetreSelection.Controls.Add($ListBoxFormation)
-$FenetreSelection.Controls.Add($ListBoxSite)
+$FenetreSelection.Controls.Add($ComboBoxFormation)
+$FenetreSelection.Controls.Add($ComboBoxSite)
 
 $FenetreCreationtab.Controls.Add($ButtonRetourCSV3)
 $FenetreCreationtab.Controls.Add($ButtonSuivantCSV3)
@@ -299,3 +381,14 @@ $FenetreValidation.Controls.Add($progressBar)
 ############
 
 $FenetreCreationCSV.ShowDialog()
+
+function MakeRequest($request) {
+    $command = New-Object Mysql.Data.MysqlClient.MySqlCommand($request,$mysql)  
+    $dataAdapter = New-Object MySql.Data.MySqlClient.MySqlDataAdapter($command)
+    $dataSet = New-Object System.Data.DataSet
+    $recordCount = $dataAdapter.Fill($dataSet, "data")
+    $result = $dataSet.Tables["data"]
+    return $result
+}
+
+$mysql.Close()
