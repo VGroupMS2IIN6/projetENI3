@@ -19,15 +19,29 @@ $mysql.Open()
 $plateformes = MakeRequest "SELECT * FROM plateforme"
 
 # Creation des composants dont on aura besoin plus tard
+$listForm = New-Object System.Windows.Forms.Form
+$listForm.Text = "Paramétrage"
+$listForm.Size = New-Object System.Drawing.Size(1000,700)
+$listForm.StartPosition = "CenterScreen"
+
+$textBoxAdURL = New-Object System.Windows.Forms.TextBox
+$textBoxAdURL.Location = New-Object System.Drawing.Point(220,50)
+$textBoxAdURL.Size = New-Object System.Drawing.Size(200,22)
+$textBoxAdUser = New-Object System.Windows.Forms.TextBox
+$textBoxAdUser.Location = New-Object System.Drawing.Point(220,90)
+$textBoxAdUser.Size = New-Object System.Drawing.Size(200,22)
+$textBoxAdMDP = New-Object System.Windows.Forms.TextBox
+$textBoxAdMDP.Location = New-Object System.Drawing.Point(220,130)
+$textBoxAdMDP.Size = New-Object System.Drawing.Size(200,22)
+
 $ListBoxAffichage = New-Object System.Windows.Forms.ListBox 
 $ListBoxAffichage.Location = New-Object System.Drawing.Size(255,30) 
 $ListBoxAffichage.Size = New-Object System.Drawing.Size(700,530) 
 $ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
 $ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
 $ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
-#$ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $ComboBoxPlateformes.add_SelectedIndexChanged({FillPlateforme})
-FillComboBox
+FillComboBoxPlateformes
 $textBoxURL = New-Object System.Windows.Forms.TextBox
 $textBoxURL.Location = New-Object System.Drawing.Point(220,50)
 $textBoxURL.Size = New-Object System.Drawing.Size(200,22)
@@ -52,7 +66,7 @@ MakeForm
 
 $mysql.Close()
 
-function FillComboBox {
+function FillComboBoxPlateformes {
     # creation de la datatable
     $table = New-Object system.Data.DataTable
 		
@@ -86,8 +100,9 @@ function MakeRequest($request) {
     return $result
 }
 
-function RetreiveRow($result, $field, $filter) {
-    foreach($row in $result)
+function RetreiveRow($rows, $field, $filter) {
+    # on parcourt les lignes une part une, pour trouver celle qui correspond
+    foreach($row in $rows)
     {
         if($row.$field -eq $filter)
         {
@@ -97,13 +112,6 @@ function RetreiveRow($result, $field, $filter) {
 }
 
 Function MakeForm {
-    $listForm = New-Object System.Windows.Forms.Form
-    $listForm = New-Object System.Windows.Forms.Form
-    $listForm.Text = "Paramétrage"
-    $listForm.Size = New-Object System.Drawing.Size(1000,700)
-    $listForm.StartPosition = "CenterScreen"
-    #$listForm.TopMost = $True
-
     $ButtonADAdmin = New-Object System.Windows.Forms.Button
     $ButtonADAdmin.Location = New-Object System.Drawing.Point(40,40)
     $ButtonADAdmin.Size = New-Object System.Drawing.Size(200,50)
@@ -132,68 +140,83 @@ Function MakeForm {
     $ButtonRetour.Location = New-Object System.Drawing.Point(30,580)
     $ButtonRetour.Size = New-Object System.Drawing.Size(150,60)
     $ButtonRetour.Text = "Retour"
+    $ButtonRetour.Add_Click({$script:listForm.Close()})
+    # la touche echap est mappée sur retour
+    $script:listForm.CancelButton = $ButtonRetour
 
     $ListBoxMenu = New-Object System.Windows.Forms.ListBox 
     $ListBoxMenu.Location = New-Object System.Drawing.Size(30,30) 
-    $ListBoxMenu.Size = New-Object System.Drawing.Size(220,20) 
-    $ListBoxMenu.Height = 530
+    $ListBoxMenu.Size = New-Object System.Drawing.Size(220,530) 
 
-    $listForm.Controls.Add($ButtonADAdmin) 
-    $listForm.Controls.Add($ButtonPlateformes)
-    $listForm.Controls.Add($ButtonDefProfils)
-    $listForm.Controls.Add($ButtonAssProfils)
-    $listForm.Controls.Add($ButtonRetour)
-    $listForm.Controls.Add($ListBoxMenu)
-    $listForm.Controls.Add($script:ListBoxAffichage)
+    $script:listForm.Controls.Add($ButtonADAdmin) 
+    $script:listForm.Controls.Add($ButtonPlateformes)
+    $script:listForm.Controls.Add($ButtonDefProfils)
+    $script:listForm.Controls.Add($ButtonAssProfils)
+    $script:listForm.Controls.Add($ButtonRetour)
+    $script:listForm.Controls.Add($ListBoxMenu)
+    $script:listForm.Controls.Add($script:ListBoxAffichage)
 
     # Afficher la fenetre
-    $listForm.ShowDialog()
+    $script:listForm.ShowDialog()
+}
+
+Function ModifyAd {
+    # on créé le répertoire s'il n'existe pas
+    New-Item -ItemType Directory -Force -Path '..\config\'
+    # on enregistre les 3 champs dans un fichier
+    "url=" + $script:textBoxAdURL.Text > '..\config\ad.properties'
+    "user=" + $script:textBoxAdUser.Text >> '..\config\ad.properties'
+    "pass=" + $script:textBoxAdMDP.Text >> '..\config\ad.properties'
 }
 
 Function MakeMenuAd {
-    #$FormLabelDA = New-Object System.Windows.Forms.Label
-    #$FormLabelDA.Location = New-Object System.Drawing.Point(250,31)
-    #$FormLabelDA.Size = New-Object System.Drawing.Size(5,700)
-    #$FormLabelDA.Text = " "
+    $labelTitreAd = New-Object System.Windows.Forms.Label
+    $labelTitreAd.Location = New-Object System.Drawing.Point(10,10)
+    $labelTitreAd.Size = New-Object System.Drawing.Size(200,20)
+    $labelTitreAd.Text = "Configuration Active Directory"
+    $labelTitreAd.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+
+    $buttonEnregistrerAd = New-Object System.Windows.Forms.Button
+    $buttonEnregistrerAd.Location = New-Object System.Drawing.Point(220,10)
+    $buttonEnregistrerAd.Size = New-Object System.Drawing.Size(70,22)
+    $buttonEnregistrerAd.Text = "Enregistrer"
+    $buttonEnregistrerAd.Add_Click({ModifyAd})
 
     $labelAdURL = New-Object System.Windows.Forms.Label
-    $labelAdURL.Location = New-Object System.Drawing.Point(10,10)
+    $labelAdURL.Location = New-Object System.Drawing.Point(10,50)
     $labelAdURL.Size = New-Object System.Drawing.Size(200,20)
     $labelAdURL.Text = "Adresse IP ou nom du serveur"
     $labelAdURL.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $textBoxAdURL = New-Object System.Windows.Forms.TextBox
-    $textBoxAdURL.Location = New-Object System.Drawing.Point(215,10)
-    $textBoxAdURL.Size = New-Object System.Drawing.Size(200,22)
-
     $labelAdUser = New-Object System.Windows.Forms.Label
-    $labelAdUser.Location = New-Object System.Drawing.Point(10,50)
+    $labelAdUser.Location = New-Object System.Drawing.Point(10,90)
     $labelAdUser.Size = New-Object System.Drawing.Size(200,20)
     $labelAdUser.Text = "Nom d'utilisateur"
     $labelAdUser.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-    $textBoxAdUser = New-Object System.Windows.Forms.TextBox
-    $textBoxAdUser.Location = New-Object System.Drawing.Point(215,50)
-    $textBoxAdUser.Size = New-Object System.Drawing.Size(200,22)
-
+    
     $labelAdMDP = New-Object System.Windows.Forms.Label
-    $labelAdMDP.Location = New-Object System.Drawing.Point(10,90)
+    $labelAdMDP.Location = New-Object System.Drawing.Point(10,130)
     $labelAdMDP.Size = New-Object System.Drawing.Size(200,20)
     $labelAdMDP.Text = "Mot de passe"
     $labelAdMDP.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-    $textBoxAdMDP = New-Object System.Windows.Forms.TextBox
-    $textBoxAdMDP.Location = New-Object System.Drawing.Point(215,90)
-    $textBoxAdMDP.Size = New-Object System.Drawing.Size(200,22)
-
+    
     $script:ListBoxAffichage.Controls.clear();
-    $script:ListBoxAffichage.Controls.Add($textBoxAdURL)
-    $script:ListBoxAffichage.Controls.Add($textBoxAdUser)
-    $script:ListBoxAffichage.Controls.Add($textBoxAdMDP)
+    $script:ListBoxAffichage.Controls.Add($labelTitreAd)
+    $script:ListBoxAffichage.Controls.Add($buttonEnregistrerAd)
     $script:ListBoxAffichage.Controls.Add($labelAdURL)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxAdURL)
     $script:ListBoxAffichage.Controls.Add($labelAdUser)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxAdUser)
     $script:ListBoxAffichage.Controls.Add($labelAdMDP)
-    #$script:ListBoxAffichage.Controls.Add($FormLabelDA)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxAdMDP)
+
+    # si le fichier existe, on charge les données
+    if(Test-Path '..\config\ad.properties') {
+        $adprop = ConvertFrom-StringData (Get-Content '..\config\ad.properties' -raw)
+        $script:textBoxAdURL.Text = $adprop.'url'
+        $script:textBoxAdUser.Text = $adprop.'user'
+        $script:textBoxAdMDP.Text = $adprop.'pass'
+    }
 }
 
 Function AddPlateforme {
@@ -228,7 +251,7 @@ Function AddPlateforme {
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
-        FillComboBox
+        FillComboBoxPlateformes
     }
 }
 
@@ -259,7 +282,7 @@ Function DeletePlateforme {
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
-        FillComboBox
+        FillComboBoxPlateformes
     }
 }
 

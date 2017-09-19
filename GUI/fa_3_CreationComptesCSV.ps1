@@ -129,10 +129,9 @@ function Select-FileDialog
         Write-Error "Opération annulé"
         return exit
     }
-
 }
 
-$file = Select-FileDialog -Titre "Choisir le fichier CSV" -Dossier "C:\" -Filtre "Fichier CSV (*.csv) |*.csv"
+$file = Select-FileDialog 
 
 
 }
