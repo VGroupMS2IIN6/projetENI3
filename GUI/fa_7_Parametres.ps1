@@ -5,7 +5,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 # Initialisation des variables  
-$serv = "192.168.0.1" # Addresse du serveur
+$serv = "192.168.1.2" # Addresse du serveur
 $port = "3306" # Port de connexion (3306 par dÃ©faut)
 $user = "vgroup"  # nom d'utilisateur pour la connexion
 $password = "vgrouproxx" # mot de passe
@@ -17,6 +17,7 @@ $mysql.Open()
 
 # recuperation de la liste des plateformes
 $plateformes = MakeRequest "SELECT * FROM plateforme"
+$profils = MakeRequest "SELECT * FROM profil"
 
 # Creation des composants dont on aura besoin plus tard
 $listForm = New-Object System.Windows.Forms.Form
@@ -42,6 +43,11 @@ $ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
 $ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
 $ComboBoxPlateformes.add_SelectedIndexChanged({FillPlateforme})
 FillComboBoxPlateformes
+$ComboBoxProfil = New-Object System.Windows.Forms.ComboBox
+$ComboBoxProfil.Location = New-Object System.Drawing.Point(10,10)
+$ComboBoxProfil.Size = New-Object System.Drawing.Size(200,20)
+$ComboBoxProfil.add_SelectedIndexChanged({FillProfil})
+FillComboBoxProfil
 $textBoxURL = New-Object System.Windows.Forms.TextBox
 $textBoxURL.Location = New-Object System.Drawing.Point(220,50)
 $textBoxURL.Size = New-Object System.Drawing.Size(200,22)
@@ -89,6 +95,31 @@ function FillComboBoxPlateformes {
     $script:ComboBoxPlateformes.DisplayMember = "nom"
     $script:ComboBoxPlateformes.ValueMember = "id"
     $script:ComboBoxPlateformes.DataSource = $table
+}
+
+function FillComboBoxProfil {
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colNom = New-Object system.Data.DataColumn "nom",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colNom)
+
+    # alimentation de la datatable avec les plateformes
+    foreach($profil in $script:profils) {
+        $ligne = $table.NewRow()
+        $ligne.id = $profil.ID
+        $ligne.nom = $profil.nom
+        $table.Rows.Add($ligne)
+    }
+
+    $script:ComboBoxProfil.DisplayMember = "nom"
+    $script:ComboBoxProfil.ValueMember = "id"
+    $script:ComboBoxProfil.DataSource = $table
 }
 
 function MakeRequest($request) {
@@ -377,14 +408,29 @@ Function MakeMenuDefProfils {
     $FormLabelTextDefProfils1 = New-Object System.Windows.Forms.Label
     $FormLabelTextDefProfils1.Location = New-Object System.Drawing.Point(300,220)
     $FormLabelTextDefProfils1.Size = New-Object System.Drawing.Size(200,20)
-    $FormLabelTextDefProfils1.Text = "plop ;-)"
+    $FormLabelTextDefProfils1.Text = "plop"
     $FormLabelTextDefProfils1.Visible = $true
 
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($FormLabelTextDefProfils1)
+    $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
+    echo plop
+    FillProfil
+}
+
+Function FillProfil {
+    $profil = RetreiveRow $script:profil "id" $script:ComboBoxProfil.SelectedItem.id
+    #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
+    #$script:textBoxURL.Text = $profil.URL
+    #$script:textBoxMail.Text = $profil.mail
+    #$script:textBoxUser.Text = $profil.identifiant
+    #$script:textBoxMdp.Text = $profil.MDP
+    #$script:textBoxRegexMdp.Text = $profil.regexMDP
+    #$script:checkBoxObligatoire.Checked = $profil.obligatoire
 }
 
 Function MakeMenuAssProfils {
+    #afficher tous les comptes pour un profil sélectionné + checkbox pour sélectionner les users (en fonction du nombre de users dans la base
     $FormLabelTextAssProfils1 = New-Object System.Windows.Forms.Label
     $FormLabelTextAssProfils1.Location = New-Object System.Drawing.Point(300,220)
     $FormLabelTextAssProfils1.Size = New-Object System.Drawing.Size(200,20)
@@ -393,4 +439,5 @@ Function MakeMenuAssProfils {
 
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($FormLabelTextAssProfils1)
+    $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
 }
