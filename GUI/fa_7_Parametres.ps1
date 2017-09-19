@@ -16,7 +16,7 @@ $mysql = New-Object MySql.Data.MySqlClient.MySqlConnection("server=" + $serv + "
 $mysql.Open()
 
 # recuperation de la liste des plateformes
-$plateformes = MakeRequest "SELECT * FROM plateforme;"
+$plateformes = MakeRequest "SELECT * FROM plateforme"
 
 # Creation des composants dont on aura besoin plus tard
 $ListBoxAffichage = New-Object System.Windows.Forms.ListBox 
@@ -25,9 +25,8 @@ $ListBoxAffichage.Size = New-Object System.Drawing.Size(700,530)
 $ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
 $ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
 $ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
-$ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
-#$ComboBoxPlateformes.Items.AddRange($plateformes.nom)
-#$ComboBoxPlateformes.SelectedIndex = 1
+#$ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+$ComboBoxPlateformes.add_SelectedIndexChanged({FillPlateforme})
 FillComboBox
 $textBoxURL = New-Object System.Windows.Forms.TextBox
 $textBoxURL.Location = New-Object System.Drawing.Point(220,50)
@@ -72,6 +71,7 @@ function FillComboBox {
         $ligne.nom = $plateforme.nom
         $table.Rows.Add($ligne)
     }
+
     $script:ComboBoxPlateformes.DisplayMember = "nom"
     $script:ComboBoxPlateformes.ValueMember = "id"
     $script:ComboBoxPlateformes.DataSource = $table
@@ -151,79 +151,136 @@ Function MakeForm {
 }
 
 Function MakeMenuAd {
-    $FormLabelDA = New-Object System.Windows.Forms.Label
-    $FormLabelDA.Location = New-Object System.Drawing.Point(250,31)
-    $FormLabelDA.Size = New-Object System.Drawing.Size(5,700)
-    $FormLabelDA.Text = " "
+    #$FormLabelDA = New-Object System.Windows.Forms.Label
+    #$FormLabelDA.Location = New-Object System.Drawing.Point(250,31)
+    #$FormLabelDA.Size = New-Object System.Drawing.Size(5,700)
+    #$FormLabelDA.Text = " "
 
-    $FormLabelTextAd1 = New-Object System.Windows.Forms.Label
-    $FormLabelTextAd1.Location = New-Object System.Drawing.Point(300,230)
-    $FormLabelTextAd1.Size = New-Object System.Drawing.Size(200,20)
-    $FormLabelTextAd1.Text = "Adresse IP ou nom du serveur : "
-    $FormLabelTextAd1.Visible = $true
+    $labelAdURL = New-Object System.Windows.Forms.Label
+    $labelAdURL.Location = New-Object System.Drawing.Point(10,10)
+    $labelAdURL.Size = New-Object System.Drawing.Size(200,20)
+    $labelAdURL.Text = "Adresse IP ou nom du serveur"
+    $labelAdURL.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $FormLabelTextAd2 = New-Object System.Windows.Forms.Label
-    $FormLabelTextAd2.Location = New-Object System.Drawing.Point(300,270)
-    $FormLabelTextAd2.Size = New-Object System.Drawing.Size(200,20)
-    $FormLabelTextAd2.Text = "Nom d'utilisateur : "
-    $FormLabelTextAd2.Visible = $true
+    $textBoxAdURL = New-Object System.Windows.Forms.TextBox
+    $textBoxAdURL.Location = New-Object System.Drawing.Point(215,10)
+    $textBoxAdURL.Size = New-Object System.Drawing.Size(200,22)
 
-    $FormLabelTextAd3 = New-Object System.Windows.Forms.Label
-    $FormLabelTextAd3.Location = New-Object System.Drawing.Point(300,310)
-    $FormLabelTextAd3.Size = New-Object System.Drawing.Size(200,20)
-    $FormLabelTextAd3.Text = "Mot de passe : "
-    $FormLabelTextAd3.Visible = $true
+    $labelAdUser = New-Object System.Windows.Forms.Label
+    $labelAdUser.Location = New-Object System.Drawing.Point(10,50)
+    $labelAdUser.Size = New-Object System.Drawing.Size(200,20)
+    $labelAdUser.Text = "Nom d'utilisateur"
+    $labelAdUser.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $TextBoxAd1 = New-Object System.Windows.Forms.TextBox
-    $TextBoxAd1.Location = New-Object System.Drawing.Point(600,230)
-    $TextBoxAd1.Size = New-Object System.Drawing.Size(200,30)
-    $TextBoxAd1.Height = 100
-    $TextBoxAd1.Text = ""
-    $TextBoxAd1.Visible = $true
+    $textBoxAdUser = New-Object System.Windows.Forms.TextBox
+    $textBoxAdUser.Location = New-Object System.Drawing.Point(215,50)
+    $textBoxAdUser.Size = New-Object System.Drawing.Size(200,22)
 
-    $TextBoxAd2 = New-Object System.Windows.Forms.TextBox
-    $TextBoxAd2.Location = New-Object System.Drawing.Point(600,270)
-    $TextBoxAd2.Size = New-Object System.Drawing.Size(200,30)
-    $TextBoxAd2.Height = 100
-    $TextBoxAd2.Text = ""
-    $TextBoxAd2.Visible = $true
+    $labelAdMDP = New-Object System.Windows.Forms.Label
+    $labelAdMDP.Location = New-Object System.Drawing.Point(10,90)
+    $labelAdMDP.Size = New-Object System.Drawing.Size(200,20)
+    $labelAdMDP.Text = "Mot de passe"
+    $labelAdMDP.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $TextBoxAd3 = New-Object System.Windows.Forms.TextBox
-    $TextBoxAd3.Location = New-Object System.Drawing.Point(600,310)
-    $TextBoxAd3.Size = New-Object System.Drawing.Size(200,30)
-    $TextBoxAd3.Height = 100
-    $TextBoxAd3.Text = ""
-    $TextBoxAd3.Visible = $true
+    $textBoxAdMDP = New-Object System.Windows.Forms.TextBox
+    $textBoxAdMDP.Location = New-Object System.Drawing.Point(215,90)
+    $textBoxAdMDP.Size = New-Object System.Drawing.Size(200,22)
 
     $script:ListBoxAffichage.Controls.clear();
-    $script:ListBoxAffichage.Controls.Add($TextBoxAd1)
-    $script:ListBoxAffichage.Controls.Add($TextBoxAd2)
-    $script:ListBoxAffichage.Controls.Add($TextBoxAd3)
-    $script:ListBoxAffichage.Controls.Add($FormLabelTextAd1)
-    $script:ListBoxAffichage.Controls.Add($FormLabelTextAd2)
-    $script:ListBoxAffichage.Controls.Add($FormLabelTextAd3)
-    $script:ListBoxAffichage.Controls.Add($FormLabelDA)
+    $script:ListBoxAffichage.Controls.Add($textBoxAdURL)
+    $script:ListBoxAffichage.Controls.Add($textBoxAdUser)
+    $script:ListBoxAffichage.Controls.Add($textBoxAdMDP)
+    $script:ListBoxAffichage.Controls.Add($labelAdURL)
+    $script:ListBoxAffichage.Controls.Add($labelAdUser)
+    $script:ListBoxAffichage.Controls.Add($labelAdMDP)
+    #$script:ListBoxAffichage.Controls.Add($FormLabelDA)
+}
+
+Function AddPlateforme {
+    # on vérifie qu'on essaie pas d'insérer une entrée déjà existante
+    if($script:ComboBoxPlateformes.SelectedIndex -eq -1 -and -not [string]::IsNullOrEmpty($script:ComboBoxPlateformes.Text)) {
+        $reqInsert = "insert into plateforme(nom, "
+        $reqValues = " values('" + $script:ComboBoxPlateformes.Text + "',"
+        if(-not [string]::IsNullOrEmpty($script:textBoxURL.Text)) {
+            $reqInsert += "URL,"
+            $reqValues += "'" + $script:textBoxURL.Text + "',"
+        }
+        if(-not [string]::IsNullOrEmpty($script:textBoxMail.Text)) {
+            $reqInsert += "mail,"
+            $reqValues += "'" + $script:textBoxMail.Text + "',"
+        }
+        if(-not [string]::IsNullOrEmpty($script:textBoxUser.Text)) {
+            $reqInsert += "identifiant,"
+            $reqValues += "'" + $script:textBoxUser.Text + "',"
+        }
+         if(-not [string]::IsNullOrEmpty($script:textBoxMDP.Text)) {
+            $reqInsert += "MDP,"
+            $reqValues += "'" + $script:textBoxMDP.Text + "',"
+        }
+        if(-not [string]::IsNullOrEmpty($script:textBoxRegexMdp.Text)) {
+            $reqInsert += "regexMDP,"
+            $reqValues += "'" + $script:textBoxRegexMdp.Text + "',"
+        }
+        $reqValues += "" + $script:checkBoxObligatoire.Checked + ")"
+
+        $reqInsert += "obligatoire)" + $reqValues
+        MakeRequest $reqInsert
+
+        # on recharge les infos
+        $script:plateformes = MakeRequest "SELECT * FROM plateforme"
+        FillComboBox
+    }
 }
 
 Function ModifyPlateforme {
-    $reqUpdate = "update plateforme set"
-    $reqUpdate += " URL='" + $script:textBoxURL.Text + "',"
-    $reqUpdate += " mail='" + $script:textBoxMail.Text + "',"
-    $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
-    $reqUpdate += " MDP='" + $script:textBoxMdp.Text + "',"
-    $reqUpdate += " RegexMDP='" + $script:textBoxRegexMdp.Text + "',"
-    $reqUpdate += " obligatoire=" + $script:checkBoxObligatoire.Checked
-    $reqUpdate += " where id=" + $script:ComboBoxPlateformes.SelectedItem.id
-    MakeRequest $reqUpdate
-    $script:plateformes = MakeRequest "SELECT * FROM plateforme;"
+    # on vérifie qu'on essaie pas de modifier une nouvelle entrée pas encore insérée
+    if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
+        $reqUpdate = "update plateforme set"
+        $reqUpdate += " URL='" + $script:textBoxURL.Text + "',"
+        $reqUpdate += " mail='" + $script:textBoxMail.Text + "',"
+        $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
+        $reqUpdate += " MDP='" + $script:textBoxMdp.Text + "',"
+        $reqUpdate += " RegexMDP='" + $script:textBoxRegexMdp.Text + "',"
+        $reqUpdate += " obligatoire=" + $script:checkBoxObligatoire.Checked
+        $reqUpdate += " where id=" + $script:ComboBoxPlateformes.SelectedItem.id
+        MakeRequest $reqUpdate
+
+        # on recharge les infos
+        $script:plateformes = MakeRequest "SELECT * FROM plateforme"
+    }
+}
+
+Function DeletePlateforme {
+    # on vérifie qu'on essaie pas de supprimer une nouvelle entrée pas encore insérée
+    if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
+        $reqDelete = "delete from plateforme where id="
+        $reqDelete += $script:ComboBoxPlateformes.SelectedItem.id
+        MakeRequest $reqDelete
+
+        # on recharge les infos
+        $script:plateformes = MakeRequest "SELECT * FROM plateforme"
+        FillComboBox
+    }
 }
 
 Function MakeMenuPlateformes {
+    $buttonAjouter = New-Object System.Windows.Forms.Button
+    $buttonAjouter.Location = New-Object System.Drawing.Point(220,10)
+    $buttonAjouter.Size = New-Object System.Drawing.Size(70,22)
+    $buttonAjouter.Text = "Ajouter"
+    $buttonAjouter.Add_Click({AddPlateforme})
+
     $buttonEnregistrer = New-Object System.Windows.Forms.Button
-    $buttonEnregistrer.Location = New-Object System.Drawing.Point(215,10)
+    $buttonEnregistrer.Location = New-Object System.Drawing.Point(295,10)
     $buttonEnregistrer.Size = New-Object System.Drawing.Size(70,22)
     $buttonEnregistrer.Text = "Enregistrer"
     $buttonEnregistrer.Add_Click({ModifyPlateforme})
+
+    $buttonSupprimer = New-Object System.Windows.Forms.Button
+    $buttonSupprimer.Location = New-Object System.Drawing.Point(370,10)
+    $buttonSupprimer.Size = New-Object System.Drawing.Size(70,22)
+    $buttonSupprimer.Text = "Supprimer"
+    $buttonSupprimer.Add_Click({DeletePlateforme})
 
     $labelURL = New-Object System.Windows.Forms.Label
     $labelURL.Location = New-Object System.Drawing.Point(10,50)
@@ -263,7 +320,9 @@ Function MakeMenuPlateformes {
     
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
+    $script:ListBoxAffichage.Controls.Add($buttonAjouter)
     $script:ListBoxAffichage.Controls.Add($buttonEnregistrer)
+    $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
     $script:ListBoxAffichage.Controls.Add($labelURL)
     $script:ListBoxAffichage.Controls.Add($script:textBoxURL)
     $script:ListBoxAffichage.Controls.Add($labelMail)
@@ -279,10 +338,6 @@ Function MakeMenuPlateformes {
 
     # alimentation des champs pour la plateforme selectionnee
     FillPlateforme
-
-    $ComboBoxPlateformes.add_SelectedIndexChanged({
-        FillPlateforme
-    })
 }
 
 Function FillPlateforme {
