@@ -15,6 +15,52 @@ $db = "projet_eni" # nom de la base de donnÃ©e
 $mysql = New-Object MySql.Data.MySqlClient.MySqlConnection("server=" + $serv + ";port=" + $port + ";uid=" + $user + ";pwd=" + $password + ";database=" + $db + ";Pooling=False")  
 $mysql.Open()
 
+# recuperation de la liste des plateformes
+$plateformes = MakeRequest "SELECT * FROM plateforme;"
+
+# Creation des composants dont on aura besoin plus tard
+$ListBoxAffichage = New-Object System.Windows.Forms.ListBox 
+$ListBoxAffichage.Location = New-Object System.Drawing.Size(255,30) 
+$ListBoxAffichage.Size = New-Object System.Drawing.Size(700,20) 
+$ListBoxAffichage.Height = 530
+$ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
+$ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
+$ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
+$ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+$ComboBoxPlateformes.Items.AddRange($plateformes.nom)
+$ComboBoxPlateformes.SelectedIndex = 0
+$textBoxURL = New-Object System.Windows.Forms.TextBox
+$textBoxURL.Name = "textBoxURL"
+$textBoxURL.Location = New-Object System.Drawing.Point(220,50)
+$textBoxURL.Size = New-Object System.Drawing.Size(200,20)
+$textBoxURL.Height = 100
+$textBoxMail = New-Object System.Windows.Forms.TextBox
+$textBoxMail.Name = "textBoxMail"
+$textBoxMail.Location = New-Object System.Drawing.Point(220,90)
+$textBoxMail.Size = New-Object System.Drawing.Size(200,30)
+$textBoxMail.Height = 100
+$textBoxUser = New-Object System.Windows.Forms.TextBox
+$textBoxUser.Name = "textBoxUser"
+$textBoxUser.Location = New-Object System.Drawing.Point(220,130)
+$textBoxUser.Size = New-Object System.Drawing.Size(200,30)
+$textBoxUser.Height = 100
+$textBoxMdp = New-Object System.Windows.Forms.TextBox
+$textBoxMdp.Name = "textBoxMdp"
+$textBoxMdp.Location = New-Object System.Drawing.Point(220,170)
+$textBoxMdp.Size = New-Object System.Drawing.Size(200,30)
+$textBoxMdp.Height = 100
+$textBoxRegexMdp = New-Object System.Windows.Forms.TextBox
+$textBoxRegexMdp.Name = "textBoxRegexMdp"
+$textBoxRegexMdp.Location = New-Object System.Drawing.Point(220,210)
+$textBoxRegexMdp.Size = New-Object System.Drawing.Size(200,30)
+$textBoxRegexMdp.Height = 100
+$textBoxObligatoire = New-Object System.Windows.Forms.TextBox
+$textBoxObligatoire.Name = "textBoxObligatoire"
+$textBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
+$textBoxObligatoire.Size = New-Object System.Drawing.Size(200,30)
+$textBoxObligatoire.Height = 100
+
+# Affichage de l'ecran
 MakeForm
 
 $mysql.Close()
@@ -39,11 +85,12 @@ function RetreiveRow($result, $field, $filter) {
 }
 
 Function MakeForm {
-    $ListForm = New-Object System.Windows.Forms.Form
-    $ListForm.Text = "Paramétrage"
-    $ListForm.Size = New-Object System.Drawing.Size(1000,700)
-    $ListForm.StartPosition = "CenterScreen"
-    #$ListForm.TopMost = $True
+    $listForm = New-Object System.Windows.Forms.Form
+    $listForm = New-Object System.Windows.Forms.Form
+    $listForm.Text = "Paramêµ²age"
+    $listForm.Size = New-Object System.Drawing.Size(1000,700)
+    $listForm.StartPosition = "CenterScreen"
+    #$listForm.TopMost = $True
 
     $ButtonADAdmin = New-Object System.Windows.Forms.Button
     $ButtonADAdmin.Location = New-Object System.Drawing.Point(40,40)
@@ -60,7 +107,7 @@ Function MakeForm {
     $ButtonDefProfils = New-Object System.Windows.Forms.Button
     $ButtonDefProfils.Location = New-Object System.Drawing.Point(40,160)
     $ButtonDefProfils.Size = New-Object System.Drawing.Size(200,50)
-    $ButtonDefProfils.Text = "Définition des profils"
+    $ButtonDefProfils.Text = "Dê§©nition des profils"
     $ButtonDefProfils.Add_Click({makeMenuDefProfils})
 
     $ButtonAssProfils = New-Object System.Windows.Forms.Button
@@ -79,22 +126,16 @@ Function MakeForm {
     $ListBoxMenu.Size = New-Object System.Drawing.Size(220,20) 
     $ListBoxMenu.Height = 530
 
-    $ListBoxMenuDeux = New-Object System.Windows.Forms.ListBox 
-    $ListBoxMenuDeux.Location = New-Object System.Drawing.Size(255,30) 
-    $ListBoxMenuDeux.Size = New-Object System.Drawing.Size(700,20) 
-    $ListBoxMenuDeux.Height = 530
-    $ListBoxMenuDeux.Text = "plop ;-)"
-
-    $ListForm.Controls.Add($ButtonADAdmin) 
-    $ListForm.Controls.Add($ButtonPlateformes)
-    $ListForm.Controls.Add($ButtonDefProfils)
-    $ListForm.Controls.Add($ButtonAssProfils)
-    $ListForm.Controls.Add($ButtonRetour)
-    $ListForm.Controls.Add($ListBoxMenu)
-    $ListForm.Controls.Add($ListBoxMenuDeux)
+    $listForm.Controls.Add($ButtonADAdmin) 
+    $listForm.Controls.Add($ButtonPlateformes)
+    $listForm.Controls.Add($ButtonDefProfils)
+    $listForm.Controls.Add($ButtonAssProfils)
+    $listForm.Controls.Add($ButtonRetour)
+    $listForm.Controls.Add($ListBoxMenu)
+    $listForm.Controls.Add($script:ListBoxAffichage)
 
     # Afficher la fenetre
-    $ListForm.ShowDialog()
+    $listForm.ShowDialog()
 }
 
 
@@ -143,122 +184,78 @@ Function MakeMenuAd {
     $TextBoxAd3.Text = ""
     $TextBoxAd3.Visible = $true
 
-    $ListBoxMenuDeux.Controls.clear();
-    $ListBoxMenuDeux.Controls.Add($TextBoxAd1)
-    $ListBoxMenuDeux.Controls.Add($TextBoxAd2)
-    $ListBoxMenuDeux.Controls.Add($TextBoxAd3)
-    $ListBoxMenuDeux.Controls.Add($FormLabelTextAd1)
-    $ListBoxMenuDeux.Controls.Add($FormLabelTextAd2)
-    $ListBoxMenuDeux.Controls.Add($FormLabelTextAd3)
-    $ListBoxMenuDeux.Controls.Add($FormLabelDA)
+    $script:ListBoxAffichage.Controls.clear();
+    $script:ListBoxAffichage.Controls.Add($TextBoxAd1)
+    $script:ListBoxAffichage.Controls.Add($TextBoxAd2)
+    $script:ListBoxAffichage.Controls.Add($TextBoxAd3)
+    $script:ListBoxAffichage.Controls.Add($FormLabelTextAd1)
+    $script:ListBoxAffichage.Controls.Add($FormLabelTextAd2)
+    $script:ListBoxAffichage.Controls.Add($FormLabelTextAd3)
+    $script:ListBoxAffichage.Controls.Add($FormLabelDA)
 }
 
 Function MakeMenuPlateformes {
+    $labelURL = New-Object System.Windows.Forms.Label
+    $labelURL.Location = New-Object System.Drawing.Point(10,50)
+    $labelURL.Size = New-Object System.Drawing.Size(200,20)
+    $labelURL.Text = "Adresse IP ou nom du serveur"
+    $labelURL.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-$plateformes = MakeRequest "SELECT * FROM plateforme;"
+    $labelMail = New-Object System.Windows.Forms.Label
+    $labelMail.Location = New-Object System.Drawing.Point(10,90)
+    $labelMail.Size = New-Object System.Drawing.Size(200,20)
+    $labelMail.Text = "Adresse mail destinataire"
+    $labelMail.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+    
+    $labelUser = New-Object System.Windows.Forms.Label
+    $labelUser.Location = New-Object System.Drawing.Point(10,130)
+    $labelUser.Size = New-Object System.Drawing.Size(200,20)
+    $labelUser.Text = "Nom d'utilisateur"
+    $labelUser.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-$ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
-$ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
-$ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
-$ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
-$ComboBoxPlateformes.Items.AddRange($plateformes.nom)
-$ComboBoxPlateformes.SelectedIndex = 0
+    $labelMdp = New-Object System.Windows.Forms.Label
+    $labelMdp.Location = New-Object System.Drawing.Point(10,170)
+    $labelMdp.Size = New-Object System.Drawing.Size(200,20)
+    $labelMdp.Text = "Mot de passe"
+    $labelMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-$labelURL = New-Object System.Windows.Forms.Label
-$labelURL.Location = New-Object System.Drawing.Point(10,50)
-$labelURL.Size = New-Object System.Drawing.Size(200,20)
-$labelURL.Text = "Adresse IP ou nom du serveur"
-$labelURL.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+    $labelRegexMdp = New-Object System.Windows.Forms.Label
+    $labelRegexMdp.Location = New-Object System.Drawing.Point(10,210)
+    $labelRegexMdp.Size = New-Object System.Drawing.Size(200,20)
+    $labelRegexMdp.Text = "Regex de gê¯©ration du mot de passe"
+    $labelRegexMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+    
+    $labelObligatoire = New-Object System.Windows.Forms.Label
+    $labelObligatoire.Location = New-Object System.Drawing.Point(10,250)
+    $labelObligatoire.Size = New-Object System.Drawing.Size(200,20)
+    $labelObligatoire.Text = "Compte obligatoire"
+    $labelObligatoire.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+    
+    $script:ListBoxAffichage.Controls.clear();
+    $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
+    $script:ListBoxAffichage.Controls.Add($labelURL)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxURL)
+    $script:ListBoxAffichage.Controls.Add($labelMail)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxMail)
+    $script:ListBoxAffichage.Controls.Add($labelUser)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxUser)
+    $script:ListBoxAffichage.Controls.Add($labelMdp)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxMdp)
+    $script:ListBoxAffichage.Controls.Add($labelRegexMdp)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxRegexMdp)
+    $script:ListBoxAffichage.Controls.Add($labelObligatoire)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxObligatoire)
 
-$textBoxURL = New-Object System.Windows.Forms.TextBox
-$textBoxURL.Name = "textBoxURL"
-$textBoxURL.Location = New-Object System.Drawing.Point(220,50)
-$textBoxURL.Size = New-Object System.Drawing.Size(200,20)
-$textBoxURL.Height = 100
+    # alimentation des champs pour la plateforme selectionnee
+    FillPlateforme
 
-$labelMail = New-Object System.Windows.Forms.Label
-$labelMail.Location = New-Object System.Drawing.Point(10,90)
-$labelMail.Size = New-Object System.Drawing.Size(200,20)
-$labelMail.Text = "Adresse mail destinataire"
-$labelMail.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-$textBoxMail = New-Object System.Windows.Forms.TextBox
-$textBoxMail.Name = "textBoxMail"
-$textBoxMail.Location = New-Object System.Drawing.Point(220,90)
-$textBoxMail.Size = New-Object System.Drawing.Size(200,30)
-$textBoxMail.Height = 100
-
-$labelUser = New-Object System.Windows.Forms.Label
-$labelUser.Location = New-Object System.Drawing.Point(10,130)
-$labelUser.Size = New-Object System.Drawing.Size(200,20)
-$labelUser.Text = "Nom d'utilisateur"
-$labelUser.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-$textBoxUser = New-Object System.Windows.Forms.TextBox
-$textBoxUser.Name = "textBoxUser"
-$textBoxUser.Location = New-Object System.Drawing.Point(220,130)
-$textBoxUser.Size = New-Object System.Drawing.Size(200,30)
-$textBoxUser.Height = 100
-
-$labelMdp = New-Object System.Windows.Forms.Label
-$labelMdp.Location = New-Object System.Drawing.Point(10,170)
-$labelMdp.Size = New-Object System.Drawing.Size(200,20)
-$labelMdp.Text = "Mot de passe"
-$labelMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-$textBoxMdp = New-Object System.Windows.Forms.TextBox
-$textBoxMdp.Name = "textBoxMdp"
-$textBoxMdp.Location = New-Object System.Drawing.Point(220,170)
-$textBoxMdp.Size = New-Object System.Drawing.Size(200,30)
-$textBoxMdp.Height = 100
-
-$labelRegexMdp = New-Object System.Windows.Forms.Label
-$labelRegexMdp.Location = New-Object System.Drawing.Point(10,210)
-$labelRegexMdp.Size = New-Object System.Drawing.Size(200,20)
-$labelRegexMdp.Text = "Regex de génération du mot de passe"
-$labelRegexMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-$textBoxRegexMdp = New-Object System.Windows.Forms.TextBox
-$textBoxRegexMdp.Name = "textBoxRegexMdp"
-$textBoxRegexMdp.Location = New-Object System.Drawing.Point(220,210)
-$textBoxRegexMdp.Size = New-Object System.Drawing.Size(200,30)
-$textBoxRegexMdp.Height = 100
-
-$labelObligatoire = New-Object System.Windows.Forms.Label
-$labelObligatoire.Location = New-Object System.Drawing.Point(10,250)
-$labelObligatoire.Size = New-Object System.Drawing.Size(200,20)
-$labelObligatoire.Text = "Compte obligatoire"
-$labelObligatoire.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-$textBoxObligatoire = New-Object System.Windows.Forms.TextBox
-$textBoxObligatoire.Name = "textBoxObligatoire"
-$textBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
-$textBoxObligatoire.Size = New-Object System.Drawing.Size(200,30)
-$textBoxObligatoire.Height = 100
-
-$ListBoxMenuDeux.Controls.clear();
-$ListBoxMenuDeux.Controls.Add($ComboBoxPlateformes)
-$ListBoxMenuDeux.Controls.Add($labelURL)
-$ListBoxMenuDeux.Controls.Add($textBoxURL)
-$ListBoxMenuDeux.Controls.Add($labelMail)
-$ListBoxMenuDeux.Controls.Add($textBoxMail)
-$ListBoxMenuDeux.Controls.Add($labelUser)
-$ListBoxMenuDeux.Controls.Add($textBoxUser)
-$ListBoxMenuDeux.Controls.Add($labelMdp)
-$ListBoxMenuDeux.Controls.Add($textBoxMdp)
-$ListBoxMenuDeux.Controls.Add($labelRegexMdp)
-$ListBoxMenuDeux.Controls.Add($textBoxRegexMdp)
-$ListBoxMenuDeux.Controls.Add($labelObligatoire)
-$ListBoxMenuDeux.Controls.Add($textBoxObligatoire)
-
-# récupération de la ligne de la table plateforme en fonction de l'index
-FillPlateforme $plateformes $ComboBoxPlateformes.SelectedItem $textBoxURL $textBoxMail $textBoxUser $textBoxMdp $textBoxRegexMdp $textBoxObligatoire
-#$ComboBoxPlateformes.Add_click({FillPlateforme $plateformes $ComboBoxPlateformes.SelectedItem $textBoxURL $textBoxMail $textBoxUser $textBoxMdp $textBoxRegexMdp $textBoxObligatoire})
+    $ComboBoxPlateformes.add_SelectedIndexChanged({
+        FillPlateforme
+    })
 }
 
-Function FillPlateforme($plateformes, $selectedItem, $textBoxURL, $textBoxMail, $textBoxUser, $textBoxMdp, $textBoxRegexMdp, $textBoxObligatoire)
-{
-    $plateforme = RetreiveRow $plateformes "nom" $selectedItem
+Function FillPlateforme {
+    $plateforme = RetreiveRow $script:plateformes "nom" $script:ComboBoxPlateformes.SelectedItem
     $textBoxURL.Text = $plateforme.URL
     $textBoxMail.Text = $plateforme.mail
     $textBoxUser.Text = $plateforme.identifiant
@@ -268,27 +265,24 @@ Function FillPlateforme($plateformes, $selectedItem, $textBoxURL, $textBoxMail, 
 }
 
 Function MakeMenuDefProfils {
+    $FormLabelTextDefProfils1 = New-Object System.Windows.Forms.Label
+    $FormLabelTextDefProfils1.Location = New-Object System.Drawing.Point(300,220)
+    $FormLabelTextDefProfils1.Size = New-Object System.Drawing.Size(200,20)
+    $FormLabelTextDefProfils1.Text = "plop ;-)"
+    $FormLabelTextDefProfils1.Visible = $true
 
-$FormLabelTextDefProfils1 = New-Object System.Windows.Forms.Label
-$FormLabelTextDefProfils1.Location = New-Object System.Drawing.Point(300,220)
-$FormLabelTextDefProfils1.Size = New-Object System.Drawing.Size(200,20)
-$FormLabelTextDefProfils1.Text = "plop ;-)"
-$FormLabelTextDefProfils1.Visible = $true
-
-$ListBoxMenuDeux.Controls.clear();
-$ListBoxMenuDeux.Controls.Add($FormLabelTextDefProfils1)
-
+    $script:ListBoxAffichage.Controls.clear();
+    $script:ListBoxAffichage.Controls.Add($FormLabelTextDefProfils1)
 }
 
 
 Function MakeMenuAssProfils {
+    $FormLabelTextAssProfils1 = New-Object System.Windows.Forms.Label
+    $FormLabelTextAssProfils1.Location = New-Object System.Drawing.Point(300,220)
+    $FormLabelTextAssProfils1.Size = New-Object System.Drawing.Size(200,20)
+    $FormLabelTextAssProfils1.Text = "plop ;-)"
+    $FormLabelTextAssProfils1.Visible = $true
 
-$FormLabelTextAssProfils1 = New-Object System.Windows.Forms.Label
-$FormLabelTextAssProfils1.Location = New-Object System.Drawing.Point(300,220)
-$FormLabelTextAssProfils1.Size = New-Object System.Drawing.Size(200,20)
-$FormLabelTextAssProfils1.Text = "plop ;-)"
-$FormLabelTextAssProfils1.Visible = $true
-
-$ListBoxMenuDeux.Controls.clear();
-$ListBoxMenuDeux.Controls.Add($FormLabelTextAssProfils1)
+    $script:ListBoxAffichage.Controls.clear();
+    $script:ListBoxAffichage.Controls.Add($FormLabelTextAssProfils1)
 }
