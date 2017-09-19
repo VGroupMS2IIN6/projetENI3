@@ -21,8 +21,7 @@ $plateformes = MakeRequest "SELECT * FROM plateforme;"
 # Creation des composants dont on aura besoin plus tard
 $ListBoxAffichage = New-Object System.Windows.Forms.ListBox 
 $ListBoxAffichage.Location = New-Object System.Drawing.Size(255,30) 
-$ListBoxAffichage.Size = New-Object System.Drawing.Size(700,20) 
-$ListBoxAffichage.Height = 530
+$ListBoxAffichage.Size = New-Object System.Drawing.Size(700,530) 
 $ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
 $ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
 $ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
@@ -31,35 +30,23 @@ $ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropD
 #$ComboBoxPlateformes.SelectedIndex = 1
 FillComboBox
 $textBoxURL = New-Object System.Windows.Forms.TextBox
-$textBoxURL.Name = "textBoxURL"
 $textBoxURL.Location = New-Object System.Drawing.Point(220,50)
-$textBoxURL.Size = New-Object System.Drawing.Size(200,20)
-$textBoxURL.Height = 100
+$textBoxURL.Size = New-Object System.Drawing.Size(200,22)
 $textBoxMail = New-Object System.Windows.Forms.TextBox
-$textBoxMail.Name = "textBoxMail"
 $textBoxMail.Location = New-Object System.Drawing.Point(220,90)
-$textBoxMail.Size = New-Object System.Drawing.Size(200,30)
-$textBoxMail.Height = 100
+$textBoxMail.Size = New-Object System.Drawing.Size(200,22)
 $textBoxUser = New-Object System.Windows.Forms.TextBox
-$textBoxUser.Name = "textBoxUser"
 $textBoxUser.Location = New-Object System.Drawing.Point(220,130)
-$textBoxUser.Size = New-Object System.Drawing.Size(200,30)
-$textBoxUser.Height = 100
+$textBoxUser.Size = New-Object System.Drawing.Size(200,22)
 $textBoxMdp = New-Object System.Windows.Forms.TextBox
-$textBoxMdp.Name = "textBoxMdp"
 $textBoxMdp.Location = New-Object System.Drawing.Point(220,170)
-$textBoxMdp.Size = New-Object System.Drawing.Size(200,30)
-$textBoxMdp.Height = 100
+$textBoxMdp.Size = New-Object System.Drawing.Size(200,22)
 $textBoxRegexMdp = New-Object System.Windows.Forms.TextBox
-$textBoxRegexMdp.Name = "textBoxRegexMdp"
 $textBoxRegexMdp.Location = New-Object System.Drawing.Point(220,210)
-$textBoxRegexMdp.Size = New-Object System.Drawing.Size(200,30)
-$textBoxRegexMdp.Height = 100
-$textBoxObligatoire = New-Object System.Windows.Forms.TextBox
-$textBoxObligatoire.Name = "textBoxObligatoire"
-$textBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
-$textBoxObligatoire.Size = New-Object System.Drawing.Size(200,30)
-$textBoxObligatoire.Height = 100
+$textBoxRegexMdp.Size = New-Object System.Drawing.Size(200,22)
+$checkBoxObligatoire = New-Object System.Windows.Forms.CheckBox
+$checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
+$checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
 
 # Affichage de l'ecran
 MakeForm
@@ -218,7 +205,25 @@ Function MakeMenuAd {
     $script:ListBoxAffichage.Controls.Add($FormLabelDA)
 }
 
+Function ModifyPlateforme {
+    $reqUpdate = "update plateforme set"
+    $reqUpdate += " URL='" + $script:textBoxURL.Text + "',"
+    $reqUpdate += " mail='" + $script:textBoxMail.Text + "',"
+    $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
+    $reqUpdate += " MDP='" + $script:textBoxMdp.Text + "',"
+    $reqUpdate += " RegexMDP='" + $script:textBoxRegexMdp.Text + "',"
+    $reqUpdate += " obligatoire='" + $script:checkBoxObligatoire.Checked + "'"
+    $reqUpdate += " where id=" + $script:ComboBoxPlateformes.SelectedItem.id
+    #MakeRequest $reqUpdate
+}
+
 Function MakeMenuPlateformes {
+    $buttonEnregistrer = New-Object System.Windows.Forms.Button
+    $buttonEnregistrer.Location = New-Object System.Drawing.Point(215,10)
+    $buttonEnregistrer.Size = New-Object System.Drawing.Size(70,22)
+    $buttonEnregistrer.Text = "Enregistrer"
+    $buttonEnregistrer.Add_Click({ModifyPlateforme})
+
     $labelURL = New-Object System.Windows.Forms.Label
     $labelURL.Location = New-Object System.Drawing.Point(10,50)
     $labelURL.Size = New-Object System.Drawing.Size(200,20)
@@ -254,19 +259,10 @@ Function MakeMenuPlateformes {
     $labelObligatoire.Size = New-Object System.Drawing.Size(200,20)
     $labelObligatoire.Text = "Compte obligatoire"
     $labelObligatoire.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
-
-    $buttonEnregistrer = New-Object System.Windows.Forms.Button
-    $buttonEnregistrer.Location = New-Object System.Drawing.Point(30,580)
-    $buttonEnregistrer.Size = New-Object System.Drawing.Size(150,60)
-    $buttonEnregistrer.Text = "Enregistrer"
-    #$buttonEnregistrer.Add_Click({
-    #    $plateforme = RetreiveRow $script:plateformes "nom" $script:ComboBoxPlateformes.SelectedItem
-    #    $reqUdate = "update plateforme set "
-    #    if($
-    #})
     
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
+    $script:ListBoxAffichage.Controls.Add($buttonEnregistrer)
     $script:ListBoxAffichage.Controls.Add($labelURL)
     $script:ListBoxAffichage.Controls.Add($script:textBoxURL)
     $script:ListBoxAffichage.Controls.Add($labelMail)
@@ -278,7 +274,7 @@ Function MakeMenuPlateformes {
     $script:ListBoxAffichage.Controls.Add($labelRegexMdp)
     $script:ListBoxAffichage.Controls.Add($script:textBoxRegexMdp)
     $script:ListBoxAffichage.Controls.Add($labelObligatoire)
-    $script:ListBoxAffichage.Controls.Add($script:textBoxObligatoire)
+    $script:ListBoxAffichage.Controls.Add($script:checkBoxObligatoire)
 
     # alimentation des champs pour la plateforme selectionnee
     FillPlateforme
@@ -295,7 +291,7 @@ Function FillPlateforme {
     $script:textBoxUser.Text = $plateforme.identifiant
     $script:textBoxMdp.Text = $plateforme.MDP
     $script:textBoxRegexMdp.Text = $plateforme.regexMDP
-    $script:textBoxObligatoire.Text = $plateforme.obligatoire
+    $script:checkBoxObligatoire.Checked = $plateforme.obligatoire
 }
 
 Function MakeMenuDefProfils {
