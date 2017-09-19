@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Drawing
 Add-Type -Path '..\libs\MySql.Data.dll'
 
 # Initialisation des variables  
-$serv = "127.0.0.1" # Addresse du serveur
+$serv = "192.168.1.2" # Addresse du serveur
 $port = "3306" # Port de connexion (3306 par défaut)
 $user = "vgroup"  # nom d'utilisateur pour la connexion
 $password = "vgrouproxx" # mot de passe
@@ -249,25 +249,25 @@ $FormLabelE.Size = '400,40'
 $FormLabelE.Text = "Selectionnez la formation"
 
 $FormLabelF = New-Object System.Windows.Forms.Label
-$FormLabelF.Location = '260,310'
+$FormLabelF.Location = '300,295'
 $FormLabelF.Size = '150,60'
-$FormLabelF.Text = "Formation"
+$FormLabelF.Text = "Formation :"
 
 #Formation
 $ComboBoxFormation = New-Object System.Windows.Forms.ComboBox
-$ComboBoxFormation.Location = '430,295'
+$ComboBoxFormation.Location = '450,295'
 $ComboBoxFormation.Size = '250,400'
 $ComboBoxFormation.Height = 60
 FillComboBoxFormation
 
 $FormLabelG = New-Object System.Windows.Forms.Label
-$FormLabelG.Location = '260,410'
+$FormLabelG.Location = '300,410'
 $FormLabelG.Size = '150,60'
-$FormLabelG.Text = "Site"
+$FormLabelG.Text = "Site :"
 
 #Site
 $ComboBoxSite = New-Object System.Windows.Forms.ComboBox
-$ComboBoxSite.Location = '430,390'
+$ComboBoxSite.Location = '450,410'
 $ComboBoxSite.Size = '150,60'
 $ComboBoxSite.Height = 60
 FillComboBoxSite
