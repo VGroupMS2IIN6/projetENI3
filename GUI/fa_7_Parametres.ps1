@@ -212,9 +212,10 @@ Function ModifyPlateforme {
     $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
     $reqUpdate += " MDP='" + $script:textBoxMdp.Text + "',"
     $reqUpdate += " RegexMDP='" + $script:textBoxRegexMdp.Text + "',"
-    $reqUpdate += " obligatoire='" + $script:checkBoxObligatoire.Checked + "'"
+    $reqUpdate += " obligatoire=" + $script:checkBoxObligatoire.Checked
     $reqUpdate += " where id=" + $script:ComboBoxPlateformes.SelectedItem.id
-    #MakeRequest $reqUpdate
+    MakeRequest $reqUpdate
+    $script:plateformes = MakeRequest "SELECT * FROM plateforme;"
 }
 
 Function MakeMenuPlateformes {
