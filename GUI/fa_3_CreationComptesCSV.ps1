@@ -59,27 +59,7 @@ $ButtonParcourirCSV.Location = '650,290'
 $ButtonParcourirCSV.Size = '150,60'
 $ButtonParcourirCSV.Text = 'Parcourir'
 $ButtonParcourirCSV.add_Click($ButtonParcourirCSV_Click)
-<<<<<<< HEAD
-$ButtonParcourirCSV_Click = {
- 
-Function Get-FileName
-# Open file dialog box and select a file to import
-{   
-    [void][System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")
 
-    $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
-    $OpenFileDialog.filter = "Text Files (*.txt)| *.txt" # Set the file types visible to dialog
-
-    # Alternate filters include:
-    # "CSV files (*.csv) | *.csv"
-
-    $OpenFileDialog.initialDirectory = "c:\"
-    
-    $OpenFileDialog.ShowDialog() | Out-Null
-    $OpenFileDialog.filename
-}
-
-=======
 
 $ButtonParcourirCSV_Click = {
 
@@ -102,7 +82,7 @@ function Select-FileDialog
         Write-Error "Opération annulé"
         return exit
     }
->>>>>>> 43378510dfdf28f321d3171b2226f85c9a877ede
+
 }
 
 $file = Select-FileDialog -Titre "Choisir le fichier CSV" -Dossier "C:\" -Filtre "Fichier CSV (*.csv) |*.csv"
