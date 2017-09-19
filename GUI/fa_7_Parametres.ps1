@@ -27,8 +27,9 @@ $ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
 $ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
 $ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
 $ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
-$ComboBoxPlateformes.Items.AddRange($plateformes.nom)
-$ComboBoxPlateformes.SelectedIndex = 0
+#$ComboBoxPlateformes.Items.AddRange($plateformes.nom)
+#$ComboBoxPlateformes.SelectedIndex = 1
+FillComboBox
 $textBoxURL = New-Object System.Windows.Forms.TextBox
 $textBoxURL.Name = "textBoxURL"
 $textBoxURL.Location = New-Object System.Drawing.Point(220,50)
@@ -65,6 +66,30 @@ MakeForm
 
 $mysql.Close()
 
+function FillComboBox {
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colNom = New-Object system.Data.DataColumn "nom",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colNom)
+
+    # alimentation de la datatable avec les plateformes
+    foreach($plateforme in $script:plateformes) {
+        $ligne = $table.NewRow()
+        $ligne.id = $plateforme.ID
+        $ligne.nom = $plateforme.nom
+        $table.Rows.Add($ligne)
+    }
+    $script:ComboBoxPlateformes.DisplayMember = "nom"
+    $script:ComboBoxPlateformes.ValueMember = "id"
+    $script:ComboBoxPlateformes.DataSource = $table
+}
+
 function MakeRequest($request) {
     $command = New-Object Mysql.Data.MysqlClient.MySqlCommand($request,$mysql)  
     $dataAdapter = New-Object MySql.Data.MySqlClient.MySqlDataAdapter($command)
@@ -87,7 +112,7 @@ function RetreiveRow($result, $field, $filter) {
 Function MakeForm {
     $listForm = New-Object System.Windows.Forms.Form
     $listForm = New-Object System.Windows.Forms.Form
-    $listForm.Text = "Paramêµ²age"
+    $listForm.Text = "Paramétrage"
     $listForm.Size = New-Object System.Drawing.Size(1000,700)
     $listForm.StartPosition = "CenterScreen"
     #$listForm.TopMost = $True
@@ -107,7 +132,7 @@ Function MakeForm {
     $ButtonDefProfils = New-Object System.Windows.Forms.Button
     $ButtonDefProfils.Location = New-Object System.Drawing.Point(40,160)
     $ButtonDefProfils.Size = New-Object System.Drawing.Size(200,50)
-    $ButtonDefProfils.Text = "Dê§©nition des profils"
+    $ButtonDefProfils.Text = "Défnition des profils"
     $ButtonDefProfils.Add_Click({makeMenuDefProfils})
 
     $ButtonAssProfils = New-Object System.Windows.Forms.Button
@@ -137,7 +162,6 @@ Function MakeForm {
     # Afficher la fenetre
     $listForm.ShowDialog()
 }
-
 
 Function MakeMenuAd {
     $FormLabelDA = New-Object System.Windows.Forms.Label
@@ -222,7 +246,7 @@ Function MakeMenuPlateformes {
     $labelRegexMdp = New-Object System.Windows.Forms.Label
     $labelRegexMdp.Location = New-Object System.Drawing.Point(10,210)
     $labelRegexMdp.Size = New-Object System.Drawing.Size(200,20)
-    $labelRegexMdp.Text = "Regex de gê¯©ration du mot de passe"
+    $labelRegexMdp.Text = "Regex de génération du mot de passe"
     $labelRegexMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
     
     $labelObligatoire = New-Object System.Windows.Forms.Label
@@ -230,6 +254,16 @@ Function MakeMenuPlateformes {
     $labelObligatoire.Size = New-Object System.Drawing.Size(200,20)
     $labelObligatoire.Text = "Compte obligatoire"
     $labelObligatoire.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+
+    $buttonEnregistrer = New-Object System.Windows.Forms.Button
+    $buttonEnregistrer.Location = New-Object System.Drawing.Point(30,580)
+    $buttonEnregistrer.Size = New-Object System.Drawing.Size(150,60)
+    $buttonEnregistrer.Text = "Enregistrer"
+    #$buttonEnregistrer.Add_Click({
+    #    $plateforme = RetreiveRow $script:plateformes "nom" $script:ComboBoxPlateformes.SelectedItem
+    #    $reqUdate = "update plateforme set "
+    #    if($
+    #})
     
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
@@ -255,13 +289,13 @@ Function MakeMenuPlateformes {
 }
 
 Function FillPlateforme {
-    $plateforme = RetreiveRow $script:plateformes "nom" $script:ComboBoxPlateformes.SelectedItem
-    $textBoxURL.Text = $plateforme.URL
-    $textBoxMail.Text = $plateforme.mail
-    $textBoxUser.Text = $plateforme.identifiant
-    $textBoxMdp.Text = $plateforme.MDP
-    $textBoxRegexMdp.Text = $plateforme.regexMDP
-    $textBoxObligatoire.Text = $plateforme.obligatoire
+    $plateforme = RetreiveRow $script:plateformes "id" $script:ComboBoxPlateformes.SelectedItem.id
+    $script:textBoxURL.Text = $plateforme.URL
+    $script:textBoxMail.Text = $plateforme.mail
+    $script:textBoxUser.Text = $plateforme.identifiant
+    $script:textBoxMdp.Text = $plateforme.MDP
+    $script:textBoxRegexMdp.Text = $plateforme.regexMDP
+    $script:textBoxObligatoire.Text = $plateforme.obligatoire
 }
 
 Function MakeMenuDefProfils {
@@ -274,7 +308,6 @@ Function MakeMenuDefProfils {
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($FormLabelTextDefProfils1)
 }
-
 
 Function MakeMenuAssProfils {
     $FormLabelTextAssProfils1 = New-Object System.Windows.Forms.Label
