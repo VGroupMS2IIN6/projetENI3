@@ -5,7 +5,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 # Initialisation des variables  
-$serv = "192.168.1.2" # Addresse du serveur
+$serv = "127.0.0.1" # Addresse du serveur
 $port = "3306" # Port de connexion (3306 par dÃ©faut)
 $user = "vgroup"  # nom d'utilisateur pour la connexion
 $password = "vgrouproxx" # mot de passe
@@ -18,6 +18,7 @@ $mysql.Open()
 # recuperation de la liste des plateformes
 $plateformes = MakeRequest "SELECT * FROM plateforme"
 $profils = MakeRequest "SELECT * FROM profil"
+#$droitPlateformes = MakeRequest "select ass_droit_plateforme.ID, droit.nom droit, plateforme.nom plateforme from droit, plateforme, ass_droit_plateforme where ass_droit_plateforme.droit = droit.ID and ass_droit_plateforme.plateforme = plateforme.ID and ass_droit_plateforme.droit ORDER by droit.ID, plateforme.ID;"
 
 # Creation des composants dont on aura besoin plus tard
 $listForm = New-Object System.Windows.Forms.Form
@@ -66,6 +67,16 @@ $textBoxRegexMdp.Size = New-Object System.Drawing.Size(200,22)
 $checkBoxObligatoire = New-Object System.Windows.Forms.CheckBox
 $checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
 $checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
+
+###########################
+## tester checkedListBox ##
+###########################
+$listBoxDroitPlateforme = New-Object System.Windows.Forms.checkedListBox
+$listBoxDroitPlateforme.Location = New-Object System.Drawing.Point(10,80)
+$listBoxDroitPlateforme.Size = New-Object System.Drawing.Size(230,88)
+# ajouter l'enregistrement en base de chaque case cochée.
+#$listBoxDroitPlateforme.add_SelectedIndexChanged({FillDroitsDroitPlateforme})
+
 
 # Affichage de l'ecran
 MakeForm
@@ -405,28 +416,80 @@ Function FillPlateforme {
 }
 
 Function MakeMenuDefProfils {
-    $FormLabelTextDefProfils1 = New-Object System.Windows.Forms.Label
-    $FormLabelTextDefProfils1.Location = New-Object System.Drawing.Point(300,220)
-    $FormLabelTextDefProfils1.Size = New-Object System.Drawing.Size(200,20)
-    $FormLabelTextDefProfils1.Text = "plop"
-    $FormLabelTextDefProfils1.Visible = $true
+    $buttonAjouter = New-Object System.Windows.Forms.Button
+    $buttonAjouter.Location = New-Object System.Drawing.Point(220,10)
+    $buttonAjouter.Size = New-Object System.Drawing.Size(70,22)
+    $buttonAjouter.Text = "Ajouter"
+    #$buttonAjouter.Add_Click({})
 
+    $buttonEnregistrer = New-Object System.Windows.Forms.Button
+    $buttonEnregistrer.Location = New-Object System.Drawing.Point(295,10)
+    $buttonEnregistrer.Size = New-Object System.Drawing.Size(70,22)
+    $buttonEnregistrer.Text = "Enregistrer"
+    $buttonEnregistrer.Add_Click({ModifyProfilDroitsPlateforme})
+
+    $buttonSupprimer = New-Object System.Windows.Forms.Button
+    $buttonSupprimer.Location = New-Object System.Drawing.Point(370,10)
+    $buttonSupprimer.Size = New-Object System.Drawing.Size(70,22)
+    $buttonSupprimer.Text = "Supprimer"
+    #$buttonSupprimer.Add_Click({})
+
+    $labelcreation = New-Object System.Windows.Forms.Label
+    $labelcreation.Location = New-Object System.Drawing.Point(10,50)
+    $labelcreation.Size = New-Object System.Drawing.Size(200,20)
+    $labelcreation.Text = "Création de comptes"
+    $labelcreation.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+
+    
     $script:ListBoxAffichage.Controls.clear();
+    $script:ListBoxAffichage.Controls.Add($buttonAjouter)
+    $script:ListBoxAffichage.Controls.Add($buttonEnregistrer)
+    $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
+    $script:ListBoxAffichage.Controls.Add($labelCreation)
+    $script:ListBoxAffichage.Controls.Add($script:listBoxDroitPlateforme)
+    
     $script:ListBoxAffichage.Controls.Add($FormLabelTextDefProfils1)
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
-    echo plop
+    # alimentation des champs pour le profil selectionne
+    FillProfil
+    # rustine dégueu en attendant de comprendre
     FillProfil
 }
 
 Function FillProfil {
-    $profil = RetreiveRow $script:profil "id" $script:ComboBoxProfil.SelectedItem.id
     #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
-    #$script:textBoxURL.Text = $profil.URL
-    #$script:textBoxMail.Text = $profil.mail
-    #$script:textBoxUser.Text = $profil.identifiant
-    #$script:textBoxMdp.Text = $profil.MDP
-    #$script:textBoxRegexMdp.Text = $profil.regexMDP
-    #$script:checkBoxObligatoire.Checked = $profil.obligatoire
+
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colDroit = New-Object system.Data.DataColumn "droit",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colDroit)
+
+    # alimentation de la datatable avec les plateformes
+    $reqSel = "select pdp.ID, d.nom as nomdroit, pl.nom as nomplateforme, pdp.accord from ass_profil_droit_plateforme pdp join profil p on pdp.profil = p.ID"
+    $reqSel += " join ass_droit_plateforme dp on pdp.droit_plateforme = dp.ID join droit d on dp.droit = d.ID"
+    $reqSel += " join plateforme pl on dp.plateforme = pl.ID where p.ID = " + $script:ComboBoxProfil.SelectedItem.id + " order by d.nom, pl.nom;"
+    $DroitsPlateformes = MakeRequest $reqSel
+    foreach($DroitPlateforme in $DroitsPlateformes) {
+        $ligne = $table.NewRow()
+        $ligne.id = $DroitPlateforme.id
+        $ligne.droit = $DroitPlateforme.nomdroit + " " + $DroitPlateforme.nomplateforme
+        $table.Rows.Add($ligne)
+    }
+
+    $script:listBoxDroitPlateforme.DisplayMember = "droit"
+    $script:listBoxDroitPlateforme.ValueMember = "id"
+    $script:listBoxDroitPlateforme.DataSource = $table    
+
+    for($i=0;$i -lt $script:listBoxDroitPlateforme.Items.Count; $i++) {
+        $dp = RetreiveRow $DroitsPlateformes "id" $script:listBoxDroitPlateforme.Items[$i].id
+        $script:listBoxDroitPlateforme.SetItemChecked($i, $dp.accord)
+    }
 }
 
 Function MakeMenuAssProfils {
