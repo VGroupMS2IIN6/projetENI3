@@ -74,7 +74,11 @@ $checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
 $listBoxDroitPlateforme = New-Object System.Windows.Forms.checkedListBox
 $listBoxDroitPlateforme.Location = New-Object System.Drawing.Point(10,80)
 $listBoxDroitPlateforme.Size = New-Object System.Drawing.Size(230,88)
+#TODO : vérifier si le comportement est bien celui avec cette option à true
+$listBoxDroitPlateforme.CheckOnClick = $true
 # ajouter l'enregistrement en base de chaque case cochée.
+$listBoxDroitPlateforme.Add_ItemCheck({ModifyProfilDroitsPlateforme})
+$saveEnabled = $true
 #$listBoxDroitPlateforme.add_SelectedIndexChanged({FillDroitsDroitPlateforme})
 
 
@@ -415,24 +419,68 @@ Function FillPlateforme {
     $script:checkBoxObligatoire.Checked = $plateforme.obligatoire
 }
 
+Function AddProfil {
+    # on vérifie qu'on essaie pas d'insérer une entrée déjà existante
+    if($script:ComboBoxProfil.SelectedIndex -eq -1 -and -not [string]::IsNullOrEmpty($script:ComboBoxProfil.Text)) {
+        # on crée le nouveau profil
+        $reqInsertProfil = "insert into profil(nom) values('" + $script:ComboBoxProfil.Text + "')"
+        MakeRequest $reqInsertProfil
+        $reqSelect = "select last_insert_id() as id"
+        # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
+        # c'est donc valide même dans le cas de plusieurs clients en parallèle
+        $idNewProfil = MakeRequest $reqSelect
+        # on crée les droits plateformes avec accord à 0
+        $reqInsertDroitsPlateformes = "insert into ass_profil_droit_plateforme(profil,droit_plateforme,accord)"
+        $reqInsertDroitsPlateformes += " select " + $idNewProfil.id + ", ass_droit_plateforme.ID, 0 from ass_droit_plateforme"
+        MakeRequest $reqInsertDroitsPlateformes
+
+        # on recharge les infos
+        $script:profils = MakeRequest "SELECT * FROM profil"
+        FillComboBoxProfil
+    }
+}
+
+Function ModifyProfilDroitsPlateforme {
+    if($script:saveEnabled) {
+        # la case n'est pas encore décochée quand l'événement est déclenché, d'où le -not
+        $accord = -not $script:listBoxDroitPlateforme.GetItemChecked($script:listBoxDroitPlateforme.SelectedIndex)
+        $reqUpdate = "update ass_profil_droit_plateforme set accord = " + $accord
+        $reqUpdate += " where id = " + $script:listBoxDroitPlateforme.SelectedItem.id
+        MakeRequest $reqUpdate
+    }
+}
+
+Function DeleteProfil {
+    # on vérifie qu'on essaie pas de supprimer une nouvelle entrée pas encore insérée
+    if($script:ComboBoxProfil.SelectedIndex -ne -1) {
+        # on supprime d'abord les droits plateformes
+        $reqDeleteDroitsPlateformes = "delete from ass_profil_droit_plateforme where profil="
+        $reqDeleteDroitsPlateformes += $script:ComboBoxProfil.SelectedItem.id
+        MakeRequest $reqDeleteDroitsPlateformes
+        
+        # puis le profil en lui-même
+        $reqDeleteProfil = "delete from profil where id="
+        $reqDeleteProfil += $script:ComboBoxProfil.SelectedItem.id
+        MakeRequest $reqDeleteProfil
+
+        # on recharge les infos
+        $script:profils = MakeRequest "SELECT * FROM profil"
+        FillComboBoxProfil
+    }
+}
+
 Function MakeMenuDefProfils {
     $buttonAjouter = New-Object System.Windows.Forms.Button
     $buttonAjouter.Location = New-Object System.Drawing.Point(220,10)
     $buttonAjouter.Size = New-Object System.Drawing.Size(70,22)
     $buttonAjouter.Text = "Ajouter"
-    #$buttonAjouter.Add_Click({})
-
-    $buttonEnregistrer = New-Object System.Windows.Forms.Button
-    $buttonEnregistrer.Location = New-Object System.Drawing.Point(295,10)
-    $buttonEnregistrer.Size = New-Object System.Drawing.Size(70,22)
-    $buttonEnregistrer.Text = "Enregistrer"
-    $buttonEnregistrer.Add_Click({ModifyProfilDroitsPlateforme})
+    $buttonAjouter.Add_Click({AddProfil})
 
     $buttonSupprimer = New-Object System.Windows.Forms.Button
-    $buttonSupprimer.Location = New-Object System.Drawing.Point(370,10)
+    $buttonSupprimer.Location = New-Object System.Drawing.Point(295,10)
     $buttonSupprimer.Size = New-Object System.Drawing.Size(70,22)
     $buttonSupprimer.Text = "Supprimer"
-    #$buttonSupprimer.Add_Click({})
+    $buttonSupprimer.Add_Click({DeleteProfil})
 
     $labelcreation = New-Object System.Windows.Forms.Label
     $labelcreation.Location = New-Object System.Drawing.Point(10,50)
@@ -440,16 +488,14 @@ Function MakeMenuDefProfils {
     $labelcreation.Text = "Création de comptes"
     $labelcreation.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($buttonAjouter)
-    $script:ListBoxAffichage.Controls.Add($buttonEnregistrer)
     $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
     $script:ListBoxAffichage.Controls.Add($labelCreation)
     $script:ListBoxAffichage.Controls.Add($script:listBoxDroitPlateforme)
-    
     $script:ListBoxAffichage.Controls.Add($FormLabelTextDefProfils1)
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
+
     # alimentation des champs pour le profil selectionne
     FillProfil
     # rustine dégueu en attendant de comprendre
@@ -486,10 +532,15 @@ Function FillProfil {
     $script:listBoxDroitPlateforme.ValueMember = "id"
     $script:listBoxDroitPlateforme.DataSource = $table    
 
+    # on désactive la gestion de la sauvegarde quand on coche les cases
+    $script:saveEnabled = $false
+    # on coche les cases en fonction des données en base
     for($i=0;$i -lt $script:listBoxDroitPlateforme.Items.Count; $i++) {
         $dp = RetreiveRow $DroitsPlateformes "id" $script:listBoxDroitPlateforme.Items[$i].id
         $script:listBoxDroitPlateforme.SetItemChecked($i, $dp.accord)
     }
+    # on réactive la gestion de la sauvegarde quand on coche les cases
+    $script:saveEnabled = $true
 }
 
 Function MakeMenuAssProfils {
