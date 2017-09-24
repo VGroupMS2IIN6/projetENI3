@@ -18,6 +18,7 @@ $mysql.Open()
 # recuperation de la liste des plateformes
 $plateformes = MakeRequest "SELECT * FROM plateforme"
 $profils = MakeRequest "SELECT * FROM profil"
+$utilisateurs = MakeRequest "SELECT * FROM utilisateur"
 #$droitPlateformes = MakeRequest "select ass_droit_plateforme.ID, droit.nom droit, plateforme.nom plateforme from droit, plateforme, ass_droit_plateforme where ass_droit_plateforme.droit = droit.ID and ass_droit_plateforme.plateforme = plateforme.ID and ass_droit_plateforme.droit ORDER by droit.ID, plateforme.ID;"
 
 # Creation des composants dont on aura besoin plus tard
@@ -47,8 +48,13 @@ FillComboBoxPlateformes
 $ComboBoxProfil = New-Object System.Windows.Forms.ComboBox
 $ComboBoxProfil.Location = New-Object System.Drawing.Point(10,10)
 $ComboBoxProfil.Size = New-Object System.Drawing.Size(200,20)
-$ComboBoxProfil.add_SelectedIndexChanged({FillProfil})
+$ComboBoxProfil.add_SelectedIndexChanged({FillProfilPlateforme})
 FillComboBoxProfil
+$ComboBoxUtilisateur = New-Object System.Windows.Forms.ComboBox
+$ComboBoxUtilisateur.Location = New-Object System.Drawing.Point(10,10)
+$ComboBoxUtilisateur.Size = New-Object System.Drawing.Size(200,20)
+$ComboBoxUtilisateur.add_SelectedIndexChanged({FillProfilUtilisateur})
+FillComboBoxUtilisateur
 $textBoxURL = New-Object System.Windows.Forms.TextBox
 $textBoxURL.Location = New-Object System.Drawing.Point(220,50)
 $textBoxURL.Size = New-Object System.Drawing.Size(200,22)
@@ -68,12 +74,9 @@ $checkBoxObligatoire = New-Object System.Windows.Forms.CheckBox
 $checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
 $checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
 
-###########################
-## tester checkedListBox ##
-###########################
 $listBoxDroitPlateforme = New-Object System.Windows.Forms.checkedListBox
 $listBoxDroitPlateforme.Location = New-Object System.Drawing.Point(10,80)
-$listBoxDroitPlateforme.Size = New-Object System.Drawing.Size(230,88)
+$listBoxDroitPlateforme.Size = New-Object System.Drawing.Size(280,410)
 #TODO : vérifier si le comportement est bien celui avec cette option à true
 $listBoxDroitPlateforme.CheckOnClick = $true
 # ajouter l'enregistrement en base de chaque case cochée.
@@ -81,6 +84,21 @@ $listBoxDroitPlateforme.Add_ItemCheck({ModifyProfilDroitsPlateforme})
 $saveEnabled = $true
 #$listBoxDroitPlateforme.add_SelectedIndexChanged({FillDroitsDroitPlateforme})
 
+$listBoxDroitFormSite = New-Object System.Windows.Forms.checkedListBox
+$listBoxDroitFormSite.Location = New-Object System.Drawing.Point(400,80)
+$listBoxDroitFormSite.Size = New-Object System.Drawing.Size(280,410)
+#TODO : vérifier si le comportement est bien celui avec cette option à true
+$listBoxDroitFormSite.CheckOnClick = $true
+# ajouter l'enregistrement en base de chaque case cochée.
+$listBoxDroitFormSite.Add_ItemCheck({ModifyProfilDroitsFormSite})
+
+$listBoxProfils = New-Object System.Windows.Forms.checkedListBox
+$listBoxProfils.Location = New-Object System.Drawing.Point(10,80)
+$listBoxProfils.Size = New-Object System.Drawing.Size(280,410)
+#TODO : vérifier si le comportement est bien celui avec cette option à true
+$listBoxProfils.CheckOnClick = $true
+# ajouter l'enregistrement en base de chaque case cochée.
+$listBoxProfils.Add_ItemCheck({ModifyProfilUtilisateur})
 
 # Affichage de l'ecran
 MakeForm
@@ -295,6 +313,27 @@ Function AddPlateforme {
         $reqInsert += "obligatoire)" + $reqValues
         MakeRequest $reqInsert
 
+        $reqSelect = "select last_insert_id() as id"
+        # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
+        # c'est donc valide même dans le cas de plusieurs clients en parallèle
+        $idNewPlateforme = MakeRequest $reqSelect
+
+        # on ajoute les droits pour les plateformes
+        $reqInsertDroitsPlateformes = "INSERT INTO projet_eni.ass_droit_plateforme (droit, plateforme)"
+        $reqInsertDroitsPlateformes += " select droit.ID, " + $idNewPlateforme.id + " from droit"
+        MakeRequest $reqInsertDroitsPlateformes
+
+#############################################################################
+#############################################################################
+##     #requete compliquée il manque le listing de tous les profils....    ##
+#############################################################################
+#############################################################################
+
+#        # on ajoute les droits pour les plateformes
+#        $reqInsertDroitsPlateformes = "INSERT INTO projet_eni.ass_profil_droit_plateforme (profil, droit_plateforme, accord)"
+#        $reqInsertDroitsPlateformes += " select " + $idNewPlateforme.id + ", ass_droit_plateforme.ID droit_plateforme, 0 accord from ass_droit_plateforme where plateforme = " + $idNewPlateforme.id
+#        MakeRequest $reqInsertDroitsPlateformes
+
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
         FillComboBoxPlateformes
@@ -325,6 +364,12 @@ Function DeletePlateforme {
         $reqDelete = "delete from plateforme where id="
         $reqDelete += $script:ComboBoxPlateformes.SelectedItem.id
         MakeRequest $reqDelete
+
+#############################################################################
+#############################################################################
+##      TODO : supprimer les infos des tables d'associations pdp et dp     ##
+#############################################################################
+#############################################################################
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
@@ -429,10 +474,16 @@ Function AddProfil {
         # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
         # c'est donc valide même dans le cas de plusieurs clients en parallèle
         $idNewProfil = MakeRequest $reqSelect
+        
         # on crée les droits plateformes avec accord à 0
         $reqInsertDroitsPlateformes = "insert into ass_profil_droit_plateforme(profil,droit_plateforme,accord)"
         $reqInsertDroitsPlateformes += " select " + $idNewProfil.id + ", ass_droit_plateforme.ID, 0 from ass_droit_plateforme"
         MakeRequest $reqInsertDroitsPlateformes
+
+        # on crée les droits formation et site avec accord à 0
+        $reqInsertDroitsFormSite = "insert into ass_profil_droits_utilisateurs(droit,profil,accord)"
+        $reqInsertDroitsFormSite += " select droits_utilisateur.ID, " + $idNewProfil.id + ", 0 from droits_utilisateur"
+        MakeRequest $reqInsertDroitsFormSite
 
         # on recharge les infos
         $script:profils = MakeRequest "SELECT * FROM profil"
@@ -450,11 +501,26 @@ Function ModifyProfilDroitsPlateforme {
     }
 }
 
+Function ModifyProfilDroitsFormSite {
+    if($script:saveEnabled) {
+        # la case n'est pas encore décochée quand l'événement est déclenché, d'où le -not
+        $accord = -not $script:listBoxDroitFormSite.GetItemChecked($script:listBoxDroitFormSite.SelectedIndex)
+        $reqUpdate = "update ass_profil_droits_utilisateurs set accord = " + $accord
+        $reqUpdate += " where id = " + $script:listBoxDroitFormSite.SelectedItem.id
+        MakeRequest $reqUpdate
+    }
+}
+
 Function DeleteProfil {
     # on vérifie qu'on essaie pas de supprimer une nouvelle entrée pas encore insérée
     if($script:ComboBoxProfil.SelectedIndex -ne -1) {
         # on supprime d'abord les droits plateformes
         $reqDeleteDroitsPlateformes = "delete from ass_profil_droit_plateforme where profil="
+        $reqDeleteDroitsPlateformes += $script:ComboBoxProfil.SelectedItem.id
+        MakeRequest $reqDeleteDroitsPlateformes
+
+        # on supprime d'abord les droits formation et site
+        $reqDeleteDroitsPlateformes = "delete from ass_profil_droits_utilisateurs where profil="
         $reqDeleteDroitsPlateformes += $script:ComboBoxProfil.SelectedItem.id
         MakeRequest $reqDeleteDroitsPlateformes
         
@@ -488,21 +554,29 @@ Function MakeMenuDefProfils {
     $labelcreation.Text = "Création de comptes"
     $labelcreation.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
+    $labelFormSite = New-Object System.Windows.Forms.Label
+    $labelFormSite.Location = New-Object System.Drawing.Point(400,50)
+    $labelFormSite.Size = New-Object System.Drawing.Size(200,20)
+    $labelFormSite.Text = "droits formations et sites"
+    $labelFormSite.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($buttonAjouter)
     $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
     $script:ListBoxAffichage.Controls.Add($labelCreation)
+    $script:ListBoxAffichage.Controls.Add($labelFormSite)
     $script:ListBoxAffichage.Controls.Add($script:listBoxDroitPlateforme)
+    $script:ListBoxAffichage.Controls.Add($script:listBoxDroitFormSite)
     $script:ListBoxAffichage.Controls.Add($FormLabelTextDefProfils1)
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
 
     # alimentation des champs pour le profil selectionne
-    FillProfil
+    FillProfilPlateforme
     # rustine dégueu en attendant de comprendre
-    FillProfil
+    FillProfilPlateforme
 }
 
-Function FillProfil {
+Function FillProfilPlateforme {
     #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
 
     # creation de la datatable
@@ -541,17 +615,134 @@ Function FillProfil {
     }
     # on réactive la gestion de la sauvegarde quand on coche les cases
     $script:saveEnabled = $true
+    FillProfilFormSite
+}
+
+Function FillProfilFormSite {
+    #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
+
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colDroit = New-Object system.Data.DataColumn "nom",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colDroit)
+
+    # alimentation de la datatable avec les plateformes
+    $reqSel = "select pdu.ID, du.nom, pdu.accord from ass_profil_droits_utilisateurs pdu join profil p on pdu.profil = p.ID"
+    $reqSel += " join droits_utilisateur du on du.ID = pdu.droit where p.ID = " + $script:ComboBoxProfil.SelectedItem.id + " order by p.ID;"
+    $DroitsFormsSites = MakeRequest $reqSel
+    foreach($DroitFormSite in $DroitsFormsSites) {
+        $ligne = $table.NewRow()
+        $ligne.id = $DroitFormSite.id
+        $ligne.nom = $DroitFormSite.nom
+        $table.Rows.Add($ligne)
+    }
+
+    $script:listBoxDroitFormSite.DisplayMember = "nom"
+    $script:listBoxDroitFormSite.ValueMember = "id"
+    $script:listBoxDroitFormSite.DataSource = $table    
+
+    # on désactive la gestion de la sauvegarde quand on coche les cases
+    $script:saveEnabled = $false
+    # on coche les cases en fonction des données en base
+    for($i=0;$i -lt $script:listBoxDroitFormSite.Items.Count; $i++) {
+        $dp = RetreiveRow $DroitsFormsSites "id" $script:listBoxDroitFormSite.Items[$i].id
+        $script:listBoxDroitFormSite.SetItemChecked($i, $dp.accord)
+    }
+    # on réactive la gestion de la sauvegarde quand on coche les cases
+    $script:saveEnabled = $true
 }
 
 Function MakeMenuAssProfils {
     #afficher tous les comptes pour un profil sélectionné + checkbox pour sélectionner les users (en fonction du nombre de users dans la base
-    $FormLabelTextAssProfils1 = New-Object System.Windows.Forms.Label
-    $FormLabelTextAssProfils1.Location = New-Object System.Drawing.Point(300,220)
-    $FormLabelTextAssProfils1.Size = New-Object System.Drawing.Size(200,20)
-    $FormLabelTextAssProfils1.Text = "plop ;-)"
-    $FormLabelTextAssProfils1.Visible = $true
 
     $script:ListBoxAffichage.Controls.clear();
-    $script:ListBoxAffichage.Controls.Add($FormLabelTextAssProfils1)
-    $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
+    $script:ListBoxAffichage.Controls.Add($script:ComboBoxUtilisateur)
+    $script:ListBoxAffichage.Controls.Add($script:listBoxProfils)
+
+    # alimentation des champs pour le profil selectionne
+    FillProfilUtilisateur
+    FillProfilUtilisateur
+}
+
+function FillComboBoxUtilisateur {
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colLogin = New-Object system.Data.DataColumn "login",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colLogin)
+
+    # alimentation de la datatable avec les plateformes
+    foreach($utilisateur in $script:utilisateurs) {
+        $ligne = $table.NewRow()
+        $ligne.id = $utilisateur.ID
+        $ligne.login = $utilisateur.login
+        $table.Rows.Add($ligne)
+    }
+
+    $script:ComboBoxUtilisateur.DisplayMember = "login"
+    $script:ComboBoxUtilisateur.ValueMember = "id"
+    $script:ComboBoxUtilisateur.DataSource = $table
+}
+
+Function FillProfilUtilisateur {
+    #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
+
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colProfil = New-Object system.Data.DataColumn "nom",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colProfil)
+
+    # alimentation de la datatable avec les plateformes
+    $reqSel = "select pu.id, p.nom , pu.accord from ass_profil_utilisateur pu"
+    $reqSel += " join profil p on p.id = pu.profil where pu.utilisateur = " + $script:ComboBoxUtilisateur.SelectedItem.id + " order by pu.profil;"
+
+    $listProfils = MakeRequest $reqSel
+    foreach($listProfil in $listProfils) {
+        $ligne = $table.NewRow()
+        $ligne.id = $listProfil.id
+        $ligne.nom = $listProfil.nom
+        $table.Rows.Add($ligne)
+    }
+
+    $script:listBoxProfils.DisplayMember = "nom"
+    $script:listBoxProfils.ValueMember = "id"
+    $script:listBoxProfils.DataSource = $table    
+
+    # on désactive la gestion de la sauvegarde quand on coche les cases
+    $script:saveEnabled = $false
+    # on coche les cases en fonction des données en base
+    for($i=0;$i -lt $script:listBoxProfils.Items.Count; $i++) {
+        $dp = RetreiveRow $listProfils "id" $script:listBoxProfils.Items[$i].id
+        $script:listBoxProfils.SetItemChecked($i, $dp.accord)
+    }
+
+    # on réactive la gestion de la sauvegarde quand on coche les cases
+    $script:saveEnabled = $true
+}
+
+Function ModifyProfilUtilisateur {
+    if($script:saveEnabled) {
+        # la case n'est pas encore décochée quand l'événement est déclenché, d'où le -not
+        $accord = -not $script:listBoxProfils.GetItemChecked($script:listBoxProfils.SelectedIndex)
+        $reqUpdate = "update ass_profil_utilisateur set accord = " + $accord
+        $reqUpdate += " where id = " + $script:listBoxProfils.SelectedItem.id
+        MakeRequest $reqUpdate
+    }
 }
