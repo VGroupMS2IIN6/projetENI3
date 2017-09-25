@@ -313,26 +313,20 @@ Function AddPlateforme {
         $reqInsert += "obligatoire)" + $reqValues
         MakeRequest $reqInsert
 
-        $reqSelect = "select last_insert_id() as id"
         # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
         # c'est donc valide même dans le cas de plusieurs clients en parallèle
-        $idNewPlateforme = MakeRequest $reqSelect
+        $idNewPlateforme = MakeRequest "select last_insert_id() as id"
 
         # on ajoute les droits pour les plateformes
-        $reqInsertDroitsPlateformes = "INSERT INTO projet_eni.ass_droit_plateforme (droit, plateforme)"
+        $reqInsertDroitsPlateformes = "INSERT INTO ass_droit_plateforme (droit, plateforme)"
         $reqInsertDroitsPlateformes += " select droit.ID, " + $idNewPlateforme.id + " from droit"
         MakeRequest $reqInsertDroitsPlateformes
 
-#############################################################################
-#############################################################################
-##     #requete compliquée il manque le listing de tous les profils....    ##
-#############################################################################
-#############################################################################
-
-#        # on ajoute les droits pour les plateformes
-#        $reqInsertDroitsPlateformes = "INSERT INTO projet_eni.ass_profil_droit_plateforme (profil, droit_plateforme, accord)"
-#        $reqInsertDroitsPlateformes += " select " + $idNewPlateforme.id + ", ass_droit_plateforme.ID droit_plateforme, 0 accord from ass_droit_plateforme where plateforme = " + $idNewPlateforme.id
-#        MakeRequest $reqInsertDroitsPlateformes
+        # on ajoute les droits pour les plateformes
+        $reqInsertProfilDroitsPlateformes = "INSERT INTO ass_profil_droit_plateforme(profil, droit_plateforme, accord)"
+        $reqInsertProfilDroitsPlateformes += " select profil.ID, ass_droit_plateforme.ID, 0 from profil, ass_droit_plateforme"
+        $reqInsertProfilDroitsPlateformes += " where ass_droit_plateforme.plateforme = " + $idNewPlateforme.id
+        MakeRequest $reqInsertProfilDroitsPlateformes
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
@@ -361,15 +355,19 @@ Function ModifyPlateforme {
 Function DeletePlateforme {
     # on vérifie qu'on essaie pas de supprimer une nouvelle entrée pas encore insérée
     if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
-        $reqDelete = "delete from plateforme where id="
-        $reqDelete += $script:ComboBoxPlateformes.SelectedItem.id
-        MakeRequest $reqDelete
+        $idPlateforme = $script:ComboBoxPlateformes.SelectedItem.id
 
-#############################################################################
-#############################################################################
-##      TODO : supprimer les infos des tables d'associations pdp et dp     ##
-#############################################################################
-#############################################################################
+        $reqDeleteProfilDroitsPlateformes = "delete from ass_profil_droit_plateforme"
+        $reqDeleteProfilDroitsPlateformes += " where droit_plateforme in "
+        $reqDeleteProfilDroitsPlateformes += "  (select ID from ass_droit_plateforme where plateforme = " + $idPlateforme + ")"
+        MakeRequest $reqDeleteProfilDroitsPlateformes
+
+        $reqDeleteDroitsPlateformes = "delete from ass_droit_plateforme"
+        $reqDeleteDroitsPlateformes += " where plateforme = " + $idPlateforme
+        MakeRequest $reqDeleteDroitsPlateformes
+
+        $reqDelete = "delete from plateforme where id = " + $idPlateforme
+        MakeRequest $reqDelete
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
