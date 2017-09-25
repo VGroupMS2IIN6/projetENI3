@@ -1,3 +1,4 @@
+cls
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -Path '..\libs\MySql.Data.dll'
@@ -8,6 +9,90 @@ $port = "3306" # Port de connexion (3306 par dÃ©faut)
 $user = "vgroup"  # nom d'utilisateur pour la connexion
 $password = "vgrouproxx" # mot de passe
 $db = "projet_eni" # nom de la base de donnÃ©e
+$global:OpenFileDialog = ""
+
+# fonctions
+function MakeRequest($request) {
+    $command = New-Object Mysql.Data.MysqlClient.MySqlCommand($request,$mysql)  
+    $dataAdapter = New-Object MySql.Data.MySqlClient.MySqlDataAdapter($command)
+    $dataSet = New-Object System.Data.DataSet
+    $recordCount = $dataAdapter.Fill($dataSet, "data")
+    $result = $dataSet.Tables["data"]
+    return $result
+}
+
+#Fabrication du tableau
+function CreatTableauSelectionStag (){
+    $script:dataGridView = New-Object System.Windows.Forms.DataGridView
+    $script:dataGridView.Location = '30,120'
+    $script:dataGridView.Size=New-Object System.Drawing.Size(920,450)
+
+    #Create an unbound DataGridView by declaring a column count.
+    $script:dataGridView.ColumnCount = 2
+    $script:dataGridView.ColumnHeadersVisible = $true
+    $script:dataGridView.Columns.Insert(0, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
+    $script:dataGridView.Columns.Insert(3, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
+    $script:dataGridView.Columns.Insert(4, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
+    $script:dataGridView.Columns.Insert(5, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
+    $script:dataGridView.Columns.Insert(6, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
+    $script:dataGridView.Columns.Insert(7, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
+
+    #Set the column header names.
+    $script:dataGridView.Columns[0].Name = "Select"
+    $script:dataGridView.Columns[1].Name = "Prénom"
+    $script:dataGridView.Columns[2].Name = "Nom"
+    $script:dataGridView.Columns[3].Name = "Active Directory"
+    $script:dataGridView.Columns[4].Name = "Office 365"
+    $script:dataGridView.Columns[5].Name = "NetAcad"
+    $script:dataGridView.Columns[6].Name = "MEDIAplus"
+    $script:dataGridView.Columns[7].Name = "7Speaking"
+	
+    $rows += ,@()
+    foreach ($a in $global:CSVContent){
+        #[System.Windows.Forms.MessageBox]::Show($a.Nom, "row")
+        $script:rows += ,@($null , $a.nom , $a.prenom ,$null , $null, $null ,$true ,$null)
+    }
+
+    <#
+    #Populate the rows.
+    $row1 = @($null,"Main Dish", "boringMeatloaf", $null, $null,$null,$null,$null)
+    $row2 = @($null,"Dessert", "lime juice evaporated milk", $null, $null,$null,$null,$null)
+    $row3 = @($true,"Main Dish", "pork chops, salsa, orange juice", $null, $null,$null,$null,$null)
+    $row4 = @($null,"Salad", "black beans, brown rice", $null, $null,$null,$null,$null)
+    $row5 = @($null,"Dessert", "cream cheese", $null, $null,$null,$null,$null)
+    $row6 = @($null, "Appetizer","black beans, sour cream", $null, $null,$null,$null,$null)
+    $rows = @( $row1, $row2, $row3, $row4, $row5, $row6 )
+    #>	
+
+    foreach ($row in $script:rows){
+        #[System.Windows.Forms.MessageBox]::Show($row[0] + $row[1] + $row[2], "row")
+        $script:dataGridView.Rows.Add($row)
+    }
+   
+}
+
+function ReadTableauSelectionStag (){
+    foreach ($a in $script:dataGridView){
+        $a.Rows[0].Cells[1].Value
+        echo "---"
+    }
+}
+
+
+
+# Extraction des info du CSV ; utilisé dans la fenetre de création du tableau
+function extractCSV (){
+    #$ListBoxtab.text = $("Formation : " + $global:Formation)
+    #echo $("Formation : " + $global:Formation)
+    #echo $("Formation : " + $global:Site)
+    #echo $("Path : " + $global:OpenFileDialog.Filename)
+    #[System.Windows.Forms.MessageBox]::Show($global:Site, "site")
+    #[System.Windows.Forms.MessageBox]::Show($global:Formation, "formation")
+    #[System.Windows.Forms.MessageBox]::Show($global:OpenFileDialog.Filename, "Path")
+     
+     $global:CSVContent = Import-csv -path $global:OpenFileDialog.Filename
+     CreatTableauSelectionStag
+}
 
 # Creation de l'instance, connexion Ã  la base de donnÃ©es  
 $mysql = New-Object MySql.Data.MySqlClient.MySqlConnection("server=" + $serv + ";port=" + $port + ";uid=" + $user + ";pwd=" + $password + ";database=" + $db + ";Pooling=False")  
@@ -17,14 +102,15 @@ $formation = MakeRequest "SELECT * FROM formation"
 $site = MakeRequest "SELECT * FROM site"
 
 #########################
-### FENETRES     CSV  ###
+### FENETRES  CSV  ###
 #########################
-#test
+
 $FenetreCreationCSV = New-Object System.Windows.Forms.Form
 $FenetreCreationCSV.StartPosition = "CenterScreen"
 $FenetreCreationCSV.ClientSize = '1000,700'
 $FenetreCreationCSV.Text = "Application de creation de comptes stagiaires"
 $FenetreCreationCSV.Formborderstyle = 3
+
 
 $FenetreSelection = New-Object System.Windows.Forms.Form
 $FenetreSelection.StartPosition = "CenterScreen"
@@ -77,9 +163,20 @@ $FenetreValidation.Add_KeyDown({if ($_.KeyCode -eq "Escape")
     {$FenetreValidation.Close()}})
 
 #####################################
-### ELEMENTS FENETRES CREATION CSV###
+### ELEMENTS FENETRES CREATION (SELECTION du fichier) CSV ###
 #####################################
 
+# Apparition de la fenetre de dialogue de sélection du CSV
+function ButtonParcourirCSV_Click() {
+    $global:OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+    $global:OpenFileDialog.filter = "CSV (*.csv)| *.csv"
+    $global:OpenFileDialog.ShowDialog() #| Out-Null
+    $FileName = Split-Path $global:OpenFileDialog.filename -leaf
+    $TextboxFileCSV.Text = $FileName
+    return $global:OpenFileDialog.filename
+}
+
+# Elements graphiques
 $ButtonRetourCSV = New-Object System.Windows.Forms.Button
 $ButtonRetourCSV.Location = '40,600'
 $ButtonRetourCSV.Size = '150,40'
@@ -96,57 +193,26 @@ $ButtonSuivantCSV.Size = '150,40'
 $ButtonSuivantCSV.Text = 'Suivant'
 $ButtonSuivantCSV.add_Click($ButtonSuivantCSV_Click)
 $ButtonSuivantCSV_Click = {
-    $FenetreCreationCSV.Visible = $False
+    $FenetreCreationCSV.Visible = $False  
     $FenetreSelection.ShowDialog()
 }
-
 
 $ButtonParcourirCSV = New-Object System.Windows.Forms.Button
 $ButtonParcourirCSV.Location = '650,290'
 $ButtonParcourirCSV.Size = '150,60'
 $ButtonParcourirCSV.Text = 'Parcourir'
-$ButtonParcourirCSV.add_Click($ButtonParcourirCSV_Click)
+$ButtonParcourirCSV.add_Click({ButtonParcourirCSV_Click})
 
-
-$ButtonParcourirCSV_Click = {
-
-
-function Select-FileDialog
-{
-    param([string]$Titre,[string]$Dossier,[string]$Filtre="Tous les fichiers *.*|*.*")
-    [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
-    $objForm = New-Object System.Windows.Forms.OpenFileDialog
-    $objForm.InitialDirectory = $Directory
-    $objForm.Filter = $Filter
-    $objForm.Title = $Title
-    $Show = $objForm.ShowDialog()
-    If ($Show -eq "OK")
-    {
-        Return $objForm.FileName
-    }
-    Else
-    {
-        Write-Error "Opération annulé"
-        return exit
-    }
-}
-
-$file = Select-FileDialog 
-
-
-}
-
-$ListBoxCreationCompteCSV = New-Object System.Windows.Forms.ListBox 
-$ListBoxCreationCompteCSV.Location = '400,292'
-$ListBoxCreationCompteCSV.Size = '250,400'
-$ListBoxCreationCompteCSV.Height = 60
-
+$TextboxFileCSV = New-Object System.Windows.Forms.Textbox 
+$TextboxFileCSV.Location = '400,292'
+$TextboxFileCSV.Size = '250,400'
+$TextboxFileCSV.Height = 60
+$TextboxFileCSV.Text = $OpenFileDialog.filename
 
 $FormLabelA = New-Object System.Windows.Forms.Label
 $FormLabelA.Location = '30,30'
 $FormLabelA.Size = '400,40'
 $FormLabelA.Text = "Creation de compte stagiaire (CSV) : "
-
 
 $FormLabelB = New-Object System.Windows.Forms.Label
 $FormLabelB.Location = '30,100'
@@ -159,9 +225,9 @@ $FormLabelC.Size = '150,60'
 $FormLabelC.Text = "Fichier à importer "
 
 
-#####################################
-### ELEMENTS FENETRES SELECTION   ###
-#####################################
+#####################################################
+### ELEMENTS FENETRES SELECTION FORMATION et SITE  ###
+####################################################
 
 function FillComboBoxFormation {
     # creation de la datatable
@@ -213,8 +279,7 @@ function FillComboBoxSite {
     $script:ComboBoxSite.DataSource = $table
 }
 
-
-
+# Elements graphiques
 $ButtonRetourCSV2 = New-Object System.Windows.Forms.Button
 $ButtonRetourCSV2.Location = '40,600'
 $ButtonRetourCSV2.Size = '150,40'
@@ -225,17 +290,19 @@ $ButtonRetourCSV2_Click = {
     $FenetreCreationCSV.Visible = $True
 }
 
-
 $ButtonSuivantCSV2 = New-Object System.Windows.Forms.Button
 $ButtonSuivantCSV2.Location = '800,600'
 $ButtonSuivantCSV2.Size = '150,40'
 $ButtonSuivantCSV2.Text = 'Suivant'
 $ButtonSuivantCSV2.add_Click($ButtonSuivantCSV2_Click)
 $ButtonSuivantCSV2_Click = {
+    
     $FenetreSelection.Visible = $False
+    $global:Formation = $script:ComboBoxFormation.text
+    $global:Site = $script:ComboBoxSite.text
+    extractCSV
     $FenetreCreationtab.ShowDialog()
 }
-
 
 $FormLabelD = New-Object System.Windows.Forms.Label
 $FormLabelD.Location = '30,30'
@@ -245,7 +312,7 @@ $FormLabelD.Text = "Creation de compte stagiaire (CSV) : "
 $FormLabelE = New-Object System.Windows.Forms.Label
 $FormLabelE.Location = '30,100'
 $FormLabelE.Size = '400,40'
-$FormLabelE.Text = "Selectionnez la formation"
+$FormLabelE.Text = "Selectionnez la formation puis le site associé."
 
 $FormLabelF = New-Object System.Windows.Forms.Label
 $FormLabelF.Location = '300,295'
@@ -272,7 +339,7 @@ $ComboBoxSite.Height = 60
 FillComboBoxSite
 
 #####################################
-### ELEMENTS FENETRES CREATIONTAB ###
+### ELEMENTS FENETRES CREATION TAB ###
 #####################################
 
 $FormLabelH = New-Object System.Windows.Forms.Label
@@ -287,6 +354,8 @@ $FormLabelI.Size = '400,40'
 $FormLabelI.Text = "Selection des stagiaires et des plateformes"
 
 
+
+
 $ButtonRetourCSV3 = New-Object System.Windows.Forms.Button
 $ButtonRetourCSV3.Location = '40,600'
 $ButtonRetourCSV3.Size = '150,40'
@@ -295,7 +364,6 @@ $ButtonRetourCSV3.add_Click($ButtonRetourCSV3_Click)
 $ButtonRetourCSV3_Click = {
     $FenetreCreationtab.Visible = $False
 	$FenetreSelection.Visible = $True
-    
 }
 
 $ButtonSuivantCSV3 = New-Object System.Windows.Forms.Button
@@ -304,14 +372,23 @@ $ButtonSuivantCSV3.Size = '150,40'
 $ButtonSuivantCSV3.Text = 'Suivant'
 $ButtonSuivantCSV3.add_Click($ButtonSuivantCSV3_Click)
 $ButtonSuivantCSV3_Click = {
+    echo  $dataGridView.Rows[2].Cells[0]
+    [System.Windows.Forms.MessageBox]::Show($dataGridView.Rows[2].Cells[0].Value.toString(), "row")
     $FenetreCreationtab.Visible = $False
     $FenetreValidation.Visible = $True
 }
 
-$ListBoxtab = New-Object System.Windows.Forms.ListBox 
-$ListBoxtab.Location = '30,150' 
-$ListBoxtab.Size = '920,20'
-$ListBoxtab.Height = 440
+
+
+
+
+
+
+
+
+
+
+
 
 
 #####################################
@@ -320,6 +397,7 @@ $ListBoxtab.Height = 440
 
 #[reflection.assembly]::loadwithpartialname("System.Windows.Forms") | Out-Null
 #[reflection.assembly]::loadwithpartialname("System.Drawing") | Out-Null
+
 
 $ButtonRetourCSV4 = New-Object System.Windows.Forms.Button
 $ButtonRetourCSV4.Location = '40,230'
@@ -349,7 +427,7 @@ $FormLabelK.Text = "Creation de compte en cours..."
 $FenetreCreationCSV.Controls.Add($ButtonRetourCSV)
 $FenetreCreationCSV.Controls.Add($ButtonSuivantCSV)
 $FenetreCreationCSV.Controls.Add($ButtonParcourirCSV)
-$FenetreCreationCSV.Controls.Add($ListBoxCreationCompteCSV)
+$FenetreCreationCSV.Controls.Add($TextboxFileCSV)
 $FenetreCreationCSV.Controls.Add($FormLabelA)
 $FenetreCreationCSV.Controls.Add($FormLabelB)
 $FenetreCreationCSV.Controls.Add($FormLabelC)
@@ -368,6 +446,7 @@ $FenetreCreationtab.Controls.Add($ButtonSuivantCSV3)
 $FenetreCreationtab.Controls.Add($ListBoxtab)
 $FenetreCreationtab.Controls.Add($FormLabelH)
 $FenetreCreationtab.Controls.Add($FormLabelI)
+$FenetreCreationtab.Controls.Add($script:dataGridView)
 
 $FenetreValidation.Controls.Add($ButtonRetourCSV4)
 $FenetreValidation.Controls.Add($FormLabelJ)
@@ -380,14 +459,5 @@ $FenetreValidation.Controls.Add($progressBar)
 ############
 
 $FenetreCreationCSV.ShowDialog()
-
-function MakeRequest($request) {
-    $command = New-Object Mysql.Data.MysqlClient.MySqlCommand($request,$mysql)  
-    $dataAdapter = New-Object MySql.Data.MySqlClient.MySqlDataAdapter($command)
-    $dataSet = New-Object System.Data.DataSet
-    $recordCount = $dataAdapter.Fill($dataSet, "data")
-    $result = $dataSet.Tables["data"]
-    return $result
-}
 
 $mysql.Close()
