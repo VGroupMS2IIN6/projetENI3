@@ -18,7 +18,7 @@ Function MakeForm {
     $ButtonCreationCSV.Location = '30,30'
     $ButtonCreationCSV.Size = '150,60'
     $ButtonCreationCSV.Text = "Creation Comptes CSV"
-    $ButtonCreationCSV.add_Click($MakeMenuCreationCsv)
+    $ButtonCreationCSV.add_Click({.\fa_3_CreationComptesCSV.ps1})
     $ButtonCreationCSV_Click = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreCreationCSV.ShowDialog()
@@ -28,7 +28,7 @@ Function MakeForm {
     $ButtonUnit.Location = '190,30'
     $ButtonUnit.Size = '150,60'
     $ButtonUnit.Text = "Creation Compte Unitaire"
-    $ButtonUnit.add_Click($MakeMenuUnit)
+    $ButtonUnit.add_Click({MakeMenuUnit})
     $ButtonUnit_Click = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreCreationUnitaire.ShowDialog()
@@ -38,7 +38,7 @@ Function MakeForm {
     $ButtonResetPWD.Location = '350,30'
     $ButtonResetPWD.Size = '150,60'
     $ButtonResetPWD.Text = "Réinisialisation MDP"
-    $ButtonResetPWD.add_Click($MakeMenuResetPWD)
+    $ButtonResetPWD.add_Click({MakeMenuResetPWD})
     $ButtonResetPWD_Click = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreResetPWD.ShowDialog()
@@ -48,7 +48,7 @@ Function MakeForm {
     $ButtonHistorique.Location = '510,30'
     $ButtonHistorique.Size = '150,60'
     $ButtonHistorique.Text = 'Historique'
-    $ButtonHistorique.add_Click($MakeMenuHistorique)
+    $ButtonHistorique.add_Click({MakeMenuHistorique})
     $ButtonHistorique_Click = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreHistorique.ShowDialog()
@@ -58,13 +58,13 @@ Function MakeForm {
     $ButtonGestionFormation.Location = '670,30'
     $ButtonGestionFormation.Size = '150,60'
     $ButtonGestionFormation.Text = "Gestion des sites et formations"
-    $ButtonGestionFormation.add_Click($MakeMenuSiteForm)
+    $ButtonGestionFormation.add_Click({.\formsite.ps1})
 
     $ButtonParametres = New-Object System.Windows.Forms.Button
     $ButtonParametres.Location = '830,30'
     $ButtonParametres.Size = '150,60'
     $ButtonParametres.Text = "Paramètres"
-    $ButtonParametres.add_Click($MakeMenuParametres)
+    $ButtonParametres.add_Click({.\fa_7_Parametres.ps1})
     $ButtonParametres_Click = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreParametres.ShowDialog()
@@ -74,7 +74,7 @@ Function MakeForm {
     $ButtonAPropos.Location = '30,580'
     $ButtonAPropos.Size = '150,60'
     $ButtonAPropos.Text = "A propos"
-    $ButtonAPropos.add_Click($MakeMenuAPropos)
+    $ButtonAPropos.add_Click({MakeMenuAPropos})
     $ButtonAPropos_CLick = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreAPropos.ShowDialog()
@@ -146,15 +146,11 @@ Function MakeMenuHistorique {
     $script:ListBoxAffichage.Controls.Add($labelTitreHistorique)
 }
 
-Function MakeMenuSiteForm {
-    $labelTitreSiteForm = New-Object System.Windows.Forms.Label
-    $labelTitreSiteForm.Location = New-Object System.Drawing.Point(10,10)
-    $labelTitreSiteForm.Size = New-Object System.Drawing.Size(200,20)
-    $labelTitreSiteForm.Text = "Gestion des sites et formations"
-    $labelTitreSiteForm.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+Function MakeMenuFormSite {
+
     
     $script:ListBoxAffichage.Controls.clear();
-    $script:ListBoxAffichage.Controls.Add($labelTitreSiteForm)
+    $script:ListBoxAffichage.Controls.Add($labelTitreFormSite)
 }
 
 Function MakeMenuParametres {
