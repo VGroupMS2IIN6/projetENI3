@@ -26,6 +26,8 @@ Function MakeForm {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreCreationCSV.ShowDialog()
     }
+    $toolTipButtonCreationCSV = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonCreationCSV.SetToolTip($ButtonCreationCSV, "création des comptes stagiaires à partir d'un CSV")
 
     $ButtonUnit = New-Object System.Windows.Forms.Button
     $ButtonUnit.Location = New-Object System.Drawing.Point($position,30)
@@ -37,6 +39,8 @@ Function MakeForm {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreCreationUnitaire.ShowDialog()
     }
+    $toolTipButtonUnit = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonUnit.SetToolTip($ButtonUnit, "création d'un compte stagiaire")
 
     $ButtonResetPWD = New-Object System.Windows.Forms.Button
     $ButtonResetPWD.Location = New-Object System.Drawing.Point($position,30)
@@ -48,6 +52,8 @@ Function MakeForm {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreResetPWD.ShowDialog()
     }
+    $toolTipButtonResetPWD = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonResetPWD.SetToolTip($ButtonResetPWD, "réinitialisation de mots de passe stagiaire")
 
     $ButtonHistorique = New-Object System.Windows.Forms.Button
     $ButtonHistorique.Location = New-Object System.Drawing.Point($position,30)
@@ -59,6 +65,8 @@ Function MakeForm {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreHistorique.ShowDialog()
     }
+    $toolTipButtonHistorique = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonHistorique.SetToolTip($ButtonHistorique, "Consulter l'historique de création de comptes")
 
     #TODO : gérer l'interrogation des droits
     if($true) {
@@ -69,6 +77,8 @@ Function MakeForm {
         $ButtonGestionFormation.Text = "Gestion des sites et formations"
         $ButtonGestionFormation.add_Click({.\fa_4_GestionFormationSite.ps1})
     }
+    $toolTipButtonGestionFormation = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonGestionFormation.SetToolTip($ButtonGestionFormation, "Gérer les formations et les sites")
 
     $ButtonParametres = New-Object System.Windows.Forms.Button
     $ButtonParametres.Location = New-Object System.Drawing.Point($position,30)
@@ -80,6 +90,8 @@ Function MakeForm {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreParametres.ShowDialog()
     }
+    $toolTipButtonParametres = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonParametres.SetToolTip($ButtonParametres, "Paramètres de l'application")
 
     $ButtonAPropos = New-Object System.Windows.Forms.Button
     $ButtonAPropos.Location = '30,580'
