@@ -283,6 +283,8 @@ Function MakeMenuPlateformes {
     $script:ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
     $script:ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
     $script:ComboBoxPlateformes.add_SelectedIndexChanged({FillPlateforme})
+    $toolTipComboBoxPlateformes = New-Object System.Windows.Forms.ToolTip
+    $toolTipComboBoxPlateformes.SetToolTip($script:ComboBoxPlateformes, "Pour créer une nouvelle plateforme, saisir un nouveau nom ici, renseigner les informations et cliquer sur Ajouter")
     FillComboBox $script:ComboBoxPlateformes $script:plateformes "nom"
 
     $buttonAjouter = New-Object System.Windows.Forms.Button

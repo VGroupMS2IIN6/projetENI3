@@ -9,14 +9,17 @@ $listForm.StartPosition = "CenterScreen"
 
 $ListBoxAffichage = New-Object System.Windows.Forms.ListBox 
 $ListBoxAffichage.Location = New-Object System.Drawing.Size(30,150) 
-$ListBoxAffichage.Size = New-Object System.Drawing.Size(920,20)
-$ListBoxAffichage.Height = 400
-
+$ListBoxAffichage.Size = New-Object System.Drawing.Size(920,400)
 
 Function MakeForm {
+    $position = 30
+    $largeur = 140
+    $ecart = 5
+
     $ButtonCreationCSV = New-Object System.Windows.Forms.Button
-    $ButtonCreationCSV.Location = '30,30'
-    $ButtonCreationCSV.Size = '150,60'
+    $ButtonCreationCSV.Location = New-Object System.Drawing.Point($position,30)
+    $ButtonCreationCSV.Size = New-Object System.Drawing.Size($largeur,60)
+    $position += $largeur + $ecart
     $ButtonCreationCSV.Text = "Creation Comptes CSV"
     $ButtonCreationCSV.add_Click({.\fa_3_CreationComptesCSV.ps1})
     $ButtonCreationCSV_Click = {
@@ -25,8 +28,9 @@ Function MakeForm {
     }
 
     $ButtonUnit = New-Object System.Windows.Forms.Button
-    $ButtonUnit.Location = '190,30'
-    $ButtonUnit.Size = '150,60'
+    $ButtonUnit.Location = New-Object System.Drawing.Point($position,30)
+    $ButtonUnit.Size = New-Object System.Drawing.Size($largeur,60)
+    $position += $largeur + $ecart
     $ButtonUnit.Text = "Creation Compte Unitaire"
     $ButtonUnit.add_Click({MakeMenuUnit})
     $ButtonUnit_Click = {
@@ -35,8 +39,9 @@ Function MakeForm {
     }
 
     $ButtonResetPWD = New-Object System.Windows.Forms.Button
-    $ButtonResetPWD.Location = '350,30'
-    $ButtonResetPWD.Size = '150,60'
+    $ButtonResetPWD.Location = New-Object System.Drawing.Point($position,30)
+    $ButtonResetPWD.Size = New-Object System.Drawing.Size($largeur,60)
+    $position += $largeur + $ecart
     $ButtonResetPWD.Text = "Réinisialisation MDP"
     $ButtonResetPWD.add_Click({MakeMenuResetPWD})
     $ButtonResetPWD_Click = {
@@ -45,8 +50,9 @@ Function MakeForm {
     }
 
     $ButtonHistorique = New-Object System.Windows.Forms.Button
-    $ButtonHistorique.Location = '510,30'
-    $ButtonHistorique.Size = '150,60'
+    $ButtonHistorique.Location = New-Object System.Drawing.Point($position,30)
+    $ButtonHistorique.Size = New-Object System.Drawing.Size($largeur,60)
+    $position += $largeur + $ecart
     $ButtonHistorique.Text = 'Historique'
     $ButtonHistorique.add_Click({MakeMenuHistorique})
     $ButtonHistorique_Click = {
@@ -54,15 +60,20 @@ Function MakeForm {
 	    $FenetreHistorique.ShowDialog()
     }
 
-    $ButtonGestionFormation = New-Object System.Windows.Forms.Button
-    $ButtonGestionFormation.Location = '670,30'
-    $ButtonGestionFormation.Size = '150,60'
-    $ButtonGestionFormation.Text = "Gestion des sites et formations"
-    $ButtonGestionFormation.add_Click({.\formsite.ps1})
+    #TODO : gérer l'interrogation des droits
+    if($true) {
+        $ButtonGestionFormation = New-Object System.Windows.Forms.Button
+        $ButtonGestionFormation.Location = New-Object System.Drawing.Point($position,30)
+        $ButtonGestionFormation.Size = New-Object System.Drawing.Size($largeur,60)
+        $position += $largeur + $ecart
+        $ButtonGestionFormation.Text = "Gestion des sites et formations"
+        $ButtonGestionFormation.add_Click({.\fa_4_GestionFormationSite.ps1})
+    }
 
     $ButtonParametres = New-Object System.Windows.Forms.Button
-    $ButtonParametres.Location = '830,30'
-    $ButtonParametres.Size = '150,60'
+    $ButtonParametres.Location = New-Object System.Drawing.Point($position,30)
+    $ButtonParametres.Size = New-Object System.Drawing.Size($largeur,60)
+    $position += $largeur + $ecart
     $ButtonParametres.Text = "Paramètres"
     $ButtonParametres.add_Click({.\fa_7_Parametres.ps1})
     $ButtonParametres_Click = {
