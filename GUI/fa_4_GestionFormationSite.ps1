@@ -2,7 +2,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 . "../ps/fg_1-1_DBUtils.ps1"
-. "../GUI/formsite_Functions.ps1"
+. "../GUI/fa_4_GestionFormationSite_Functions.ps1"
 
 OpenDB
 

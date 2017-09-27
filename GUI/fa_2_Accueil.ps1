@@ -69,29 +69,37 @@ Function MakeForm {
     $toolTipButtonHistorique.SetToolTip($ButtonHistorique, "Consulter l'historique de création de comptes")
 
     #TODO : gérer l'interrogation des droits
+#select count(distinct u.id) from utilisateur u
+#join ass_profil_utilisateur pu on pu.utilisateur = u.id
+#join profil p on p.id = pu.profil
+#join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
+#join droits_utilisateur du on du.ID = pdu.droit where u.login = 'sartu' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'gestion des formations' or du.nom = 'gestion des sites');
     if($true) {
         $ButtonGestionFormation = New-Object System.Windows.Forms.Button
         $ButtonGestionFormation.Location = New-Object System.Drawing.Point($position,30)
         $ButtonGestionFormation.Size = New-Object System.Drawing.Size($largeur,60)
         $position += $largeur + $ecart
         $ButtonGestionFormation.Text = "Gestion des sites et formations"
-        $ButtonGestionFormation.add_Click({.\fa_4_GestionFormationSite.ps1})
+        $ButtonGestionFormation.add_Click({..\GUI\fa_4_GestionFormationSite.ps1})
+        $toolTipButtonGestionFormation = New-Object System.Windows.Forms.ToolTip
+        $toolTipButtonGestionFormation.SetToolTip($ButtonGestionFormation, "Gérer les formations et les sites")
     }
-    $toolTipButtonGestionFormation = New-Object System.Windows.Forms.ToolTip
-    $toolTipButtonGestionFormation.SetToolTip($ButtonGestionFormation, "Gérer les formations et les sites")
 
-    $ButtonParametres = New-Object System.Windows.Forms.Button
-    $ButtonParametres.Location = New-Object System.Drawing.Point($position,30)
-    $ButtonParametres.Size = New-Object System.Drawing.Size($largeur,60)
-    $position += $largeur + $ecart
-    $ButtonParametres.Text = "Paramètres"
-    $ButtonParametres.add_Click({.\fa_7_Parametres.ps1})
-    $ButtonParametres_Click = {
-	    $FenetreAccueil.Visible = $false
-	    $FenetreParametres.ShowDialog()
+#select count(distinct u.id) from utilisateur u
+#join ass_profil_utilisateur pu on pu.utilisateur = u.id
+#join profil p on p.id = pu.profil
+#join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
+#join droits_utilisateur du on du.ID = pdu.droit where u.login = 'admin' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'paramétrage administration');
+    if($true) {
+        $ButtonParametres = New-Object System.Windows.Forms.Button
+        $ButtonParametres.Location = New-Object System.Drawing.Point($position,30)
+        $ButtonParametres.Size = New-Object System.Drawing.Size($largeur,60)
+        $position += $largeur + $ecart
+        $ButtonParametres.Text = "Paramètres"
+        $ButtonParametres.add_Click({.\fa_7_Parametres.ps1})
+        $toolTipButtonParametres = New-Object System.Windows.Forms.ToolTip
+        $toolTipButtonParametres.SetToolTip($ButtonParametres, "Paramètres de l'application")
     }
-    $toolTipButtonParametres = New-Object System.Windows.Forms.ToolTip
-    $toolTipButtonParametres.SetToolTip($ButtonParametres, "Paramètres de l'application")
 
     $ButtonAPropos = New-Object System.Windows.Forms.Button
     $ButtonAPropos.Location = '30,580'

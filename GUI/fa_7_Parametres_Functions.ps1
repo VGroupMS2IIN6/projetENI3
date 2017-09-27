@@ -608,24 +608,32 @@ Function MakeForm {
     $ButtonADAdmin.Size = New-Object System.Drawing.Size(200,50)
     $ButtonADAdmin.Text = "Active Directory administratif"
     $ButtonADAdmin.Add_Click({MakeMenuAd})
+    $toolTipButtonADAdmin = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonADAdmin.SetToolTip($ButtonADAdmin, "Paramétrage de la connexion à l'annuaire Active Directory")
     
     $ButtonPlateformes = New-Object System.Windows.Forms.Button
     $ButtonPlateformes.Location = New-Object System.Drawing.Point(40,100)
     $ButtonPlateformes.Size = New-Object System.Drawing.Size(200,50)
     $ButtonPlateformes.Text = "Plateformes"
     $ButtonPlateformes.Add_Click({MakeMenuPlateformes})
+    $toolTipButtonPlateformes = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonPlateformes.SetToolTip($ButtonPlateformes, "Paramétrage et ajout des plateformes")
 
     $ButtonDefProfils = New-Object System.Windows.Forms.Button
     $ButtonDefProfils.Location = New-Object System.Drawing.Point(40,160)
     $ButtonDefProfils.Size = New-Object System.Drawing.Size(200,50)
-    $ButtonDefProfils.Text = "Défnition des profils"
+    $ButtonDefProfils.Text = "profils"
     $ButtonDefProfils.Add_Click({makeMenuDefProfils})
+    $toolTipButtonDefProfils = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonDefProfils.SetToolTip($ButtonDefProfils, "création des profils et assignation des droits")
 
     $ButtonAssProfils = New-Object System.Windows.Forms.Button
     $ButtonAssProfils.Location = New-Object System.Drawing.Point(40,220)
     $ButtonAssProfils.Size = New-Object System.Drawing.Size(200,50)
-    $ButtonAssProfils.Text = "Assignation des profils"
+    $ButtonAssProfils.Text = "utilisateurs"
     $ButtonAssProfils.Add_Click({makeMenuAssProfils})
+    $toolTipButtonAssProfils = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonAssProfils.SetToolTip($ButtonAssProfils, "création des comptes utilisateurs et assignation des profils")
 
     $ButtonRetour = New-Object System.Windows.Forms.Button
     $ButtonRetour.Location = New-Object System.Drawing.Point(30,580)

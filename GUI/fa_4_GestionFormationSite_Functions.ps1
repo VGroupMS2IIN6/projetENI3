@@ -271,17 +271,31 @@ Function MakeForm {
     $script:ListBoxAffichage.Location = New-Object System.Drawing.Size(255,30)
     $script:ListBoxAffichage.Size = New-Object System.Drawing.Size(700,530)
 
+#select count(distinct u.id) from utilisateur u
+#join ass_profil_utilisateur pu on pu.utilisateur = u.id
+#join profil p on p.id = pu.profil
+#join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
+#join droits_utilisateur du on du.ID = pdu.droit where u.login = 'sartu' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'gestion des formations' or du.nom = 'gestion des sites');
     $ButtonSites = New-Object System.Windows.Forms.Button
     $ButtonSites.Location = New-Object System.Drawing.Point(40,40)
     $ButtonSites.Size = New-Object System.Drawing.Size(200,50)
     $ButtonSites.Text = "Sites"
     $ButtonSites.Add_Click({MakeMenuSites})
+    $toolTipButtonSites = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonSites.SetToolTip($ButtonSites, "Ajouter des sites et assigner les formations")
 
+#select count(distinct u.id) from utilisateur u
+#join ass_profil_utilisateur pu on pu.utilisateur = u.id
+#join profil p on p.id = pu.profil
+#join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
+#join droits_utilisateur du on du.ID = pdu.droit where u.login = 'sartu' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'gestion des formations' or du.nom = 'gestion des sites');
     $ButtonFormations = New-Object System.Windows.Forms.Button
     $ButtonFormations.Location = New-Object System.Drawing.Point(40,100)
     $ButtonFormations.Size = New-Object System.Drawing.Size(200,50)
     $ButtonFormations.Text = "Formations"
     $ButtonFormations.Add_Click({MakeMenuFormations})
+    $toolTipButtonFormations = New-Object System.Windows.Forms.ToolTip
+    $toolTipButtonFormations.SetToolTip($ButtonFormations, "Ajouter des formations et assigner les plateformes obligatoires")
 
     $ButtonRetour = New-Object System.Windows.Forms.Button
     $ButtonRetour.Location = New-Object System.Drawing.Point(30,580)
