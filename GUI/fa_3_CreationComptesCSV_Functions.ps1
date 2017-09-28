@@ -7,6 +7,7 @@ $comboBoxFormation = New-Object System.Windows.Forms.ComboBox
 $labelSite = New-Object System.Windows.Forms.Label
 $comboBoxSite = New-Object System.Windows.Forms.ComboBox
 $dataGridView = New-Object System.Windows.Forms.DataGridView
+$buttonImporter = New-Object System.Windows.Forms.Button
 
 function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol) {
     # creation de la datatable
@@ -36,10 +37,13 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
 Function FillDataGrid {
     $script:dataGridView.Rows.Clear()
     $script:dataGridView.Columns.Clear()
+    $script:dataGridView.Visible = $false
+    $script:buttonImporter.Visible = $false
 
     if($script:comboBoxFormation.SelectedIndex -ne -1) {
-        # on affiche la datagrid
+        # on affiche la datagrid et le bouton importer
         $script:dataGridView.Visible = $true
+        $script:buttonImporter.Visible = $true
 
         # ajoute les colonnes nom et prénom
         $colCheckLigne = New-Object System.Windows.Forms.DataGridViewCheckBoxColumn
@@ -128,10 +132,17 @@ Function FillFormation {
     # on affiche la sélection du site
     $script:labelFormation.Visible = $true
     $script:comboBoxFormation.Visible = $true
-    $script:dataGridView.Visible = $false
     FillComboBox $script:comboBoxFormation $script:formations "nom"
     $script:comboBoxFormation.SelectedIndex = -1
     $script:comboBoxFormation.add_SelectedIndexChanged({FillDataGrid})
+}
+
+Function ImporterCSV {
+    #TODO : réaliser les différentes moulinettes
+
+    $typeBouton = [System.Windows.Forms.MessageBoxButtons]::OK
+    $typeIcone = [System.Windows.Forms.MessageBoxIcon]::Information
+    [System.Windows.Forms.MessageBox]::Show("L'import est terminé", "Information", $typeBouton, $typeIcone)
 }
 
 Function Parcourir {
@@ -191,7 +202,7 @@ Function MakeForm {
     $script:comboBoxFormation.Visible = $false
 
     $script:dataGridView.Location = New-Object System.Drawing.Point(20,80)
-    $script:dataGridView.Size = New-Object System.Drawing.Size(940,480)
+    $script:dataGridView.Size = New-Object System.Drawing.Size(940,485)
     $script:dataGridView.MultiSelect = $false
     $script:dataGridView.ColumnHeadersVisible = $true
     $script:dataGridView.RowHeadersVisible = $true
@@ -207,6 +218,14 @@ Function MakeForm {
     # la touche echap est mappée sur retour
     $listForm.CancelButton = $ButtonRetour
 
+    $script:buttonImporter.Location = New-Object System.Drawing.Point(815,580)
+    $script:buttonImporter.Size = New-Object System.Drawing.Size(150,60)
+    $script:buttonImporter.Text = "Importer"
+    $script:buttonImporter.Add_Click({ImporterCSV; $listForm.Close()})
+    $script:buttonImporter.Visible = $false
+    # la touche entrée est mappée sur importer
+    $listForm.AcceptButton = $script:buttonImporter
+
     $listForm.Controls.Add($labelFichier)
     $listForm.Controls.Add($script:textBoxFichier)
     $listForm.Controls.Add($ButtonParcourir)
@@ -216,6 +235,7 @@ Function MakeForm {
     $listForm.Controls.Add($script:comboBoxFormation)
     $listForm.Controls.Add($script:dataGridView)
     $listForm.Controls.Add($ButtonRetour)
+    $listForm.Controls.Add($script:buttonImporter)
 
     # Afficher la fenetre
     $listForm.ShowDialog()
