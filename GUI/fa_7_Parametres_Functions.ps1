@@ -15,9 +15,17 @@ $textBoxUser = New-Object System.Windows.Forms.TextBox
 $textBoxMdp = New-Object System.Windows.Forms.TextBox
 $textBoxRegexMdp = New-Object System.Windows.Forms.TextBox
 $checkBoxObligatoire = New-Object System.Windows.Forms.CheckBox
-$buttonAjouter = New-Object System.Windows.Forms.Button
 
 $ComboBoxProfil = New-Object System.Windows.Forms.ComboBox
+$textBoxProfil = New-Object System.Windows.Forms.TextBox
+
+$buttonAjouterPlateforme = New-Object System.Windows.Forms.Button
+$buttonEnregistrerPlateforme = New-Object System.Windows.Forms.Button
+$buttonSupprimerPlateforme = New-Object System.Windows.Forms.Button
+
+$buttonAjouterProfil = New-Object System.Windows.Forms.Button
+$buttonEnregistrerProfil = New-Object System.Windows.Forms.Button
+$buttonSupprimerProfil = New-Object System.Windows.Forms.Button
 
 $ComboBoxUtilisateur = New-Object System.Windows.Forms.ComboBox
 
@@ -37,7 +45,7 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
     $table = New-Object system.Data.DataTable
 		
     # definition des colonnes
-    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colId = New-Object system.Data.DataColumn "id",([int])
     $colLib = New-Object system.Data.DataColumn $nomCol,([string])
  
     # table des colonnes à la datatable
@@ -136,9 +144,9 @@ Function FillPlateforme {
 }
 
 Function AddPlateforme {
-    if($script:buttonAjouter.Text -eq "Ajouter") {
+    if($script:buttonAjouterPlateforme.Text -eq "Ajouter") {
         # on passe en ajout, on modifie le texte du bouton ajouter pour permettre l'annulation
-        $script:buttonAjouter.Text = "Annuler"
+        $script:buttonAjouterPlateforme.Text = "Annuler"
         
         # on efface tous les champs
         $script:textBoxNom.Text = ""
@@ -149,17 +157,23 @@ Function AddPlateforme {
         $script:textBoxRegexMdp.Text = ""
         $script:checkBoxObligatoire.Checked = $true
 
-        # on cache la combo-box et on affiche le champ
+        # on cache le bouton supprimer
+        $script:buttonSupprimerPlateforme = $false
+
+         # on cache la combo-box et on affiche le champ
         $script:ComboBoxPlateformes.Visible = $false
         $script:textBoxNom.Visible = $true
     } else {
         # on annule l'ajout, on rétablit le texte du bouton ajouter
-        $script:buttonAjouter.Text = "Ajouter"
+        $script:buttonAjouterPlateforme.Text = "Ajouter"
         
         # on vide le champ nom et on le cache, on affiche la combo-box
         $script:textBoxNom.Text = ""
         $script:textBoxNom.Visible = $false
         $script:ComboBoxPlateformes.Visible = $true
+
+        # on affiche le bouton supprimer
+        $script:buttonSupprimerPlateforme = $true
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
@@ -218,8 +232,11 @@ Function ModifyPlateforme {
             $script:textBoxNom.Visible = $false
             $script:ComboBoxPlateformes.Visible = $true
 
+            # on affiche le bouton supprimer
+            $script:buttonSupprimerPlateforme = $true
+
             # on rétablit le texte du bouton ajouter
-            $script:buttonAjouter.Text = "Ajouter"
+            $script:buttonAjouterPlateforme.Text = "Ajouter"
 
             # on recharge les infos
             $script:plateformes = MakeRequest "SELECT * FROM plateforme"
@@ -329,24 +346,23 @@ Function MakeMenuPlateformes {
     $script:checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
     $script:checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
     
-    $script:buttonAjouter.Location = New-Object System.Drawing.Point(220,10)
-    $script:buttonAjouter.Size = New-Object System.Drawing.Size(70,22)
-    $script:buttonAjouter.Text = "Ajouter"
-    $script:buttonAjouter.Add_Click({AddPlateforme})
+    $script:buttonAjouterPlateforme.Location = New-Object System.Drawing.Point(220,10)
+    $script:buttonAjouterPlateforme.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonAjouterPlateforme.Text = "Ajouter"
+    $script:buttonAjouterPlateforme.Add_Click({AddPlateforme})
     $toolTipAjouter = New-Object System.Windows.Forms.ToolTip
-    $toolTipAjouter.SetToolTip($script:buttonAjouter, "Pour ajouter une plateforme, cliquer sur Ajouter, renseigner les différents champs puis cliquer sur Enregistrer")
+    $toolTipAjouter.SetToolTip($script:buttonAjouterPlateforme, "Pour ajouter une plateforme, cliquer sur Ajouter, renseigner les différents champs puis cliquer sur Enregistrer")
 
-    $buttonEnregistrer = New-Object System.Windows.Forms.Button
-    $buttonEnregistrer.Location = New-Object System.Drawing.Point(295,10)
-    $buttonEnregistrer.Size = New-Object System.Drawing.Size(70,22)
-    $buttonEnregistrer.Text = "Enregistrer"
-    $buttonEnregistrer.Add_Click({ModifyPlateforme})
+    $script:buttonEnregistrerPlateforme.Location = New-Object System.Drawing.Point(295,10)
+    $script:buttonEnregistrerPlateforme.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonEnregistrerPlateforme.Text = "Enregistrer"
+    $script:buttonEnregistrerPlateforme.Add_Click({ModifyPlateforme})
 
-    $buttonSupprimer = New-Object System.Windows.Forms.Button
-    $buttonSupprimer.Location = New-Object System.Drawing.Point(370,10)
-    $buttonSupprimer.Size = New-Object System.Drawing.Size(70,22)
-    $buttonSupprimer.Text = "Supprimer"
-    $buttonSupprimer.Add_Click({DeletePlateforme})
+    $script:buttonSupprimerPlateforme.Location = New-Object System.Drawing.Point(370,10)
+    $script:buttonSupprimerPlateforme.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonSupprimerPlateforme.Text = "Supprimer"
+    $script:buttonSupprimerPlateforme.Visible = $true
+    $script:buttonSupprimerPlateforme.Add_Click({DeletePlateforme})
 
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
@@ -363,9 +379,9 @@ Function MakeMenuPlateformes {
     $script:ListBoxAffichage.Controls.Add($script:textBoxRegexMdp)
     $script:ListBoxAffichage.Controls.Add($labelObligatoire)
     $script:ListBoxAffichage.Controls.Add($script:checkBoxObligatoire)
-    $script:ListBoxAffichage.Controls.Add($buttonAjouter)
-    $script:ListBoxAffichage.Controls.Add($buttonEnregistrer)
-    $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
+    $script:ListBoxAffichage.Controls.Add($script:buttonAjouterPlateforme)
+    $script:ListBoxAffichage.Controls.Add($script:buttonEnregistrerPlateforme)
+    $script:ListBoxAffichage.Controls.Add($script:buttonSupprimerPlateforme)
     
     # alimentation des champs pour la plateforme selectionnee
     FillPlateforme
@@ -378,7 +394,7 @@ Function FillProfilFormSite {
     $table = New-Object system.Data.DataTable
 		
     # definition des colonnes
-    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colId = New-Object system.Data.DataColumn "id",([int])
     $colDroit = New-Object system.Data.DataColumn "nom",([string])
  
     # table des colonnes à la datatable
@@ -418,7 +434,7 @@ Function FillProfilPlateforme {
     $table = New-Object system.Data.DataTable
 		
     # definition des colonnes
-    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colId = New-Object system.Data.DataColumn "id",([int])
     $colDroit = New-Object system.Data.DataColumn "droit",([string])
  
     # table des colonnes à la datatable
@@ -474,10 +490,41 @@ Function ModifyProfilDroitsFormSite {
 }
 
 Function AddProfil {
-    # on vérifie qu'on essaie pas d'insérer une entrée déjà existante
-    if($script:ComboBoxProfil.SelectedIndex -eq -1 -and -not [string]::IsNullOrEmpty($script:ComboBoxProfil.Text)) {
+    if($script:buttonAjouterProfil.Text -eq "Ajouter") {
+        # on passe en ajout, on modifie le texte du bouton ajouter pour permettre l'annulation
+        $script:buttonAjouterProfil.Text = "Annuler"
+
+        # on cache la combo-box et on affiche le champ à vide
+        $script:textBoxProfil.Text = ""
+        $script:ComboBoxProfil.Visible = $false
+        $script:textBoxProfil.Visible = $true
+        
+        # on cache le button supprimer et on affiche le button Enregistrer
+        $script:buttonSupprimerProfil.Visible = $false
+        $script:buttonEnregistrerProfil.Visible = $true
+    } else {
+        # on annule l'ajout, on rétablit le texte du bouton ajouter
+        $script:buttonAjouterProfil.Text = "Ajouter"
+
+        # on affiche la combo-box, on vide le champ profil et on le cache
+        $script:textBoxProfil.Text = ""
+        $script:ComboBoxProfil.Visible = $true
+        $script:textBoxProfil.Visible = $false
+
+        # on cache le bouton enregistrer et on affiche le bouton supprimer
+        $script:buttonSupprimerProfil.Visible = $true
+        $script:buttonEnregistrerProfil.Visible = $false
+        
+        # on recharge les infos
+        $script:profils = MakeRequest "SELECT * FROM profil"
+        FillComboBox $script:ComboBoxProfil $script:profils "nom"
+    }
+}
+
+Function ModifyProfil {
+    if($script:textBoxProfil.Text -ne "") {
         # on crée le nouveau profil
-        $reqInsertProfil = "insert into profil(nom) values('" + $script:ComboBoxProfil.Text + "')"
+        $reqInsertProfil = "insert into profil(nom) values('" + $script:textBoxProfil.Text + "')"
         MakeRequest $reqInsertProfil
         $reqSelect = "select last_insert_id() as id"
         # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
@@ -494,48 +541,73 @@ Function AddProfil {
         $reqInsertDroitsFormSite += " select droits_utilisateur.ID, " + $idNewProfil.id + ", 0 from droits_utilisateur"
         MakeRequest $reqInsertDroitsFormSite
 
+        # on affiche la combo-box, on vide le champ profil et on le cache
+        $script:textBoxProfil.Text = ""
+        $script:ComboBoxProfil.Visible = $true
+        $script:textBoxProfil.Visible = $false
+
+        # on cache le bouton Enregistrer et on affiche le bouton supprimer
+        $script:buttonSupprimerProfil.Visible = $true
+        $script:buttonEnregistrerProfil.Visible = $false
+
         # on recharge les infos
         $script:profils = MakeRequest "SELECT * FROM profil"
         FillComboBox $script:ComboBoxProfil $script:profils "nom"
+
+        # on sélectionne le dernier élément de la combo, c'est en principe le dernier ajouté
+        $script:ComboBoxProfil.SelectedIndex = $script:ComboBoxProfil.Items.Count - 1
     }
 }
 
 Function DeleteProfil {
-    # on vérifie qu'on essaie pas de supprimer une nouvelle entrée pas encore insérée
-    if($script:ComboBoxProfil.SelectedIndex -ne -1) {
-        # on supprime d'abord les droits plateformes
-        $reqDeleteDroitsPlateformes = "delete from ass_profil_droit_plateforme where profil="
-        $reqDeleteDroitsPlateformes += $script:ComboBoxProfil.SelectedItem.id
-        MakeRequest $reqDeleteDroitsPlateformes
+    # on supprime d'abord les droits plateformes
+    $reqDeleteDroitsPlateformes = "delete from ass_profil_droit_plateforme where profil="
+    $reqDeleteDroitsPlateformes += $script:ComboBoxProfil.SelectedItem.id
+    MakeRequest $reqDeleteDroitsPlateformes
 
-        # on supprime d'abord les droits formation et site
-        $reqDeleteDroitsPlateformes = "delete from ass_profil_droits_utilisateurs where profil="
-        $reqDeleteDroitsPlateformes += $script:ComboBoxProfil.SelectedItem.id
-        MakeRequest $reqDeleteDroitsPlateformes
+    # on supprime d'abord les droits formation et site
+    $reqDeleteDroitsPlateformes = "delete from ass_profil_droits_utilisateurs where profil="
+    $reqDeleteDroitsPlateformes += $script:ComboBoxProfil.SelectedItem.id
+    MakeRequest $reqDeleteDroitsPlateformes
         
-        # puis le profil en lui-même
-        $reqDeleteProfil = "delete from profil where id="
-        $reqDeleteProfil += $script:ComboBoxProfil.SelectedItem.id
-        MakeRequest $reqDeleteProfil
+    # puis le profil en lui-même
+    $reqDeleteProfil = "delete from profil where id="
+    $reqDeleteProfil += $script:ComboBoxProfil.SelectedItem.id
+    MakeRequest $reqDeleteProfil
 
-        # on recharge les infos
-        $script:profils = MakeRequest "SELECT * FROM profil"
-        FillComboBox $script:ComboBoxProfil $script:profils "nom"
-    }
+    # on recharge les infos
+    $script:profils = MakeRequest "SELECT * FROM profil"
+    FillComboBox $script:ComboBoxProfil $script:profils "nom"
 }
 
 Function MakeMenuDefProfils {
-    $buttonAjouter = New-Object System.Windows.Forms.Button
-    $buttonAjouter.Location = New-Object System.Drawing.Point(220,10)
-    $buttonAjouter.Size = New-Object System.Drawing.Size(70,22)
-    $buttonAjouter.Text = "Ajouter"
-    $buttonAjouter.Add_Click({AddProfil})
+    $script:ComboBoxProfil.Location = New-Object System.Drawing.Point(10,10)
+    $script:ComboBoxProfil.Size = New-Object System.Drawing.Size(200,20)
+    $script:ComboBoxProfil.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+    $script:ComboBoxProfil.Visible = $true
+    $script:ComboBoxProfil.add_SelectedIndexChanged({FillProfilPlateforme})
+    FillComboBox $script:ComboBoxProfil $profils "nom"
+    
+    $script:textBoxProfil.Location = New-Object System.Drawing.Point(10,10)
+    $script:textBoxProfil.Size = New-Object System.Drawing.Size(200,20)
+    $script:textBoxProfil.Visible = $false
 
-    $buttonSupprimer = New-Object System.Windows.Forms.Button
-    $buttonSupprimer.Location = New-Object System.Drawing.Point(295,10)
-    $buttonSupprimer.Size = New-Object System.Drawing.Size(70,22)
-    $buttonSupprimer.Text = "Supprimer"
-    $buttonSupprimer.Add_Click({DeleteProfil})
+    $script:buttonAjouterProfil.Location = New-Object System.Drawing.Point(220,10)
+    $script:buttonAjouterProfil.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonAjouterProfil.Text = "Ajouter"
+    $script:buttonAjouterProfil.Add_Click({AddProfil})
+
+    $script:buttonEnregistrerProfil.Location = New-Object System.Drawing.Point(295,10)
+    $script:buttonEnregistrerProfil.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonEnregistrerProfil.Text = "Enregistrer"
+    $script:buttonEnregistrerProfil.Visible = $false
+    $script:buttonEnregistrerProfil.Add_Click({ModifyProfil})
+
+    $script:buttonSupprimerProfil.Location = New-Object System.Drawing.Point(295,10)
+    $script:buttonSupprimerProfil.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonSupprimerProfil.Text = "Supprimer"
+    $script:buttonSupprimerProfil.Visible = $true
+    $script:buttonSupprimerProfil.Add_Click({DeleteProfil})
 
     $labelcreation = New-Object System.Windows.Forms.Label
     $labelcreation.Location = New-Object System.Drawing.Point(10,50)
@@ -549,21 +621,18 @@ Function MakeMenuDefProfils {
     $labelFormSite.Text = "droits formations et sites"
     $labelFormSite.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:ComboBoxProfil.Location = New-Object System.Drawing.Point(10,10)
-    $script:ComboBoxProfil.Size = New-Object System.Drawing.Size(200,20)
-    $script:ComboBoxProfil.add_SelectedIndexChanged({FillProfilPlateforme})
-    FillComboBox $script:ComboBoxProfil $profils "nom"
-
     $script:ListBoxAffichage.Controls.clear();
-    $script:ListBoxAffichage.Controls.Add($buttonAjouter)
-    $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
+    $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxProfil)
     $script:ListBoxAffichage.Controls.Add($labelCreation)
     $script:ListBoxAffichage.Controls.Add($labelFormSite)
     $script:ListBoxAffichage.Controls.Add($script:listBoxDroitPlateforme)
     $script:ListBoxAffichage.Controls.Add($script:listBoxDroitFormSite)
     $script:ListBoxAffichage.Controls.Add($FormLabelTextDefProfils1)
-    $script:ListBoxAffichage.Controls.Add($script:ComboBoxProfil)
-
+    $script:ListBoxAffichage.Controls.Add($script:buttonAjouterProfil)
+    $script:ListBoxAffichage.Controls.Add($script:buttonEnregistrerProfil)
+    $script:ListBoxAffichage.Controls.Add($script:buttonSupprimerProfil)
+    
     # alimentation des champs pour le profil selectionne
     FillProfilPlateforme
     # rustine dégueu en attendant de comprendre
@@ -577,7 +646,7 @@ Function FillProfilUtilisateur {
     $table = New-Object system.Data.DataTable
 		
     # definition des colonnes
-    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colId = New-Object system.Data.DataColumn "id",([int])
     $colProfil = New-Object system.Data.DataColumn "nom",([string])
  
     # table des colonnes à la datatable
