@@ -218,11 +218,15 @@ Function ModifyPlateforme {
             $script:textBoxNom.Visible = $false
             $script:ComboBoxPlateformes.Visible = $true
 
+            # on rétablit le texte du bouton ajouter
+            $script:buttonAjouter.Text = "Ajouter"
+
             # on recharge les infos
             $script:plateformes = MakeRequest "SELECT * FROM plateforme"
             FillComboBox $script:ComboBoxPlateformes $script:plateformes "nom"
 
-            #TODO : sélectionner la plateforme juste insérée
+            # on sélectionne le dernier élément de la combo, c'est en principe le dernier ajouté
+            $script:ComboBoxPlateformes.SelectedIndex = $script:ComboBoxPlateformes.Items.Count - 1
         }
     } else {
         # on est en modification
@@ -238,27 +242,24 @@ Function ModifyPlateforme {
     }
 }
 
-Function DeletePlateforme([System.Windows.Forms.ComboBox] $script:ComboBoxPlateformes) {
-    # on vérifie qu'on essaie pas de supprimer une nouvelle entrée pas encore insérée
-    if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
-        $idPlateforme = $script:ComboBoxPlateformes.SelectedItem.id
+Function DeletePlateforme {
+    $idPlateforme = $script:ComboBoxPlateformes.SelectedItem.id
 
-        $reqDeleteProfilDroitsPlateformes = "delete from ass_profil_droit_plateforme"
-        $reqDeleteProfilDroitsPlateformes += " where droit_plateforme in "
-        $reqDeleteProfilDroitsPlateformes += "  (select ID from ass_droit_plateforme where plateforme = " + $idPlateforme + ")"
-        MakeRequest $reqDeleteProfilDroitsPlateformes
+    $reqDeleteProfilDroitsPlateformes = "delete from ass_profil_droit_plateforme"
+    $reqDeleteProfilDroitsPlateformes += " where droit_plateforme in "
+    $reqDeleteProfilDroitsPlateformes += "  (select ID from ass_droit_plateforme where plateforme = " + $idPlateforme + ")"
+    MakeRequest $reqDeleteProfilDroitsPlateformes
 
-        $reqDeleteDroitsPlateformes = "delete from ass_droit_plateforme"
-        $reqDeleteDroitsPlateformes += " where plateforme = " + $idPlateforme
-        MakeRequest $reqDeleteDroitsPlateformes
+    $reqDeleteDroitsPlateformes = "delete from ass_droit_plateforme"
+    $reqDeleteDroitsPlateformes += " where plateforme = " + $idPlateforme
+    MakeRequest $reqDeleteDroitsPlateformes
 
-        $reqDelete = "delete from plateforme where id = " + $idPlateforme
-        MakeRequest $reqDelete
+    $reqDelete = "delete from plateforme where id = " + $idPlateforme
+    MakeRequest $reqDelete
 
-        # on recharge les infos
-        $script:plateformes = MakeRequest "SELECT * FROM plateforme"
-        FillComboBox $script:ComboBoxPlateformes $script:plateformes "nom"
-    }
+    # on recharge les infos
+    $script:plateformes = MakeRequest "SELECT * FROM plateforme"
+    FillComboBox $script:ComboBoxPlateformes $script:plateformes "nom"
 }
 
 Function MakeMenuPlateformes {
