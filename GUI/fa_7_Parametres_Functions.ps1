@@ -80,12 +80,42 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
 }
 
 Function ModifyAd {
-    # on créé le répertoire s'il n'existe pas
-    New-Item -ItemType Directory -Force -Path '..\config\'
-    # on enregistre les 3 champs dans un fichier
-    "url=" + $script:textBoxAdURL.Text > '..\config\ad.properties'
-    "user=" + $script:textBoxAdUser.Text >> '..\config\ad.properties'
-    "pass=" + $script:textBoxAdMDP.Text >> '..\config\ad.properties'
+
+    $paramIP = MakeRequest "select id from parametres where nom = 'ad_administratif_ip';"
+    
+    if($paramIP.id -ne $null) {
+        # le paramètre existe déjà, on le met à jour
+        $updateIp = "update parametres set param = '" + $script:textBoxAdURL.Text + "' where nom = 'ad_administratif_ip';"
+        MakeRequest $updateIp
+    } else {
+        # le paramètre n'existe pas, on l'insère
+        $insertIP = "insert into parametres(nom,param) values('ad_administratif_ip','" + $script:textBoxAdURL.Text + "');"
+        MakeRequest $insertIP
+    }
+
+    $paramUser = MakeRequest "select id from parametres where nom = 'ad_administratif_user';"
+    
+    if($paramUser.id -ne $null) {
+        # le paramètre existe déjà, on le met à jour
+        $updateUser = "update parametres set param = '"+ $script:textBoxAdUser.Text + "' where nom = 'ad_administratif_user';"
+        MakeRequest $updateUser
+    } else {
+        # le paramètre n'existe pas, on l'insère
+        $insertUser = "insert into parametres(nom,param) values('ad_administratif_user','" + $script:textBoxAdUser.Text + "');"
+        MakeRequest $insertUser
+    }
+
+    $paramPassword = MakeRequest "select id from parametres where nom = 'ad_administratif_password';"
+    
+    if($paramPassword.id -ne $null) {
+        # le paramètre existe déjà, on le met à jour
+        $updatePasswd = "update parametres set param = '" + $script:textBoxAdMDP.Text + "' where nom = 'ad_administratif_password';" 
+        MakeRequest $updatePasswd
+    } else {
+        # le paramètre n'existe pas, on l'insère
+        $insertPasswd = "insert into parametres(nom,param) values('ad_administratif_password','" + $script:textBoxAdMDP.Text + "');"
+        MakeRequest $insertPasswd
+    }
 }
 
 Function MakeMenuAd {
@@ -138,14 +168,19 @@ Function MakeMenuAd {
     $script:listBoxAffichage.Controls.Add($labelAdMDP)
     $script:listBoxAffichage.Controls.Add($script:textBoxAdMDP)
 
-    # si le fichier existe, on charge les données
-    if(Test-Path '..\config\ad.properties') {
-        $adprop = ConvertFrom-StringData (Get-Content '..\config\ad.properties' -raw)
-        $script:textBoxAdURL.Text = $adprop.'url'
-        $script:textBoxAdUser.Text = $adprop.'user'
-        $script:textBoxAdMDP.Text = $adprop.'pass'
+    $requestIPAdAdministratif = "select * from parametres where nom = 'ad_administratif_ip';"
+    $IPAdAdministratif = makeRequest $requestIPAdAdministratif
+
+    $requestUserAdAdministratif = "select * from parametres where nom = 'ad_administratif_user';"
+    $UserAdAdministratif = makeRequest $requestUserAdAdministratif
+
+    $requestPasswordAdAdministratif = "select * from parametres where nom = 'ad_administratif_password';"
+    $PasswordAdAdministratif = makeRequest $requestPasswordAdAdministratif
+
+    $script:textBoxAdURL.Text = $IPAdAdministratif.param
+    $script:textBoxAdUser.Text = $UserAdAdministratif.param
+    $script:textBoxAdMDP.Text = $PasswordAdAdministratif.param
     }
-}
 
 Function FillPlateforme {
     $plateforme = RetreiveRow $script:plateformes "id" $script:ComboBoxPlateformes.SelectedItem.id
