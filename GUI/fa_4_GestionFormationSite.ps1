@@ -29,6 +29,3 @@ $listBoxplateformes.Add_ItemCheck({ModifyFormationPlateformes})
 MakeForm
 
 CloseDB
-
-
-
