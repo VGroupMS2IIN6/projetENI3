@@ -1,6 +1,8 @@
 ﻿Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+. "../ps/droits.ps1"
+
 # Creation des composants dont on aura besoin plus tard
 $listForm = New-Object System.Windows.Forms.Form
 $listForm.Text = "Accueil"
@@ -68,13 +70,10 @@ Function MakeForm {
     $toolTipButtonHistorique = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonHistorique.SetToolTip($ButtonHistorique, "Consulter l'historique de création de comptes")
 
-    #TODO : gérer l'interrogation des droits
-#select count(distinct u.id) from utilisateur u
-#join ass_profil_utilisateur pu on pu.utilisateur = u.id
-#join profil p on p.id = pu.profil
-#join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
-#join droits_utilisateur du on du.ID = pdu.droit where u.login = 'sartu' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'gestion des formations' or du.nom = 'gestion des sites');
-    if($true) {
+    $nomUtilisateur = 'sartu'
+    $nomDroit = 'gestion des sites et formations'
+    $resultFormSite = checkDroitParametrage
+        if ($resultFormSite -ne 0) {
         $ButtonGestionFormation = New-Object System.Windows.Forms.Button
         $ButtonGestionFormation.Location = New-Object System.Drawing.Point($position,30)
         $ButtonGestionFormation.Size = New-Object System.Drawing.Size($largeur,60)
@@ -90,7 +89,9 @@ Function MakeForm {
 #join profil p on p.id = pu.profil
 #join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
 #join droits_utilisateur du on du.ID = pdu.droit where u.login = 'admin' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'paramétrage administration');
-    if($true) {
+    $nomDroit = 'paramétrage administration'
+    $resultFormSite = checkDroitParametrage
+    if($resultFormSite -ne 0) {
         $ButtonParametres = New-Object System.Windows.Forms.Button
         $ButtonParametres.Location = New-Object System.Drawing.Point($position,30)
         $ButtonParametres.Size = New-Object System.Drawing.Size($largeur,60)

@@ -33,7 +33,15 @@ $clickModifyProfilAdded = $false
 $buttonSupprimerProfil = New-Object System.Windows.Forms.Button
 $clickDeleteProfilAdded = $false
 
+$buttonAjouterUtilisateur = New-Object System.Windows.Forms.Button
+$clickAddUtilisateurAdded = $false
+$buttonEnregistrerUtilisateur = New-Object System.Windows.Forms.Button
+$clickModifyUtilisateurAdded = $false
+$buttonSupprimerUtilisateur = New-Object System.Windows.Forms.Button
+$clickDeleteUtilisateurAdded = $false
+
 $ComboBoxUtilisateur = New-Object System.Windows.Forms.ComboBox
+$textBoxUtilisateur = New-Object System.Windows.Forms.TextBox
 
 function RetreiveRow($rows, $field, $filter) {
     # on parcourt les lignes une part une, pour trouver celle qui correspond
@@ -565,6 +573,10 @@ Function ModifyProfil {
         $script:buttonSupprimerProfil.Visible = $true
         $script:buttonEnregistrerProfil.Visible = $false
 
+        
+        # on rétablit le texte du bouton ajouter
+        $script:buttonAjouterProfil.Text = "Ajouter"
+
         # on recharge les infos
         $script:profils = MakeRequest "SELECT * FROM profil"
         FillComboBox $script:ComboBoxProfil $script:profils "nom"
@@ -721,16 +733,139 @@ Function MakeMenuAssProfils {
     #afficher tous les comptes pour un profil sélectionné + checkbox pour sélectionner les users (en fonction du nombre de users dans la base
     $script:ComboBoxUtilisateur.Location = New-Object System.Drawing.Point(10,10)
     $script:ComboBoxUtilisateur.Size = New-Object System.Drawing.Size(200,20)
+    $script:ComboBoxUtilisateur.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $script:ComboBoxUtilisateur.add_SelectedIndexChanged({FillProfilUtilisateur})
     FillComboBox $script:ComboBoxUtilisateur $utilisateurs "login"
+
+    $script:textBoxUtilisateur.Location = New-Object System.Drawing.Point(10,10)
+    $script:textBoxUtilisateur.Size = New-Object System.Drawing.Size(200,20)
+    $script:textBoxUtilisateur.Visible = $false
+
+    $script:buttonAjouterUtilisateur.Location = New-Object System.Drawing.Point(220,10)
+    $script:buttonAjouterUtilisateur.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonAjouterUtilisateur.Text = "Ajouter"
+    if(-not $script:clickAddUtilisateurAdded) {
+        $script:clickAddUtilisateurAdded = $true
+        $script:buttonAjouterUtilisateur.Add_Click({AddUtilisateur})
+    }
+    $toolTipAjouter = New-Object System.Windows.Forms.ToolTip
+    $toolTipAjouter.SetToolTip($script:buttonAjouterUtilisateur, "Pour ajouter un utilisateur, cliquer sur Ajouter, renseigner le login, puis cliquer sur Enregistrer")
+
+    $script:buttonEnregistrerUtilisateur.Location = New-Object System.Drawing.Point(295,10)
+    $script:buttonEnregistrerUtilisateur.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonEnregistrerUtilisateur.Text = "Enregistrer"
+    $script:buttonEnregistrerUtilisateur.Visible = $false
+    if(-not $script:clickModifyUtilisateurAdded) {
+        $script:clickModifyUtilisateurAdded = $true
+        $script:buttonEnregistrerUtilisateur.Add_Click({ModifyUtilisateur})
+    }
+
+    $script:buttonSupprimerUtilisateur.Location = New-Object System.Drawing.Point(295,10)
+    $script:buttonSupprimerUtilisateur.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonSupprimerUtilisateur.Text = "Supprimer"
+    $script:buttonSupprimerUtilisateur.Visible = $true
+    if(-not $script:clickDeleteUtilisateurAdded) {
+        $script:clickDeleteUtilisateurAdded = $true
+        $script:buttonSupprimerUtilisateur.Add_Click({DeleteUtilisateur})
+    }
 
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxUtilisateur)
     $script:ListBoxAffichage.Controls.Add($script:listBoxProfils)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxUtilisateur)
+    $script:ListBoxAffichage.Controls.Add($labelCreation)
+    $script:ListBoxAffichage.Controls.Add($script:buttonAjouterUtilisateur)
+    $script:ListBoxAffichage.Controls.Add($script:buttonEnregistrerUtilisateur)
+    $script:ListBoxAffichage.Controls.Add($script:buttonSupprimerUtilisateur)
 
     # alimentation des champs pour le profil selectionne
     FillProfilUtilisateur
     FillProfilUtilisateur
+}
+
+Function AddUtilisateur {
+    if($script:buttonAjouterUtilisateur.Text -eq "Ajouter") {
+        # on passe en ajout, on modifie le texte du bouton ajouter pour permettre l'annulation
+        $script:buttonAjouterUtilisateur.Text = "Annuler"
+
+        # on cache la combo-box et on affiche le champ à vide
+        $script:textBoxUtilisateur.Text = ""
+        $script:ComboBoxUtilisateur.Visible = $false
+        $script:textBoxUtilisateur.Visible = $true
+        
+        # on cache le button supprimer et on affiche le button Enregistrer
+        $script:buttonSupprimerUtilisateur.Visible = $false
+        $script:buttonEnregistrerUtilisateur.Visible = $true
+    } else {
+        # on annule l'ajout, on rétablit le texte du bouton ajouter
+        $script:buttonAjouterUtilisateur.Text = "Ajouter"
+
+        # on affiche la combo-box, on vide le champ profil et on le cache
+        $script:textBoxUtilisateur.Text = ""
+        $script:ComboBoxUtilisateur.Visible = $true
+        $script:textBoxUtilisateur.Visible = $false
+
+        # on cache le bouton enregistrer et on affiche le bouton supprimer
+        $script:buttonSupprimerUtilisateur.Visible = $true
+        $script:buttonEnregistrerUtilisateur.Visible = $false
+        
+        # on recharge les infos
+        $script:utilisateurs = MakeRequest "SELECT * FROM utilisateur"
+        FillComboBox $script:ComboBoxUtilisateur $script:utilisateurs "login"
+    }
+}
+
+Function DeleteUtilisateur {
+    # on supprime d'abord les droits plateformes
+    $reqDeleteProfilUtilisateur = "delete from ass_profil_utilisateur where utilisateur="
+    $reqDeleteProfilUtilisateur += $script:ComboBoxUtilisateur.SelectedItem.id
+    MakeRequest $reqDeleteProfilUtilisateur
+        
+    # puis le profil en lui-même
+    $reqDeleteUtilisateur = "delete from utilisateur where id="
+    $reqDeleteUtilisateur += $script:ComboBoxUtilisateur.SelectedItem.id
+    MakeRequest $reqDeleteUtilisateur
+
+    # on recharge les infos
+    $script:utilisateurs = MakeRequest "SELECT * FROM utilisateur"
+    FillComboBox $script:ComboBoxUtilisateur $script:utilisateurs "login"
+}
+
+Function ModifyUtilisateur {
+    if($script:textBoxUtilisateur.Text -ne "") {
+        # on crée le nouveau profil
+        $reqInsertUtilisateur = "insert into utilisateur(login) values('" + $script:textBoxUtilisateur.Text + "')"
+        MakeRequest $reqInsertUtilisateur
+        $reqSelect = "select last_insert_id() as id"
+        # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
+        # c'est donc valide même dans le cas de plusieurs clients en parallèle
+        $idNewUtilisateur = MakeRequest $reqSelect
+        
+        # on crée les droits plateformes avec accord à 0
+        $reqInsertProfilUtilisateur = "insert into ass_profil_utilisateur(profil,utilisateur,accord)"
+        $reqInsertProfilUtilisateur += " select profil.ID, " + $idNewUtilisateur.id + ", 0 from profil"
+        MakeRequest $reqInsertProfilUtilisateur
+
+        # on affiche la combo-box, on vide le champ profil et on le cache
+        $script:textBoxUtilisateur.Text = ""
+        $script:ComboBoxUtilisateur.Visible = $true
+        $script:textBoxUtilisateur.Visible = $false
+
+        # on cache le bouton Enregistrer et on affiche le bouton supprimer
+        $script:buttonSupprimerUtilisateur.Visible = $true
+        $script:buttonEnregistrerUtilisateur.Visible = $false
+
+        
+        # on rétablit le texte du bouton ajouter
+        $script:buttonAjouterUtilisateur.Text = "Ajouter"
+
+        # on recharge les infos
+        $script:utilisateurs = MakeRequest "SELECT * FROM utilisateur"
+        FillComboBox $script:ComboBoxUtilisateur $script:utilisateurs "login"
+
+        # on sélectionne le dernier élément de la combo, c'est en principe le dernier ajouté
+        $script:ComboBoxUtilisateur.SelectedIndex = $script:ComboBoxUtilisateur.Items.Count - 1
+    }
 }
 
 Function MakeForm {

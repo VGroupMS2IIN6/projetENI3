@@ -1,31 +1,25 @@
-select count(distinct u.id) from utilisateur u
-join ass_profil_utilisateur pu on pu.utilisateur = u.id
-join profil pr on pr.id = pu.profil
-join ass_profil_droit_plateforme pdp on pdp.profil = pu.profil
-join ass_droit_plateforme dp on dp.droit = pdp.droit_plateforme
-join plateforme pl on pl.ID = dp.plateforme
-join droit d on dp.droit = d.ID where d.nom = 'Création de comptes' and pl.nom = 'cisco' and pdp.accord = 1 and u.login = 'sartu';
+Function CheckDroitPlateforme {
+    $request = "select count(distinct pdp.accord) accord"
+    $request += " from utilisateur u"
+    $request += " join ass_profil_utilisateur pu on pu.utilisateur = u.id"
+    $request += " join profil pr on pr.id = pu.profil"
+    $request += " join ass_profil_droit_plateforme pdp on pdp.profil = pu.profil"
+    $request += " join ass_droit_plateforme dp on dp.droit = pdp.droit_plateforme"
+    $request += " join plateforme pl on pl.ID = dp.plateforme"
+    $request += " join droit d on dp.droit = d.ID"
+    $request += " where d.nom = '$nomDroit' and pl.nom = '$nomPlateforme' and u.login = '$nomUtilisateur';"
+    $result = makeRequest $request
+    return $result.accord
+}
 
-select count(distinct u.id) from utilisateur u
-join ass_profil_utilisateur pu on pu.utilisateur = u.id
-join profil p on p.id = pu.profil
-join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
-join droits_utilisateur du on du.ID = pdu.droit where u.login = 'admin' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'paramétrage administration');
-
-select count(distinct u.id) from utilisateur u
-join ass_profil_utilisateur pu on pu.utilisateur = u.id
-join profil p on p.id = pu.profil
-join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
-join droits_utilisateur du on du.ID = pdu.droit where u.login = 'sartu' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'gestion des formations' or du.nom = 'gestion des sites');
-
-select count(distinct u.id) from utilisateur u
-join ass_profil_utilisateur pu on pu.utilisateur = u.id
-join profil p on p.id = pu.profil
-join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
-join droits_utilisateur du on du.ID = pdu.droit where u.login = 'sartu' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'gestion des formations' or du.nom = 'gestion des sites');
-
-select count(distinct u.id) from utilisateur u
-join ass_profil_utilisateur pu on pu.utilisateur = u.id
-join profil p on p.id = pu.profil
-join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
-join droits_utilisateur du on du.ID = pdu.droit where u.login = 'sartu' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'gestion des formations' or du.nom = 'gestion des sites');
+Function CheckDroitParametrage {
+    $request = "select count(distinct pdu.accord) accord"
+    $request += " from utilisateur u"
+    $request += " join ass_profil_utilisateur pu on pu.utilisateur = u.id"
+    $request += " join profil p on p.id = pu.profil"
+    $request += " join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil"
+    $request += " join droits_utilisateur du on du.ID = pdu.droit"
+    $request += " where u.login = '$nomUtilisateur' and pu.accord = 1 and pdu.accord = 1 and du.nom = '$nomDroit';"
+    $result = makeRequest $request
+    return $result.accord
+}
