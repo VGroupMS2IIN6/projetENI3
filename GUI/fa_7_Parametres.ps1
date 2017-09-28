@@ -13,8 +13,6 @@ $utilisateurs = MakeRequest "SELECT * FROM utilisateur"
 #$droitPlateformes = MakeRequest "select ass_droit_plateforme.ID, droit.nom droit, plateforme.nom plateforme from droit, plateforme, ass_droit_plateforme where ass_droit_plateforme.droit = droit.ID and ass_droit_plateforme.plateforme = plateforme.ID and ass_droit_plateforme.droit ORDER by droit.ID, plateforme.ID;"
 
 # Creation des composants dont on aura besoin plus tard
-
-
 $listBoxDroitPlateforme = New-Object System.Windows.Forms.checkedListBox
 $listBoxDroitPlateforme.Location = New-Object System.Drawing.Point(10,80)
 $listBoxDroitPlateforme.Size = New-Object System.Drawing.Size(280,410)

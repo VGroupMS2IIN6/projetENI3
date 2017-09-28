@@ -20,12 +20,18 @@ $ComboBoxProfil = New-Object System.Windows.Forms.ComboBox
 $textBoxProfil = New-Object System.Windows.Forms.TextBox
 
 $buttonAjouterPlateforme = New-Object System.Windows.Forms.Button
+$clickAddPlateformeAdded = $false
 $buttonEnregistrerPlateforme = New-Object System.Windows.Forms.Button
+$clickModifyPlateformeAdded = $false
 $buttonSupprimerPlateforme = New-Object System.Windows.Forms.Button
+$clickDeletePlateformeAdded = $false
 
 $buttonAjouterProfil = New-Object System.Windows.Forms.Button
+$clickAddProfilAdded = $false
 $buttonEnregistrerProfil = New-Object System.Windows.Forms.Button
+$clickModifyProfilAdded = $false
 $buttonSupprimerProfil = New-Object System.Windows.Forms.Button
+$clickDeleteProfilAdded = $false
 
 $ComboBoxUtilisateur = New-Object System.Windows.Forms.ComboBox
 
@@ -158,7 +164,7 @@ Function AddPlateforme {
         $script:checkBoxObligatoire.Checked = $true
 
         # on cache le bouton supprimer
-        $script:buttonSupprimerPlateforme = $false
+        $script:buttonSupprimerPlateforme.Visible = $false
 
          # on cache la combo-box et on affiche le champ
         $script:ComboBoxPlateformes.Visible = $false
@@ -173,7 +179,7 @@ Function AddPlateforme {
         $script:ComboBoxPlateformes.Visible = $true
 
         # on affiche le bouton supprimer
-        $script:buttonSupprimerPlateforme = $true
+        $script:buttonSupprimerPlateforme.Visible = $true
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
@@ -233,7 +239,7 @@ Function ModifyPlateforme {
             $script:ComboBoxPlateformes.Visible = $true
 
             # on affiche le bouton supprimer
-            $script:buttonSupprimerPlateforme = $true
+            $script:buttonSupprimerPlateforme.Visible = $true
 
             # on rétablit le texte du bouton ajouter
             $script:buttonAjouterPlateforme.Text = "Ajouter"
@@ -349,20 +355,29 @@ Function MakeMenuPlateformes {
     $script:buttonAjouterPlateforme.Location = New-Object System.Drawing.Point(220,10)
     $script:buttonAjouterPlateforme.Size = New-Object System.Drawing.Size(70,22)
     $script:buttonAjouterPlateforme.Text = "Ajouter"
-    $script:buttonAjouterPlateforme.Add_Click({AddPlateforme})
+    if(-not $script:clickAddPlateformeAdded) {
+        $script:clickAddPlateformeAdded = $true
+        $script:buttonAjouterPlateforme.Add_Click({AddPlateforme})
+    }
     $toolTipAjouter = New-Object System.Windows.Forms.ToolTip
     $toolTipAjouter.SetToolTip($script:buttonAjouterPlateforme, "Pour ajouter une plateforme, cliquer sur Ajouter, renseigner les différents champs puis cliquer sur Enregistrer")
 
     $script:buttonEnregistrerPlateforme.Location = New-Object System.Drawing.Point(295,10)
     $script:buttonEnregistrerPlateforme.Size = New-Object System.Drawing.Size(70,22)
     $script:buttonEnregistrerPlateforme.Text = "Enregistrer"
-    $script:buttonEnregistrerPlateforme.Add_Click({ModifyPlateforme})
+    if(-not $script:clickModifyPlateformeAdded) {
+        $script:clickModifyPlateformeAdded = $true
+        $script:buttonEnregistrerPlateforme.Add_Click({ModifyPlateforme})
+    }
 
     $script:buttonSupprimerPlateforme.Location = New-Object System.Drawing.Point(370,10)
     $script:buttonSupprimerPlateforme.Size = New-Object System.Drawing.Size(70,22)
     $script:buttonSupprimerPlateforme.Text = "Supprimer"
     $script:buttonSupprimerPlateforme.Visible = $true
-    $script:buttonSupprimerPlateforme.Add_Click({DeletePlateforme})
+    if(-not $script:clickDeletePlateformeAdded) {
+        $script:clickDeletePlateformeAdded = $true
+        $script:buttonSupprimerPlateforme.Add_Click({DeletePlateforme})
+    }
 
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
@@ -595,19 +610,30 @@ Function MakeMenuDefProfils {
     $script:buttonAjouterProfil.Location = New-Object System.Drawing.Point(220,10)
     $script:buttonAjouterProfil.Size = New-Object System.Drawing.Size(70,22)
     $script:buttonAjouterProfil.Text = "Ajouter"
-    $script:buttonAjouterProfil.Add_Click({AddProfil})
+    if(-not $script:clickAddProfilAdded) {
+        $script:clickAddProfilAdded = $true
+        $script:buttonAjouterProfil.Add_Click({AddProfil})
+    }
+    $toolTipAjouter = New-Object System.Windows.Forms.ToolTip
+    $toolTipAjouter.SetToolTip($script:buttonAjouterProfil, "Pour ajouter un profil, cliquer sur Ajouter, renseigner le nom, puis cliquer sur Enregistrer")
 
     $script:buttonEnregistrerProfil.Location = New-Object System.Drawing.Point(295,10)
     $script:buttonEnregistrerProfil.Size = New-Object System.Drawing.Size(70,22)
     $script:buttonEnregistrerProfil.Text = "Enregistrer"
     $script:buttonEnregistrerProfil.Visible = $false
-    $script:buttonEnregistrerProfil.Add_Click({ModifyProfil})
+    if(-not $script:clickModifyProfilAdded) {
+        $script:clickModifyProfilAdded = $true
+        $script:buttonEnregistrerProfil.Add_Click({ModifyProfil})
+    }
 
     $script:buttonSupprimerProfil.Location = New-Object System.Drawing.Point(295,10)
     $script:buttonSupprimerProfil.Size = New-Object System.Drawing.Size(70,22)
     $script:buttonSupprimerProfil.Text = "Supprimer"
     $script:buttonSupprimerProfil.Visible = $true
-    $script:buttonSupprimerProfil.Add_Click({DeleteProfil})
+    if(-not $script:clickDeleteProfilAdded) {
+        $script:clickDeleteProfilAdded = $true
+        $script:buttonSupprimerProfil.Add_Click({DeleteProfil})
+    }
 
     $labelcreation = New-Object System.Windows.Forms.Label
     $labelcreation.Location = New-Object System.Drawing.Point(10,50)
