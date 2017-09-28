@@ -8,12 +8,14 @@ $textBoxAdUser = New-Object System.Windows.Forms.TextBox
 $textBoxAdMDP = New-Object System.Windows.Forms.TextBox
     
 $ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
+$textBoxNom = New-Object System.Windows.Forms.TextBox
 $textBoxURL = New-Object System.Windows.Forms.TextBox
 $textBoxMail = New-Object System.Windows.Forms.TextBox
 $textBoxUser = New-Object System.Windows.Forms.TextBox
 $textBoxMdp = New-Object System.Windows.Forms.TextBox
 $textBoxRegexMdp = New-Object System.Windows.Forms.TextBox
 $checkBoxObligatoire = New-Object System.Windows.Forms.CheckBox
+$buttonAjouter = New-Object System.Windows.Forms.Button
 
 $ComboBoxProfil = New-Object System.Windows.Forms.ComboBox
 
@@ -134,49 +136,30 @@ Function FillPlateforme {
 }
 
 Function AddPlateforme {
-    # on vérifie qu'on essaie pas d'insérer une entrée déjà existante
-    if($script:ComboBoxPlateformes.SelectedIndex -eq -1 -and -not [string]::IsNullOrEmpty($script:ComboBoxPlateformes.Text)) {
-        $reqInsert = "insert into plateforme(nom, "
-        $reqValues = " values('" + $script:ComboBoxPlateformes.Text + "',"
-        if(-not [string]::IsNullOrEmpty($script:textBoxURL.Text)) {
-            $reqInsert += "URL,"
-            $reqValues += "'" + $script:textBoxURL.Text + "',"
-        }
-        if(-not [string]::IsNullOrEmpty($script:textBoxMail.Text)) {
-            $reqInsert += "mail,"
-            $reqValues += "'" + $script:textBoxMail.Text + "',"
-        }
-        if(-not [string]::IsNullOrEmpty($script:textBoxUser.Text)) {
-            $reqInsert += "identifiant,"
-            $reqValues += "'" + $script:textBoxUser.Text + "',"
-        }
-         if(-not [string]::IsNullOrEmpty($script:textBoxMDP.Text)) {
-            $reqInsert += "MDP,"
-            $reqValues += "'" + $script:textBoxMDP.Text + "',"
-        }
-        if(-not [string]::IsNullOrEmpty($script:textBoxRegexMdp.Text)) {
-            $reqInsert += "regexMDP,"
-            $reqValues += "'" + $script:textBoxRegexMdp.Text + "',"
-        }
-        $reqValues += "" + $script:checkBoxObligatoire.Checked + ")"
+    if($script:buttonAjouter.Text -eq "Ajouter") {
+        # on passe en ajout, on modifie le texte du bouton ajouter pour permettre l'annulation
+        $script:buttonAjouter.Text = "Annuler"
+        
+        # on efface tous les champs
+        $script:textBoxNom.Text = ""
+        $script:textBoxURL.Text = ""
+        $script:textBoxMail.Text = ""
+        $script:textBoxUser.Text = ""
+        $script:textBoxMDP.Text = ""
+        $script:textBoxRegexMdp.Text = ""
+        $script:checkBoxObligatoire.Checked = $true
 
-        $reqInsert += "obligatoire)" + $reqValues
-        MakeRequest $reqInsert
-
-        # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
-        # c'est donc valide même dans le cas de plusieurs clients en parallèle
-        $idNewPlateforme = MakeRequest "select last_insert_id() as id"
-
-        # on ajoute les droits pour les plateformes
-        $reqInsertDroitsPlateformes = "INSERT INTO ass_droit_plateforme (droit, plateforme)"
-        $reqInsertDroitsPlateformes += " select droit.ID, " + $idNewPlateforme.id + " from droit"
-        MakeRequest $reqInsertDroitsPlateformes
-
-        # on ajoute les droits pour les plateformes
-        $reqInsertProfilDroitsPlateformes = "INSERT INTO ass_profil_droit_plateforme(profil, droit_plateforme, accord)"
-        $reqInsertProfilDroitsPlateformes += " select profil.ID, ass_droit_plateforme.ID, 0 from profil, ass_droit_plateforme"
-        $reqInsertProfilDroitsPlateformes += " where ass_droit_plateforme.plateforme = " + $idNewPlateforme.id
-        MakeRequest $reqInsertProfilDroitsPlateformes
+        # on cache la combo-box et on affiche le champ
+        $script:ComboBoxPlateformes.Visible = $false
+        $script:textBoxNom.Visible = $true
+    } else {
+        # on annule l'ajout, on rétablit le texte du bouton ajouter
+        $script:buttonAjouter.Text = "Ajouter"
+        
+        # on vide le champ nom et on le cache, on affiche la combo-box
+        $script:textBoxNom.Text = ""
+        $script:textBoxNom.Visible = $false
+        $script:ComboBoxPlateformes.Visible = $true
 
         # on recharge les infos
         $script:plateformes = MakeRequest "SELECT * FROM plateforme"
@@ -185,8 +168,64 @@ Function AddPlateforme {
 }
 
 Function ModifyPlateforme {
-    # on vérifie qu'on essaie pas de modifier une nouvelle entrée pas encore insérée
-    if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
+    # on regarde si on est en ajout ou en modification
+    if($script:textBoxNom.Visible) {
+           # on est en ajout, on vérifie que le champ nom est renseigné
+           if($script.textBoxNom.Text -ne "") {
+           $reqInsert = "insert into plateforme(nom, "
+            $reqValues = " values('" + $script:textBoxNom.Text + "',"
+            if(-not [string]::IsNullOrEmpty($script:textBoxURL.Text)) {
+                $reqInsert += "URL,"
+                $reqValues += "'" + $script:textBoxURL.Text + "',"
+            }
+            if(-not [string]::IsNullOrEmpty($script:textBoxMail.Text)) {
+                $reqInsert += "mail,"
+                $reqValues += "'" + $script:textBoxMail.Text + "',"
+            }
+            if(-not [string]::IsNullOrEmpty($script:textBoxUser.Text)) {
+                $reqInsert += "identifiant,"
+                $reqValues += "'" + $script:textBoxUser.Text + "',"
+            }
+             if(-not [string]::IsNullOrEmpty($script:textBoxMDP.Text)) {
+                $reqInsert += "MDP,"
+                $reqValues += "'" + $script:textBoxMDP.Text + "',"
+            }
+            if(-not [string]::IsNullOrEmpty($script:textBoxRegexMdp.Text)) {
+                $reqInsert += "regexMDP,"
+                $reqValues += "'" + $script:textBoxRegexMdp.Text + "',"
+            }
+            $reqValues += "" + $script:checkBoxObligatoire.Checked + ")"
+
+            $reqInsert += "obligatoire)" + $reqValues
+            MakeRequest $reqInsert
+
+            # last_insert_id() permet de récupérer le dernier auto_increment de la connexion courante
+            # c'est donc valide même dans le cas de plusieurs clients en parallèle
+            $idNewPlateforme = MakeRequest "select last_insert_id() as id"
+
+            # on ajoute les droits pour les plateformes
+            $reqInsertDroitsPlateformes = "INSERT INTO ass_droit_plateforme (droit, plateforme)"
+            $reqInsertDroitsPlateformes += " select droit.ID, " + $idNewPlateforme.id + " from droit"
+            MakeRequest $reqInsertDroitsPlateformes
+
+            # on ajoute les droits pour les plateformes
+            $reqInsertProfilDroitsPlateformes = "INSERT INTO ass_profil_droit_plateforme(profil, droit_plateforme, accord)"
+            $reqInsertProfilDroitsPlateformes += " select profil.ID, ass_droit_plateforme.ID, 0 from profil, ass_droit_plateforme"
+            $reqInsertProfilDroitsPlateformes += " where ass_droit_plateforme.plateforme = " + $idNewPlateforme.id
+            MakeRequest $reqInsertProfilDroitsPlateformes
+
+            # on cache le champ nom et on affiche la combo-box
+            $script:textBoxNom.Visible = $false
+            $script:ComboBoxPlateformes.Visible = $true
+
+            # on recharge les infos
+            $script:plateformes = MakeRequest "SELECT * FROM plateforme"
+            FillComboBox $script:ComboBoxPlateformes $script:plateformes "nom"
+
+            #TODO : sélectionner la plateforme juste insérée
+        }
+    } else {
+        # on est en modification
         $reqUpdate = "update plateforme set"
         $reqUpdate += " URL='" + $script:textBoxURL.Text + "',"
         $reqUpdate += " mail='" + $script:textBoxMail.Text + "',"
@@ -196,9 +235,6 @@ Function ModifyPlateforme {
         $reqUpdate += " obligatoire=" + $script:checkBoxObligatoire.Checked
         $reqUpdate += " where id=" + $script:ComboBoxPlateformes.SelectedItem.id
         MakeRequest $reqUpdate
-
-        # on recharge les infos
-        $script:plateformes = MakeRequest "SELECT * FROM plateforme"
     }
 }
 
@@ -226,6 +262,18 @@ Function DeletePlateforme([System.Windows.Forms.ComboBox] $script:ComboBoxPlatef
 }
 
 Function MakeMenuPlateformes {
+    $script:ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
+    $script:ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
+    $script:ComboBoxPlateformes.add_SelectedIndexChanged({FillPlateforme})
+    $script:ComboBoxPlateformes.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+    $script:ComboBoxPlateformes.Visible = $true
+    FillComboBox $script:ComboBoxPlateformes $script:plateformes "nom"
+
+    # le champ nom est caché par défaut, c'est la combo-box qui est visible
+    $script:textBoxNom.Location = New-Object System.Drawing.Point(10,10)
+    $script:textBoxNom.Size = New-Object System.Drawing.Size(200,20)
+    $script:textBoxNom.Visible = $false
+
     $labelURL = New-Object System.Windows.Forms.Label
     $labelURL.Location = New-Object System.Drawing.Point(10,50)
     $labelURL.Size = New-Object System.Drawing.Size(200,20)
@@ -280,18 +328,12 @@ Function MakeMenuPlateformes {
     $script:checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
     $script:checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
     
-    $script:ComboBoxPlateformes.Location = New-Object System.Drawing.Point(10,10)
-    $script:ComboBoxPlateformes.Size = New-Object System.Drawing.Size(200,20)
-    $script:ComboBoxPlateformes.add_SelectedIndexChanged({FillPlateforme})
-    $toolTipComboBoxPlateformes = New-Object System.Windows.Forms.ToolTip
-    $toolTipComboBoxPlateformes.SetToolTip($script:ComboBoxPlateformes, "Pour créer une nouvelle plateforme, saisir un nouveau nom ici, renseigner les informations et cliquer sur Ajouter")
-    FillComboBox $script:ComboBoxPlateformes $script:plateformes "nom"
-
-    $buttonAjouter = New-Object System.Windows.Forms.Button
-    $buttonAjouter.Location = New-Object System.Drawing.Point(220,10)
-    $buttonAjouter.Size = New-Object System.Drawing.Size(70,22)
-    $buttonAjouter.Text = "Ajouter"
-    $buttonAjouter.Add_Click({AddPlateforme})
+    $script:buttonAjouter.Location = New-Object System.Drawing.Point(220,10)
+    $script:buttonAjouter.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonAjouter.Text = "Ajouter"
+    $script:buttonAjouter.Add_Click({AddPlateforme})
+    $toolTipAjouter = New-Object System.Windows.Forms.ToolTip
+    $toolTipAjouter.SetToolTip($script:buttonAjouter, "Pour ajouter une plateforme, cliquer sur Ajouter, renseigner les différents champs puis cliquer sur Enregistrer")
 
     $buttonEnregistrer = New-Object System.Windows.Forms.Button
     $buttonEnregistrer.Location = New-Object System.Drawing.Point(295,10)
@@ -307,9 +349,7 @@ Function MakeMenuPlateformes {
 
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
-    $script:ListBoxAffichage.Controls.Add($buttonAjouter)
-    $script:ListBoxAffichage.Controls.Add($buttonEnregistrer)
-    $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxNom)
     $script:ListBoxAffichage.Controls.Add($labelURL)
     $script:ListBoxAffichage.Controls.Add($script:textBoxURL)
     $script:ListBoxAffichage.Controls.Add($labelMail)
@@ -322,7 +362,10 @@ Function MakeMenuPlateformes {
     $script:ListBoxAffichage.Controls.Add($script:textBoxRegexMdp)
     $script:ListBoxAffichage.Controls.Add($labelObligatoire)
     $script:ListBoxAffichage.Controls.Add($script:checkBoxObligatoire)
-
+    $script:ListBoxAffichage.Controls.Add($buttonAjouter)
+    $script:ListBoxAffichage.Controls.Add($buttonEnregistrer)
+    $script:ListBoxAffichage.Controls.Add($buttonSupprimer)
+    
     # alimentation des champs pour la plateforme selectionnee
     FillPlateforme
 }
