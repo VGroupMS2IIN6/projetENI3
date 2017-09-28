@@ -565,6 +565,10 @@ Function ModifyProfil {
         $script:buttonSupprimerProfil.Visible = $true
         $script:buttonEnregistrerProfil.Visible = $false
 
+        
+        # on rétablit le texte du bouton ajouter
+        $script:buttonAjouterProfil.Text = "Ajouter"
+
         # on recharge les infos
         $script:profils = MakeRequest "SELECT * FROM profil"
         FillComboBox $script:ComboBoxProfil $script:profils "nom"
