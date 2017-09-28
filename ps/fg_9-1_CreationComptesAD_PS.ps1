@@ -1,4 +1,14 @@
 ﻿# fg_9.1_CreationComptesAD_PS
+Param(
+[string]$StagPrenom,
+[string]$StagNom,
+[string]$StagFormation,
+[string]$StagDateRentree,
+[string]$StagDatefinContrat,
+[string]$StagDateNaissance,
+[int]$StagIDCRM
+)
+
 
 Function SQLRequest ($reqStr)
 {
@@ -9,6 +19,7 @@ Function SQLRequest ($reqStr)
 	$script:rowCount = $dataAdapter.Fill($dataSet,"test")
 	$script:result = $dataSet.Tables["test"]
 }
+
 
 
 # Chargement du pilote .NET pour MySQL 
@@ -41,13 +52,17 @@ $mysql.Close()
 Import-Module ActiveDirectory
 
 #Init variables
+<#
 $StagPrenom = "Olivier"
 $StagNom = "Jacob-gerghgrthrthrthr"
 $StagFormation = "T2SI"
-$StagIDCrm = "001"
 $StagDateRentree = "2017-09-20 17:51:51"
-$StagPassTemp = "Pa$$w0rd"
+$StagPassTemp = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" 
 $StagDatefinContrat = "2019-09-20 17:51:51"
+#>
+
+# Génération du mot de passe temporaire
+$StagPassTemp = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $StagPrenom $StagNom $StagDateNaissance
 
 # Génération SAMAcount NAme
 $StagSAMAN = $($StagPrenom.Substring(0,1).ToLower() + $StagNom.ToLower())
@@ -62,4 +77,4 @@ $SecStagPassTemp = $StagPassTemp | ConvertTo-SecureString -AsPlainText -Force
 
 echo $StagSAMAN
 
-New-ADUser -Name $($StagPrenom + $StagNom) -surname $StagNom -GivenName $StagPrenom -SamAccountName $StagSAMAN -Server "campus-eni.ovh" -AccountPassword $SecStagPassTemp -Credential $creds
+New-ADUser -Name $($StagPrenom + $StagNom) -surname $StagNom -GivenName $StagPrenom -SamAccountName $StagSAMAN -Server "campus-eni.ovh" -AccountPassword $SecStagPassTemp -Credential $creds -whatif

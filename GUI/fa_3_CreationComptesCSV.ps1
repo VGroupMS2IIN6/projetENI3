@@ -11,15 +11,8 @@ $password = "vgrouproxx" # mot de passe
 $db = "projet_eni" # nom de la base de donnÃ©e
 $global:OpenFileDialog = ""
 
-# fonctions
-function MakeRequest($request) {
-    $command = New-Object Mysql.Data.MysqlClient.MySqlCommand($request,$mysql)  
-    $dataAdapter = New-Object MySql.Data.MySqlClient.MySqlDataAdapter($command)
-    $dataSet = New-Object System.Data.DataSet
-    $recordCount = $dataAdapter.Fill($dataSet, "data")
-    $result = $dataSet.Tables["data"]
-    return $result
-}
+# Chargement de la fonction de co à la DB
+. "../ps/fg_1-1_DBUtils.ps1"
 
 #Fabrication du tableau
 function CreatTableauSelectionStag (){
@@ -28,7 +21,7 @@ function CreatTableauSelectionStag (){
     $script:dataGridView.Size=New-Object System.Drawing.Size(920,450)
 
     #Create an unbound DataGridView by declaring a column count.
-    $script:dataGridView.ColumnCount = 2
+    $script:dataGridView.ColumnCount = 6
     $script:dataGridView.ColumnHeadersVisible = $true
     $script:dataGridView.Columns.Insert(0, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
     $script:dataGridView.Columns.Insert(3, (New-Object System.Windows.Forms.DataGridViewCheckBoxColumn))
@@ -46,11 +39,20 @@ function CreatTableauSelectionStag (){
     $script:dataGridView.Columns[5].Name = "NetAcad"
     $script:dataGridView.Columns[6].Name = "MEDIAplus"
     $script:dataGridView.Columns[7].Name = "7Speaking"
+    $script:dataGridView.Columns[8].Name = "ID_CRM"
+    $script:dataGridView.Columns[9].Name = "DateNaissance"
+    $script:dataGridView.Columns[10].Name = "debutde"
+    $script:dataGridView.Columns[11].Name = "dateFin"
+
+    $script:dataGridView.Columns[8].Visible = $false
+    $script:dataGridView.Columns[9].Visible = $false
+    $script:dataGridView.Columns[10].Visible = $false
+    $script:dataGridView.Columns[11].Visible = $false
 	
-    $rows += ,@()
+    $script:rows = @()
     foreach ($a in $global:CSVContent){
         #[System.Windows.Forms.MessageBox]::Show($a.Nom, "row")
-        $script:rows += ,@($null , $a.nom , $a.prenom ,$null , $null, $null ,$true ,$null)
+        $script:rows += ,@($false , $a.prenom , $a.nom ,$false , $false, $false ,$true ,$false, $a.codestagiaire, $a.DateNaissance, $a.debutde, $a.dateFin)
     }
 
     <#
@@ -68,13 +70,62 @@ function CreatTableauSelectionStag (){
         #[System.Windows.Forms.MessageBox]::Show($row[0] + $row[1] + $row[2], "row")
         $script:dataGridView.Rows.Add($row)
     }
-   
 }
 
 function ReadTableauSelectionStag (){
-    foreach ($a in $script:dataGridView){
-        $a.Rows[0].Cells[1].Value
-        echo "---"
+
+    $script:comptesAD = @()
+    [System.Windows.Forms.MessageBox]::Show("couou", "nom")
+    [System.Windows.Forms.MessageBox]::Show($script:dataGridView.Rows[1].Cells[3].Value.toString(), "site")
+
+
+    # Préparation des comptes à créer
+        foreach ($script:b in $script:dataGridView.Rows){
+        #$b.Cells[1].Value 
+        #[System.Windows.Forms.MessageBox]::Show($script:b.Cells[2].Value, "nom")
+        #[System.Windows.Forms.MessageBox]::Show($script:b.Cells[3].Value.tostring(), "AD true?")
+
+        # Active Directory
+        if ($script:b.Cells[3].Value.tostring() -like "True"){ 
+            #[System.Windows.Forms.MessageBox]::Show($script:b.Cells[2].Value, "nom")  
+            #[System.Windows.Forms.MessageBox]::Show($script:b.Cells[3].Value.tostring(), "true?")  
+            $script:comptesAD += ,($script:b.Cells[1].Value, $script:b.Cells[2].Value ,"FORMATION" ,  $script:b.Cells[8].Value ,  $script:b.Cells[10].Value , $script:b.Cells[11].Value , $script:b.Cells[9].Value)          
+        }
+
+        # Office 365
+        if ($b.Cells[4].Value -eq $true){
+            $script:comptesOffice365 += @($b.Cells[1].Value, $b.Cells[2].Value)
+        }
+
+        # NetAcad
+        if ($b.Cells[5].Value -eq $true){
+          
+        }
+
+        # MEDIAplus
+        if ($b.Cells[6].Value -eq $true){
+          
+        }
+
+        # 7Speaking
+        if ($b.Cells[7].Value -eq $true){
+          
+        }
+
+        <# Pour event lors case cochée
+        $listBoxProfils.CheckOnClick = $true
+        # ajouter l'enregistrement en base de chaque case cochée.
+        $listBoxProfils.Add_ItemCheck({ModifyProfilUtilisateur})
+        #> 
+
+    }  
+    
+
+    # Création des comptes
+    echo "foreach"
+    foreach ($script:c in $script:comptesAD){
+    #[System.Windows.Forms.MessageBox]::Show($script:c, "row")
+    #. "..\ps\fg_9-1_CreationComptesAD_PS.ps1 " $script:c
     }
 }
 
@@ -295,8 +346,7 @@ $ButtonSuivantCSV2.Location = '800,600'
 $ButtonSuivantCSV2.Size = '150,40'
 $ButtonSuivantCSV2.Text = 'Suivant'
 $ButtonSuivantCSV2.add_Click($ButtonSuivantCSV2_Click)
-$ButtonSuivantCSV2_Click = {
-    
+$ButtonSuivantCSV2_Click = {    
     $FenetreSelection.Visible = $False
     $global:Formation = $script:ComboBoxFormation.text
     $global:Site = $script:ComboBoxSite.text
@@ -354,13 +404,12 @@ $FormLabelI.Size = '400,40'
 $FormLabelI.Text = "Selection des stagiaires et des plateformes"
 
 
-
-
 $ButtonRetourCSV3 = New-Object System.Windows.Forms.Button
 $ButtonRetourCSV3.Location = '40,600'
 $ButtonRetourCSV3.Size = '150,40'
 $ButtonRetourCSV3.Text = 'Retour'
-$ButtonRetourCSV3.add_Click($ButtonRetourCSV3_Click)
+#$ButtonRetourCSV3.add_Click($ButtonRetourCSV3_Click)
+$ButtonRetourCSV3.add_Click({[System.Windows.Forms.MessageBox]::Show($script:dataGridView.Rows[2].Cells[0].Value.toString(), "row")})
 $ButtonRetourCSV3_Click = {
     $FenetreCreationtab.Visible = $False
 	$FenetreSelection.Visible = $True
@@ -372,10 +421,12 @@ $ButtonSuivantCSV3.Size = '150,40'
 $ButtonSuivantCSV3.Text = 'Suivant'
 $ButtonSuivantCSV3.add_Click($ButtonSuivantCSV3_Click)
 $ButtonSuivantCSV3_Click = {
-    echo  $dataGridView.Rows[2].Cells[0]
-    [System.Windows.Forms.MessageBox]::Show($dataGridView.Rows[2].Cells[0].Value.toString(), "row")
+    #[System.Windows.Forms.MessageBox]::Show($dataGridView.Rows[2].Cells[0].Value.toString(), "row")
     $FenetreCreationtab.Visible = $False
     $FenetreValidation.Visible = $True
+    $FenetreValidation.Refresh()
+    ReadTableauSelectionStag
+    
 }
 
 
