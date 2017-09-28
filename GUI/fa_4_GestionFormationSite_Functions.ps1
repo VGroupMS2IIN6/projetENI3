@@ -63,6 +63,7 @@ Function MakeMenuFormations {
     #afficher tous les comptes pour un profil sélectionné + checkbox pour sélectionner les users (en fonction du nombre de users dans la base
     $script:ComboBoxFormation.Location = New-Object System.Drawing.Point(10,10)
     $script:ComboBoxFormation.Size = New-Object System.Drawing.Size(200,20)
+    $script:ComboBoxFormation.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $script:ComboBoxFormation.add_SelectedIndexChanged({FillPlateforme})
     FillComboBox $script:ComboBoxFormation $formations "nom"
 
@@ -212,6 +213,7 @@ Function MakeMenuSites {
     #afficher tous les comptes pour un profil sélectionné + checkbox pour sélectionner les users (en fonction du nombre de users dans la base
     $script:ComboBoxSite.Location = New-Object System.Drawing.Point(10,10)
     $script:ComboBoxSite.Size = New-Object System.Drawing.Size(200,20)
+    $script:ComboBoxSite.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $script:ComboBoxSite.add_SelectedIndexChanged({FillFormation})
     FillComboBox $script:ComboBoxSite $sites "nom"
 
