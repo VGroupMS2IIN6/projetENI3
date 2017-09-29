@@ -48,7 +48,7 @@ Function MakeForm {
     $ButtonResetPWD.Location = New-Object System.Drawing.Point($position,30)
     $ButtonResetPWD.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
-    $ButtonResetPWD.Text = "Réinisialisation MDP"
+    $ButtonResetPWD.Text = "Réinitialisation MDP"
     $ButtonResetPWD.add_Click({MakeMenuResetPWD})
     $ButtonResetPWD_Click = {
 	    $FenetreAccueil.Visible = $false
@@ -62,7 +62,8 @@ Function MakeForm {
     $ButtonHistorique.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
     $ButtonHistorique.Text = 'Historique'
-    $ButtonHistorique.add_Click({MakeMenuHistorique})
+    #$ButtonHistorique.add_Click({MakeMenuHistorique})
+    $ButtonHistorique.add_Click({.\fa_6_historique.ps1})
     $ButtonHistorique_Click = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreHistorique.ShowDialog()
@@ -106,7 +107,7 @@ Function MakeForm {
     $ButtonAPropos.Location = '30,580'
     $ButtonAPropos.Size = '150,60'
     $ButtonAPropos.Text = "A propos"
-    $ButtonAPropos.add_Click({MakeMenuAPropos})
+    $ButtonAPropos.add_Click({})
     $ButtonAPropos_CLick = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreAPropos.ShowDialog()
