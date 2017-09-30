@@ -6,9 +6,6 @@ $parametres = @{
     "nom_domaine_ENI_Groupe" = "Nom domaine ENI Group";
     "login_domaine_ENI_Group" = "Login domaine ENI Group";
     "password_domaine_ENI_Group" = "Mot de passe domaine ENI Group";
-    "nom_domaine_stagiaire" = "Nom domaine stagiaire";
-    "login_domaine_stag" = "Login domaine stagiaire";
-    "password_domaine_stag" = "Mot de passe domaine stagiaire";
     "ad_administratif_ip" = "IP AD Administratif";
     "ad_administratif_user" = "Login AD Administratif";
     "ad_administratif_password" = "Mot de passe AD Administratif";
@@ -24,6 +21,7 @@ $dataGridParametres = New-Object System.Windows.Forms.DataGridView
 $ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
 $textBoxNom = New-Object System.Windows.Forms.TextBox
 $textBoxURL = New-Object System.Windows.Forms.TextBox
+$textBoxDomaine = New-Object System.Windows.Forms.TextBox
 $textBoxMail = New-Object System.Windows.Forms.TextBox
 $textBoxUser = New-Object System.Windows.Forms.TextBox
 $textBoxMdp = New-Object System.Windows.Forms.TextBox
@@ -160,6 +158,7 @@ Function MakeMenuParametres {
 Function FillPlateforme {
     if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
         $plateforme = RetreiveRow $script:plateformes "id" $script:ComboBoxPlateformes.SelectedItem.id
+        $script:textBoxDomaine.Text = $plateforme.domaine
         $script:textBoxURL.Text = $plateforme.URL
         $script:textBoxMail.Text = $plateforme.mail
         $script:textBoxUser.Text = $plateforme.identifiant
@@ -176,6 +175,7 @@ Function AddPlateforme {
         
         # on efface tous les champs
         $script:textBoxNom.Text = ""
+        $script:textBoxDomaine.Text = ""
         $script:textBoxURL.Text = ""
         $script:textBoxMail.Text = ""
         $script:textBoxUser.Text = ""
@@ -214,6 +214,10 @@ Function ModifyPlateforme {
            if($script.textBoxNom.Text -ne "") {
            $reqInsert = "insert into plateforme(nom, "
             $reqValues = " values('" + $script:textBoxNom.Text + "',"
+            if(-not [string]::IsNullOrEmpty($script:textBoxDomaine.Text)) {
+                $reqInsert += "domaine,"
+                $reqValues += "'" + $script:textBoxDomaine.Text + "',"
+            }
             if(-not [string]::IsNullOrEmpty($script:textBoxURL.Text)) {
                 $reqInsert += "URL,"
                 $reqValues += "'" + $script:textBoxURL.Text + "',"
@@ -274,6 +278,7 @@ Function ModifyPlateforme {
     } else {
         # on est en modification
         $reqUpdate = "update plateforme set"
+        $reqUpdate += " URL='" + $script:textBoxDomaine.Text + "',"
         $reqUpdate += " URL='" + $script:textBoxURL.Text + "',"
         $reqUpdate += " mail='" + $script:textBoxMail.Text + "',"
         $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
@@ -318,58 +323,67 @@ Function MakeMenuPlateformes {
     $script:textBoxNom.Size = New-Object System.Drawing.Size(200,20)
     $script:textBoxNom.Visible = $false
 
+    $labelDomaine = New-Object System.Windows.Forms.Label
+    $labelDomaine.Location = New-Object System.Drawing.Point(10,50)
+    $labelDomaine.Size = New-Object System.Drawing.Size(200,20)
+    $labelDomaine.Text = "Domaine"
+    $labelDomaine.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+
+    $script:textBoxDomaine.Location = New-Object System.Drawing.Point(220,50)
+    $script:textBoxDomaine.Size = New-Object System.Drawing.Size(200,22)
+
     $labelURL = New-Object System.Windows.Forms.Label
-    $labelURL.Location = New-Object System.Drawing.Point(10,50)
+    $labelURL.Location = New-Object System.Drawing.Point(10,90)
     $labelURL.Size = New-Object System.Drawing.Size(200,20)
     $labelURL.Text = "Adresse IP ou nom du serveur"
     $labelURL.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxURL.Location = New-Object System.Drawing.Point(220,50)
+    $script:textBoxURL.Location = New-Object System.Drawing.Point(220,90)
     $script:textBoxURL.Size = New-Object System.Drawing.Size(200,22)
 
     $labelMail = New-Object System.Windows.Forms.Label
-    $labelMail.Location = New-Object System.Drawing.Point(10,90)
+    $labelMail.Location = New-Object System.Drawing.Point(10,130)
     $labelMail.Size = New-Object System.Drawing.Size(200,20)
     $labelMail.Text = "Adresse mail destinataire"
     $labelMail.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxMail.Location = New-Object System.Drawing.Point(220,90)
+    $script:textBoxMail.Location = New-Object System.Drawing.Point(220,130)
     $script:textBoxMail.Size = New-Object System.Drawing.Size(200,22)
     
     $labelUser = New-Object System.Windows.Forms.Label
-    $labelUser.Location = New-Object System.Drawing.Point(10,130)
+    $labelUser.Location = New-Object System.Drawing.Point(10,170)
     $labelUser.Size = New-Object System.Drawing.Size(200,20)
     $labelUser.Text = "Nom d'utilisateur"
     $labelUser.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxUser.Location = New-Object System.Drawing.Point(220,130)
+    $script:textBoxUser.Location = New-Object System.Drawing.Point(220,170)
     $script:textBoxUser.Size = New-Object System.Drawing.Size(200,22)
 
     $labelMdp = New-Object System.Windows.Forms.Label
-    $labelMdp.Location = New-Object System.Drawing.Point(10,170)
+    $labelMdp.Location = New-Object System.Drawing.Point(10,210)
     $labelMdp.Size = New-Object System.Drawing.Size(200,20)
     $labelMdp.Text = "Mot de passe"
     $labelMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxMdp.Location = New-Object System.Drawing.Point(220,170)
+    $script:textBoxMdp.Location = New-Object System.Drawing.Point(220,210)
     $script:textBoxMdp.Size = New-Object System.Drawing.Size(200,22)
 
     $labelRegexMdp = New-Object System.Windows.Forms.Label
-    $labelRegexMdp.Location = New-Object System.Drawing.Point(10,210)
+    $labelRegexMdp.Location = New-Object System.Drawing.Point(10,250)
     $labelRegexMdp.Size = New-Object System.Drawing.Size(200,20)
     $labelRegexMdp.Text = "Regex de génération du mot de passe"
     $labelRegexMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxRegexMdp.Location = New-Object System.Drawing.Point(220,210)
+    $script:textBoxRegexMdp.Location = New-Object System.Drawing.Point(220,250)
     $script:textBoxRegexMdp.Size = New-Object System.Drawing.Size(200,22)
     
     $labelObligatoire = New-Object System.Windows.Forms.Label
-    $labelObligatoire.Location = New-Object System.Drawing.Point(10,250)
+    $labelObligatoire.Location = New-Object System.Drawing.Point(10,290)
     $labelObligatoire.Size = New-Object System.Drawing.Size(200,20)
     $labelObligatoire.Text = "Compte obligatoire"
     $labelObligatoire.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,250)
+    $script:checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,290)
     $script:checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
     
     $script:buttonAjouterPlateforme.Location = New-Object System.Drawing.Point(220,10)
@@ -402,6 +416,8 @@ Function MakeMenuPlateformes {
     $script:ListBoxAffichage.Controls.clear();
     $script:ListBoxAffichage.Controls.Add($script:ComboBoxPlateformes)
     $script:ListBoxAffichage.Controls.Add($script:textBoxNom)
+    $script:ListBoxAffichage.Controls.Add($labelDomaine)
+    $script:ListBoxAffichage.Controls.Add($script:textBoxDomaine)
     $script:ListBoxAffichage.Controls.Add($labelURL)
     $script:ListBoxAffichage.Controls.Add($script:textBoxURL)
     $script:ListBoxAffichage.Controls.Add($labelMail)
