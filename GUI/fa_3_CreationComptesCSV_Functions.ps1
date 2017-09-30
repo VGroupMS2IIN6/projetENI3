@@ -78,8 +78,13 @@ Function FillDataGrid {
         $reqSel += " and pf.formation = " + $script:comboBoxFormation.SelectedItem.id
         $plateformesDefaut = MakeRequest $reqSel
 
+        #conversion du CSV en unicode pour traitement et import
+        Get-Content $script:textBoxFichier.Text -encoding string | Out-File -FilePath ..\temp\import.csv -Encoding Unicode
+        # retrait des doublons
+        Import-Csv ..\temp\import.csv | Sort-Object CodeStagiaire -Unique | Sort-Object Nom | Export-Csv ..\temp\import_traite.csv -NoTypeInformation -encoding "unicode"
         # lecture du fichier csv
-        $fichier = Import-Csv $script:textBoxFichier.Text
+        $fichier = Import-Csv ..\temp\import_traite.csv
+        rm ..\temp\import.csv
         foreach($row in $fichier) {
             $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom)
         
@@ -91,6 +96,7 @@ Function FillDataGrid {
                 }
             }
         }
+        rm ..\temp\import_traite.csv
 
         # on ajoute un event click
         $dataGridView.Add_CurrentCellDirtyStateChanged({
