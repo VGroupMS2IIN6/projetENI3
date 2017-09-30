@@ -278,7 +278,7 @@ Function ModifyPlateforme {
     } else {
         # on est en modification
         $reqUpdate = "update plateforme set"
-        $reqUpdate += " URL='" + $script:textBoxDomaine.Text + "',"
+        $reqUpdate += " domaine='" + $script:textBoxDomaine.Text + "',"
         $reqUpdate += " URL='" + $script:textBoxURL.Text + "',"
         $reqUpdate += " mail='" + $script:textBoxMail.Text + "',"
         $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
