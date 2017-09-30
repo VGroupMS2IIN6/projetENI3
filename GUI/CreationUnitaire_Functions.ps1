@@ -2,29 +2,33 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $labelData = New-Object System.Windows.Forms.Label
-$labelDataNonValide = New-Object System.Windows.Forms.Label
 $labelFormation = New-Object System.Windows.Forms.Label
 $comboBoxFormation = New-Object System.Windows.Forms.ComboBox
+$indexChangedFormationAdded = $false
 $labelSite = New-Object System.Windows.Forms.Label
 $comboBoxSite = New-Object System.Windows.Forms.ComboBox
+$indexChangedSiteAdded = $false
 $buttonCreerCompte = New-Object System.Windows.Forms.Button
 
 $buttonValider = New-Object System.Windows.Forms.Button
 $TextBoxCodeStagiaire = New-Object System.Windows.Forms.TextBox
 $TextBoxNom = New-Object System.Windows.Forms.TextBox
 $TextBoxPrenom = New-Object System.Windows.Forms.TextBox
-$TextBoxDateNaissance = New-Object System.Windows.Forms.TextBox
-$TextBoxdebutde = New-Object System.Windows.Forms.TextBox
-$TextBoxdateFin = New-Object System.Windows.Forms.TextBox
-$TextBoxEmailCampus = New-Object System.Windows.Forms.TextBox
+$datePickerNaissance = New-Object System.Windows.Forms.DateTimePicker
+$datePickerDebutContrat = New-Object System.Windows.Forms.DateTimePicker
+$datePickerFinContrat = New-Object System.Windows.Forms.DateTimePicker
 
 $LabelCodeStagiaire = New-Object System.Windows.Forms.Label
 $LabelNom = New-Object System.Windows.Forms.Label
 $LabelPrenom = New-Object System.Windows.Forms.Label
 $LabelDateNaissance = New-Object System.Windows.Forms.Label
-$Labeldebutde = New-Object System.Windows.Forms.Label
-$LabeldateFin = New-Object System.Windows.Forms.Label
-$LabelEmailCampus = New-Object System.Windows.Forms.Label
+$labelDebutContrat = New-Object System.Windows.Forms.Label
+$labelFinContrat = New-Object System.Windows.Forms.Label
+
+$labelCodeNonValide = New-Object System.Windows.Forms.Label
+$labelNomNonValide = New-Object System.Windows.Forms.Label
+$labelPrenomNonValide = New-Object System.Windows.Forms.Label
+$labelDateNonValide = New-Object System.Windows.Forms.Label
 
 $labelPlateformes = New-Object System.Windows.Forms.Label
 $listBoxplateformes = New-Object System.Windows.Forms.checkedListBox
@@ -55,71 +59,127 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
 }
 
 Function validerData {
-    if ($TextBoxCodeStagiaire.TextLength -eq 0 -or $TextBoxNom.TextLength -eq 0 -or $script:TextBoxCodeStagiaire.TextLength -eq 0 -or $script:TextBoxNom.TextLength -eq 0 -or $script:TextBoxPrenom.TextLength -eq 0 -or $script:TextBoxDateNaissance.TextLength -eq 0 -or $script:TextBoxdebutde.TextLength -eq 0 -or $script:TextBoxdateFin.TextLength -eq 0 -or $script:TextBoxEmailCampus.TextLength -eq 0)
-    {
-        $erreur = 1
-        $labelDataNonValide.visible = $true
+    $erreur = 0
+    $largeur = $script:labelCodeNonValide.Location.X
+    $hauteur = $script:labelCodeNonValide.Location.Y
+
+    # on cache les labels d'erreur
+    $script:labelCodeNonValide.visible = $false
+    $script:labelNomNonValide.visible = $false
+    $script:labelPrenomNonValide.visible = $false
+    $script:labelDateNonValide.visible = $false
+
+    # on cache les éléments qui seront affichés après
+    $script:labelSite.visible = $false
+    $script:comboboxSite.Visible = $false
+    $script:labelFormation.Visible = $false
+    $script:comboBoxFormation.Visible = $false
+    $script:labelPlateformes.Visible = $false
+    $script:listBoxplateformes.Visible = $false
+    $script:buttonCreerCompte.Visible = $false
+
+    if ($TextBoxCodeStagiaire.TextLength -eq 0) {
+        $script:labelCodeNonValide.Text = "Erreur : Le champ code est vide."
+        $script:labelCodeNonValide.visible = $true
+        $hauteur += 20
+        $erreur++
     }
-    else
-    {
-        $labelDataNonValide.visible = $false
+    if($TextBoxNom.TextLength -eq 0) {
+        $script:labelNomNonValide.Location = New-Object System.Drawing.Point($largeur,$hauteur)
+        $script:labelNomNonValide.Text = "Erreur : Un champ nom est vide."
+        $script:labelNomNonValide.visible = $true
+        $hauteur += 20
+        $erreur++
+    }
+    if($script:TextBoxPrenom.TextLength -eq 0) {
+        $script:labelPrenomNonValide.Location = New-Object System.Drawing.Point($largeur,$hauteur)
+        $script:labelPrenomNonValide.Text = "Erreur : Un champ prénom est vide."
+        $script:labelPrenomNonValide.visible = $true
+        $hauteur += 20
+        $erreur++
+    }
+    if($script:datePickerDebutContrat.Value -gt $script:datePickerFinContrat.Value) {
+        $script:labelDateNonValide.Location = New-Object System.Drawing.Point($largeur,$hauteur)
+        $script:labelDateNonValide.Text = "Erreur : la date de début de contrat est postérieure à la date de fin de contrat."
+        $script:labelDateNonValide.Visible = $true
+        $erreur++
+    }
+    
+    if($erreur -eq 0) {
+        # aucune erreur
         $script:labelSite.visible = $true
-        $script:comboboxSite.Visible = $true
         FillComboBox $script:comboBoxSite $script:sites "nom"
+        $script:comboboxSite.Visible = $true
         $script:comboBoxSite.SelectedIndex = -1
-        $script:comboBoxSite.add_SelectedIndexChanged({FillFormation})
+        if(-not $indexChangedSiteAdded) {
+            $indexChangedSiteAdded = $true
+            $script:comboBoxSite.add_SelectedIndexChanged({FillFormation})
+        }
     }
 }
 
 Function FillFormation {
-    # on récupère la liste des formations filtrées en fonction du site sélectionné
-    $reqSel = "select f.* from formation f"
-    $reqSel += " join ass_formation_site fs on fs.formation = f.id"
-    $reqSel += " where fs.existe = 1"
-    $reqSel += " and fs.site = " + $script:comboBoxSite.SelectedItem.id
-    $script:formations = MakeRequest $reqSel
+    if($script:comboBoxSite.Visible -and $script:comboBoxSite.SelectedIndex -ne -1) {
+        # on récupère la liste des formations filtrées en fonction du site sélectionné
+        $reqSel = "select f.* from formation f"
+        $reqSel += " join ass_formation_site fs on fs.formation = f.id"
+        $reqSel += " where fs.existe = 1"
+        $reqSel += " and fs.site = " + $script:comboBoxSite.SelectedItem.id
+        $script:formations = MakeRequest $reqSel
 
-    # on affiche la sélection du site
-    $script:labelFormation.Visible = $true
-    $script:comboBoxFormation.Visible = $true
-    FillComboBox $script:comboBoxFormation $script:formations "nom"
-    $script:comboBoxFormation.SelectedIndex = -1
-    $script:comboBoxFormation.add_SelectedIndexChanged({$script:buttonCreerCompte.visible = $true;$script:listBoxPlateformes.visible = $true; $labelPlateformes.visible = $true ;FillPlateforme;FillPlateforme;})
+        # on affiche la sélection du site
+        $script:labelFormation.Visible = $true
+        FillComboBox $script:comboBoxFormation $script:formations "nom"
+        $script:comboBoxFormation.Visible = $true
+        $script:comboBoxFormation.SelectedIndex = -1
+        if(-not $indexChangedFormationAdded) {
+            $indexChangedFormationAdded = $true
+            $script:comboBoxFormation.add_SelectedIndexChanged({
+                $script:buttonCreerCompte.visible = $true
+                $script:listBoxPlateformes.visible = $true
+                $script:labelPlateformes.visible = $true
+                FillPlateforme
+                FillPlateforme
+            })
+        }
+    }
 }
 
 Function FillPlateforme {
-    #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
+    if($script:ComboBoxFormation.Visible -and $script:ComboBoxFormation.SelectedIndex -ne -1) {
+        #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
 
-    # creation de la datatable
-    $table = New-Object system.Data.DataTable
+        # creation de la datatable
+        $table = New-Object system.Data.DataTable
 		
-    # definition des colonnes
-    $colId = New-Object system.Data.DataColumn "id",([string])
-    $colPlateforme = New-Object system.Data.DataColumn "nom",([string])
+        # definition des colonnes
+        $colId = New-Object system.Data.DataColumn "id",([string])
+        $colPlateforme = New-Object system.Data.DataColumn "nom",([string])
  
-    # table des colonnes à la datatable
-    $table.Columns.Add($colId)
-    $table.Columns.Add($colPlateforme)
+        # table des colonnes à la datatable
+        $table.Columns.Add($colId)
+        $table.Columns.Add($colPlateforme)
 
-    # alimentation de la datatable avec les plateformes
-    $reqSel = "select pf.id, p.nom, pf.defaut from ass_plateforme_formation pf"
-    $reqSel += " join plateforme p on p.id = pf.plateforme where pf.formation = " + $script:ComboBoxFormation.SelectedItem.id + " order by pf.formation ;"
+        # alimentation de la datatable avec les plateformes
+        $reqSel = "select pf.id, p.nom, pf.defaut from ass_plateforme_formation pf"
+        $reqSel += " join plateforme p on p.id = pf.plateforme where pf.formation = " + $script:ComboBoxFormation.SelectedItem.id + " order by pf.formation ;"
 
-    $listPlateformes = MakeRequest $reqSel
-    foreach($listPlateforme in $listPlateformes) {
-        $ligne = $table.NewRow()
-        $ligne.id = $listPlateforme.id
-        $ligne.nom = $listPlateforme.nom
-        $table.Rows.Add($ligne)
-    }
+        $listPlateformes = MakeRequest $reqSel
+        foreach($listPlateforme in $listPlateformes) {
+            $ligne = $table.NewRow()
+            $ligne.id = $listPlateforme.id
+            $ligne.nom = $listPlateforme.nom
+            $table.Rows.Add($ligne)
+        }
 
-    $script:listBoxPlateformes.DisplayMember = "nom"
-    $script:listBoxPlateformes.ValueMember = "id"
-    $script:listBoxPlateformes.DataSource = $table    
+        $script:listBoxPlateformes.DisplayMember = "nom"
+        $script:listBoxPlateformes.ValueMember = "id"
+        $script:listBoxPlateformes.DataSource = $table    
 
-    for($i=0;$i -lt $script:listBoxPlateformes.Items.Count; $i++) {
-        $dp = RetreiveRow $listPlateformes "id" $script:listBoxPlateformes.Items[$i].id
-        $script:listBoxPlateformes.SetItemChecked($i, $dp.defaut)
+        for($i=0;$i -lt $script:listBoxPlateformes.Items.Count; $i++) {
+            $dp = RetreiveRow $listPlateformes "id" $script:listBoxPlateformes.Items[$i].id
+            $script:listBoxPlateformes.SetItemChecked($i, $dp.defaut)
+        }
     }
 }
 
@@ -132,6 +192,7 @@ Function MakeForm {
     $placementHauteur = 20
     $placementLargeurLabel = 30
     $placementLargeurText = 140
+    $placementLargeurDate = $placementLargeurText + 100
 
     $labelData.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
     $labelData.Size = New-Object System.Drawing.Size(300,22)
@@ -142,7 +203,7 @@ Function MakeForm {
     
     $script:labelCodeStagiaire.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
     $script:labelCodeStagiaire.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelCodeStagiaire.text = "CodeStagiaire"
+    $script:labelCodeStagiaire.text = "Code stagiaire"
     $script:labelCodeStagiaire.Visible = $true
 
     $script:textBoxCodeStagiaire.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
@@ -164,7 +225,7 @@ Function MakeForm {
 
     $script:labelPrenom.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
     $script:labelPrenom.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelPrenom.text = "Prenom"
+    $script:labelPrenom.text = "Prénom"
     $script:labelPrenom.Visible = $true
 
     $script:textBoxPrenom.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
@@ -175,45 +236,37 @@ Function MakeForm {
 
     $script:labelDateNaissance.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
     $script:labelDateNaissance.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelDateNaissance.text = "DateNaissance"
+    $script:labelDateNaissance.text = "Date de naissance"
     $script:labelDateNaissance.Visible = $true
 
-    $script:textBoxDateNaissance.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxDateNaissance.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxDateNaissance.Visible = $true
+    $script:datePickerNaissance.Location = New-Object System.Drawing.Point($placementLargeurDate,$placementHauteur)
+    $script:datePickerNaissance.Size = New-Object System.Drawing.Size(100,20)
+    $script:datePickerNaissance.Visible = $true
+    $script:datePickerNaissance.Format = [System.Windows.Forms.DateTimePickerFormat]::Short
 
     $placementHauteur = $placementHauteur + 40
 
-    $script:labeldebutde.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $script:labeldebutde.Size = New-Object System.Drawing.Size(100,22)
-    $script:labeldebutde.text = "debutde"
-    $script:labeldebutde.Visible = $true
+    $script:labelDebutContrat.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $script:labelDebutContrat.Size = New-Object System.Drawing.Size(100,22)
+    $script:labelDebutContrat.text = "Début de contrat"
+    $script:labelDebutContrat.Visible = $true
 
-    $script:textBoxdebutde.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxdebutde.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxdebutde.Visible = $true
-
-    $placementHauteur = $placementHauteur + 40
-
-    $script:labeldateFin.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $script:labeldateFin.Size = New-Object System.Drawing.Size(100,22)
-    $script:labeldateFin.text = "dateFin"
-    $script:labeldateFin.Visible = $true
-
-    $script:textBoxdateFin.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxdateFin.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxdateFin.Visible = $true
+    $script:datePickerDebutContrat.Location = New-Object System.Drawing.Point($placementLargeurDate,$placementHauteur)
+    $script:datePickerDebutContrat.Size = New-Object System.Drawing.Size(100,20)
+    $script:datePickerDebutContrat.Visible = $true
+    $script:datePickerDebutContrat.Format = [System.Windows.Forms.DateTimePickerFormat]::Short
 
     $placementHauteur = $placementHauteur + 40
 
-    $script:labelEmailCampus.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $script:labelEmailCampus.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelEmailCampus.text = "EmailCampus"
-    $script:labelEmailCampus.Visible = $true
+    $script:labelFinContrat.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $script:labelFinContrat.Size = New-Object System.Drawing.Size(100,22)
+    $script:labelFinContrat.text = "Fin de contrat"
+    $script:labelFinContrat.Visible = $true
 
-    $script:textBoxEmailCampus.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxEmailCampus.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxEmailCampus.Visible = $true
+    $script:datePickerFinContrat.Location = New-Object System.Drawing.Point($placementLargeurDate,$placementHauteur)
+    $script:datePickerFinContrat.Size = New-Object System.Drawing.Size(100,20)
+    $script:datePickerFinContrat.Visible = $true
+    $script:datePickerFinContrat.Format = [System.Windows.Forms.DateTimePickerFormat]::Short
 
     $placementHauteur = $placementHauteur + 40
     $placementLargeurButton = $placementLargeurText + 130
@@ -226,10 +279,21 @@ Function MakeForm {
 
     $placementHauteur = $placementHauteur + 40
 
-    $labelDataNonValide.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $labelDataNonValide.Size = New-Object System.Drawing.Size(200,22)
-    $labelDataNonValide.Text = "Erreur : Un champ est vide."
-    $labelDataNonValide.Visible = $false
+    $script:labelCodeNonValide.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $script:labelCodeNonValide.Size = New-Object System.Drawing.Size(200,22)
+    $script:labelCodeNonValide.Visible = $false
+    
+    $script:labelNomNonValide.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $script:labelNomNonValide.Size = New-Object System.Drawing.Size(200,22)
+    $script:labelNomNonValide.Visible = $false
+    
+    $script:labelPrenomNonValide.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $script:labelPrenomNonValide.Size = New-Object System.Drawing.Size(200,22)
+    $script:labelPrenomNonValide.Visible = $false
+
+    $script:labelDateNonValide.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $script:labelDateNonValide.Size = New-Object System.Drawing.Size(300,40)
+    $script:labelDateNonValide.Visible = $false
 
     $labelSite.Location = New-Object System.Drawing.Point(500,20)
     $labelSite.Size = New-Object System.Drawing.Size(200,22)
@@ -278,19 +342,6 @@ Function MakeForm {
     # la touche entrée est mappée sur importer
     $listForm.AcceptButton = $script:buttonCreerCompte
 
-    # MonthCalendar
-#$monthCal = New-Object System.Windows.Forms.MonthCalendar
-#$monthCal.Location = "8,24"
-#$monthCal.MinDate = New-Object System.DateTime(2013, 1, 1)
-#$monthCal.MinDate = "01/01/2012"    # Minimum Date Dispalyed
-#$monthCal.MaxDate = "12/31/2013"    # Maximum Date Dispalyed
-#$monthCal.MaxSelectionCount = 1     # Max number of days that can be selected
-#$monthCal.ShowToday = $false        # Show the Today Banner at bottom
-#$monthCal.ShowTodayCircle = $true   # Circle Todays Date
-#$monthCal.FirstDayOfWeek = "Sunday" # Which Day of the Week in the First Column
-#$monthCal.ScrollChange = 1          # Move number of months at a time with arrows
-#$monthCal.ShowWeekNumbers = $false  # Show week numbers to the left of each week
-
     $listForm.Controls.Add($labelSite)
     $listForm.Controls.Add($script:comboBoxSite)
     $listForm.Controls.Add($labelFormation)
@@ -299,24 +350,25 @@ Function MakeForm {
     $listForm.Controls.Add($script:buttonCreerCompte)
 
     $listForm.Controls.Add($labelData)
-    $listForm.Controls.Add($labelDataNonValide)
     $listForm.Controls.Add($script:LabelCodeStagiaire)
     $listForm.Controls.Add($script:LabelNom)
     $listForm.Controls.Add($script:LabelPrenom)
     $listForm.Controls.Add($script:LabelDateNaissance)
-    $listForm.Controls.Add($script:Labeldebutde)
-    $listForm.Controls.Add($script:LabeldateFin)
-    $listForm.Controls.Add($script:LabelEmailCampus)
-
-
+    $listForm.Controls.Add($script:labelDebutContrat)
+    $listForm.Controls.Add($script:labelFinContrat)
+    
     $listForm.Controls.Add($script:TextBoxCodeStagiaire)
     $listForm.Controls.Add($script:TextBoxNom)
     $listForm.Controls.Add($script:TextBoxPrenom)
-    $listForm.Controls.Add($script:TextBoxDateNaissance)
-    $listForm.Controls.Add($script:TextBoxdebutde)
-    $listForm.Controls.Add($script:TextBoxdateFin)
-    $listForm.Controls.Add($script:TextBoxEmailCampus)
+    $listForm.Controls.Add($script:datePickerNaissance)
+    $listForm.Controls.Add($script:datePickerDebutContrat)
+    $listForm.Controls.Add($script:datePickerFinContrat)
 
+    $listForm.Controls.Add($labelCodeNonValide)
+    $listForm.Controls.Add($labelNomNonValide)
+    $listForm.Controls.Add($labelPrenomNonValide)
+    $listForm.Controls.Add($labelDateNonValide)
+    
     $listForm.Controls.Add($script:buttonValider)
     $listForm.Controls.Add($script:labelPlateformes)
     $listForm.Controls.Add($script:listBoxPlateformes)
