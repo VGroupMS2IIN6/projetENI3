@@ -172,13 +172,15 @@ Function MakeMenuAd {
     }
 
 Function FillPlateforme {
-    $plateforme = RetreiveRow $script:plateformes "id" $script:ComboBoxPlateformes.SelectedItem.id
-    $script:textBoxURL.Text = $plateforme.URL
-    $script:textBoxMail.Text = $plateforme.mail
-    $script:textBoxUser.Text = $plateforme.identifiant
-    $script:textBoxMdp.Text = $plateforme.MDP
-    $script:textBoxRegexMdp.Text = $plateforme.regexMDP
-    $script:checkBoxObligatoire.Checked = $plateforme.obligatoire
+    if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
+        $plateforme = RetreiveRow $script:plateformes "id" $script:ComboBoxPlateformes.SelectedItem.id
+        $script:textBoxURL.Text = $plateforme.URL
+        $script:textBoxMail.Text = $plateforme.mail
+        $script:textBoxUser.Text = $plateforme.identifiant
+        $script:textBoxMdp.Text = $plateforme.MDP
+        $script:textBoxRegexMdp.Text = $plateforme.regexMDP
+        $script:checkBoxObligatoire.Checked = $plateforme.obligatoire
+    }
 }
 
 Function AddPlateforme {
@@ -475,45 +477,47 @@ Function FillProfilFormSite {
 }
 
 Function FillProfilPlateforme {
-    #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
+    if($script:ComboBoxProfil.SelectedIndex -ne -1) {
+        #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
 
-    # creation de la datatable
-    $table = New-Object system.Data.DataTable
+        # creation de la datatable
+        $table = New-Object system.Data.DataTable
 		
-    # definition des colonnes
-    $colId = New-Object system.Data.DataColumn "id",([int])
-    $colDroit = New-Object system.Data.DataColumn "droit",([string])
+        # definition des colonnes
+        $colId = New-Object system.Data.DataColumn "id",([int])
+        $colDroit = New-Object system.Data.DataColumn "droit",([string])
  
-    # table des colonnes à la datatable
-    $table.Columns.Add($colId)
-    $table.Columns.Add($colDroit)
+        # table des colonnes à la datatable
+        $table.Columns.Add($colId)
+        $table.Columns.Add($colDroit)
 
-    # alimentation de la datatable avec les plateformes
-    $reqSel = "select pdp.ID, d.nom as nomdroit, pl.nom as nomplateforme, pdp.accord from ass_profil_droit_plateforme pdp join profil p on pdp.profil = p.ID"
-    $reqSel += " join ass_droit_plateforme dp on pdp.droit_plateforme = dp.ID join droit d on dp.droit = d.ID"
-    $reqSel += " join plateforme pl on dp.plateforme = pl.ID where p.ID = " + $script:ComboBoxProfil.SelectedItem.id + " order by d.nom, pl.nom;"
-    $DroitsPlateformes = MakeRequest $reqSel
-    foreach($DroitPlateforme in $DroitsPlateformes) {
-        $ligne = $table.NewRow()
-        $ligne.id = $DroitPlateforme.id
-        $ligne.droit = $DroitPlateforme.nomdroit + " " + $DroitPlateforme.nomplateforme
-        $table.Rows.Add($ligne)
+        # alimentation de la datatable avec les plateformes
+        $reqSel = "select pdp.ID, d.nom as nomdroit, pl.nom as nomplateforme, pdp.accord from ass_profil_droit_plateforme pdp join profil p on pdp.profil = p.ID"
+        $reqSel += " join ass_droit_plateforme dp on pdp.droit_plateforme = dp.ID join droit d on dp.droit = d.ID"
+        $reqSel += " join plateforme pl on dp.plateforme = pl.ID where p.ID = " + $script:ComboBoxProfil.SelectedItem.id + " order by d.nom, pl.nom;"
+        $DroitsPlateformes = MakeRequest $reqSel
+        foreach($DroitPlateforme in $DroitsPlateformes) {
+            $ligne = $table.NewRow()
+            $ligne.id = $DroitPlateforme.id
+            $ligne.droit = $DroitPlateforme.nomdroit + " " + $DroitPlateforme.nomplateforme
+            $table.Rows.Add($ligne)
+        }
+
+        $script:listBoxDroitPlateforme.DisplayMember = "droit"
+        $script:listBoxDroitPlateforme.ValueMember = "id"
+        $script:listBoxDroitPlateforme.DataSource = $table    
+
+        # on désactive la gestion de la sauvegarde quand on coche les cases
+        $script:saveEnabled = $false
+        # on coche les cases en fonction des données en base
+        for($i=0;$i -lt $script:listBoxDroitPlateforme.Items.Count; $i++) {
+            $dp = RetreiveRow $DroitsPlateformes "id" $script:listBoxDroitPlateforme.Items[$i].id
+            $script:listBoxDroitPlateforme.SetItemChecked($i, $dp.accord)
+        }
+        # on réactive la gestion de la sauvegarde quand on coche les cases
+        $script:saveEnabled = $true
+        FillProfilFormSite
     }
-
-    $script:listBoxDroitPlateforme.DisplayMember = "droit"
-    $script:listBoxDroitPlateforme.ValueMember = "id"
-    $script:listBoxDroitPlateforme.DataSource = $table    
-
-    # on désactive la gestion de la sauvegarde quand on coche les cases
-    $script:saveEnabled = $false
-    # on coche les cases en fonction des données en base
-    for($i=0;$i -lt $script:listBoxDroitPlateforme.Items.Count; $i++) {
-        $dp = RetreiveRow $DroitsPlateformes "id" $script:listBoxDroitPlateforme.Items[$i].id
-        $script:listBoxDroitPlateforme.SetItemChecked($i, $dp.accord)
-    }
-    # on réactive la gestion de la sauvegarde quand on coche les cases
-    $script:saveEnabled = $true
-    FillProfilFormSite
 }
 
 Function ModifyProfilDroitsPlateforme {
@@ -702,45 +706,47 @@ Function MakeMenuDefProfils {
 }
 
 Function FillProfilUtilisateur {
-    #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
+    if($script:ComboBoxUtilisateur.SelectedIndex -ne -1) {
+        #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
 
-    # creation de la datatable
-    $table = New-Object system.Data.DataTable
+        # creation de la datatable
+        $table = New-Object system.Data.DataTable
 		
-    # definition des colonnes
-    $colId = New-Object system.Data.DataColumn "id",([int])
-    $colProfil = New-Object system.Data.DataColumn "nom",([string])
+        # definition des colonnes
+        $colId = New-Object system.Data.DataColumn "id",([int])
+        $colProfil = New-Object system.Data.DataColumn "nom",([string])
  
-    # table des colonnes à la datatable
-    $table.Columns.Add($colId)
-    $table.Columns.Add($colProfil)
+        # table des colonnes à la datatable
+        $table.Columns.Add($colId)
+        $table.Columns.Add($colProfil)
 
-    # alimentation de la datatable avec les plateformes
-    $reqSel = "select pu.id, p.nom , pu.accord from ass_profil_utilisateur pu"
-    $reqSel += " join profil p on p.id = pu.profil where pu.utilisateur = " + $script:ComboBoxUtilisateur.SelectedItem.id + " order by pu.profil;"
+        # alimentation de la datatable avec les plateformes
+        $reqSel = "select pu.id, p.nom , pu.accord from ass_profil_utilisateur pu"
+        $reqSel += " join profil p on p.id = pu.profil where pu.utilisateur = " + $script:ComboBoxUtilisateur.SelectedItem.id + " order by pu.profil;"
 
-    $listProfils = MakeRequest $reqSel
-    foreach($listProfil in $listProfils) {
-        $ligne = $table.NewRow()
-        $ligne.id = $listProfil.id
-        $ligne.nom = $listProfil.nom
-        $table.Rows.Add($ligne)
+        $listProfils = MakeRequest $reqSel
+        foreach($listProfil in $listProfils) {
+            $ligne = $table.NewRow()
+            $ligne.id = $listProfil.id
+            $ligne.nom = $listProfil.nom
+            $table.Rows.Add($ligne)
+        }
+
+        $script:listBoxProfils.DisplayMember = "nom"
+        $script:listBoxProfils.ValueMember = "id"
+        $script:listBoxProfils.DataSource = $table    
+
+        # on désactive la gestion de la sauvegarde quand on coche les cases
+        $script:saveEnabled = $false
+        # on coche les cases en fonction des données en base
+        for($i=0;$i -lt $script:listBoxProfils.Items.Count; $i++) {
+            $dp = RetreiveRow $listProfils "id" $script:listBoxProfils.Items[$i].id
+            $script:listBoxProfils.SetItemChecked($i, $dp.accord)
+        }
+
+        # on réactive la gestion de la sauvegarde quand on coche les cases
+        $script:saveEnabled = $true
     }
-
-    $script:listBoxProfils.DisplayMember = "nom"
-    $script:listBoxProfils.ValueMember = "id"
-    $script:listBoxProfils.DataSource = $table    
-
-    # on désactive la gestion de la sauvegarde quand on coche les cases
-    $script:saveEnabled = $false
-    # on coche les cases en fonction des données en base
-    for($i=0;$i -lt $script:listBoxProfils.Items.Count; $i++) {
-        $dp = RetreiveRow $listProfils "id" $script:listBoxProfils.Items[$i].id
-        $script:listBoxProfils.SetItemChecked($i, $dp.accord)
-    }
-
-    # on réactive la gestion de la sauvegarde quand on coche les cases
-    $script:saveEnabled = $true
 }
 
 Function ModifyProfilUtilisateur {
