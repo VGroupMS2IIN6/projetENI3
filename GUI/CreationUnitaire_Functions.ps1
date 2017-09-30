@@ -65,7 +65,9 @@ Function SelectPlateformes {
     # on parcourt la liste des plateformes cochées
     foreach($item in $script:listBoxplateformes.CheckedItems) {
         #TODO : appeler le script en fonction du nom de la plateforme -> $item.nom
-        $item.nom
+        $plateforme = $item.nom -replace  ' ','_'
+        $scriptCreationPlateforme = "../ps/creation_" + $plateforme + ".ps1"
+        $scriptCreationPlateforme
     }
 }
 
