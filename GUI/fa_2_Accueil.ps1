@@ -6,6 +6,11 @@ Add-Type -AssemblyName System.Drawing
 
 OpenDB
 
+if ($ADusername -eq $NULL)
+{
+    exit
+}
+
 # Creation des composants dont on aura besoin plus tard
 $listForm = New-Object System.Windows.Forms.Form
 $listForm.Text = "Accueil"
@@ -35,7 +40,7 @@ Function MakeForm {
     $ButtonUnit.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
     $ButtonUnit.Text = "Creation Compte Unitaire"
-    $ButtonUnit.add_Click({.\fa_3_CreationComptesCSV.ps1})
+    $ButtonUnit.add_Click({.\CreationUnitaire.ps1})
 
     $toolTipButtonUnit = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonUnit.SetToolTip($ButtonUnit, "création d'un compte stagiaire")
@@ -62,7 +67,6 @@ Function MakeForm {
     $toolTipButtonHistorique = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonHistorique.SetToolTip($ButtonHistorique, "Consulter l'historique de création de comptes")
 
-    $nomUtilisateur = 'sartu'
     $nomDroit = 'gestion des sites et formations'
     $resultFormSite = checkDroitParametrage
         if ($resultFormSite -ne 0) {
@@ -76,14 +80,9 @@ Function MakeForm {
         $toolTipButtonGestionFormation.SetToolTip($ButtonGestionFormation, "Gérer les formations et les sites")
     }
 
-#select count(distinct u.id) from utilisateur u
-#join ass_profil_utilisateur pu on pu.utilisateur = u.id
-#join profil p on p.id = pu.profil
-#join ass_profil_droits_utilisateurs pdu on pdu.profil = pu.profil
-#join droits_utilisateur du on du.ID = pdu.droit where u.login = 'admin' and pu.accord = 1 and pdu.accord = 1 and (du.nom = 'paramétrage administration');
     $nomDroit = 'paramétrage administration'
-    $resultFormSite = checkDroitParametrage
-    if($resultFormSite -ne 0) {
+    $resultDroitParametres = checkDroitParametrage
+    if($resultDroitParametres -ne 0) {
         $ButtonParametres = New-Object System.Windows.Forms.Button
         $ButtonParametres.Location = New-Object System.Drawing.Point($position,30)
         $ButtonParametres.Size = New-Object System.Drawing.Size($largeur,60)

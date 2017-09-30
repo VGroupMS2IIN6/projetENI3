@@ -58,7 +58,7 @@ $ButtonOK.Text = "OK"
 $ButtonOK.DialogResult = [System.Windows.Forms.DialogResult]::OK
 
 # Affichage du logo ENI
-$LogoENI = $(get-item ((get-location).path + '\ENILogo.png'))
+$LogoENI = $(get-item ((get-location).path + '.\images\ENILogo.png'))
 $img = [System.Drawing.Image]::Fromfile($LogoENI);
 $pictureBox = new-object Windows.Forms.PictureBox
 $pictureBox.Location = New-Object System.Drawing.Point(0,262)

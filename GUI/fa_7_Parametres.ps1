@@ -4,6 +4,11 @@ Add-Type -AssemblyName System.Drawing
 . "../ps/fg_1-1_DBUtils.ps1"
 . "../GUI/fa_7_Parametres_Functions.ps1"
 
+if ($ADusername -eq $NULL)
+{
+    exit
+}
+
 OpenDB
 
 # recuperation de la liste des plateformes
