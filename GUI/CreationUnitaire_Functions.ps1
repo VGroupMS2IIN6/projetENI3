@@ -1,23 +1,22 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+$labelData = New-Object System.Windows.Forms.Label
+$labelDataNonValide = New-Object System.Windows.Forms.Label
 $labelFormation = New-Object System.Windows.Forms.Label
 $comboBoxFormation = New-Object System.Windows.Forms.ComboBox
 $labelSite = New-Object System.Windows.Forms.Label
 $comboBoxSite = New-Object System.Windows.Forms.ComboBox
-$buttonImporter = New-Object System.Windows.Forms.Button
+$buttonCreerCompte = New-Object System.Windows.Forms.Button
 
+$buttonValider = New-Object System.Windows.Forms.Button
 $TextBoxCodeStagiaire = New-Object System.Windows.Forms.TextBox
 $TextBoxNom = New-Object System.Windows.Forms.TextBox
 $TextBoxPrenom = New-Object System.Windows.Forms.TextBox
 $TextBoxDateNaissance = New-Object System.Windows.Forms.TextBox
 $TextBoxdebutde = New-Object System.Windows.Forms.TextBox
 $TextBoxdateFin = New-Object System.Windows.Forms.TextBox
-$TextBoxCodePlanning = New-Object System.Windows.Forms.TextBox
-$TextBoxCodeFormation = New-Object System.Windows.Forms.TextBox
-$TextBoxCodePromotion = New-Object System.Windows.Forms.TextBox
 $TextBoxEmailCampus = New-Object System.Windows.Forms.TextBox
-$TextBoxSAMAccountName = New-Object System.Windows.Forms.TextBox
 
 $LabelCodeStagiaire = New-Object System.Windows.Forms.Label
 $LabelNom = New-Object System.Windows.Forms.Label
@@ -25,11 +24,10 @@ $LabelPrenom = New-Object System.Windows.Forms.Label
 $LabelDateNaissance = New-Object System.Windows.Forms.Label
 $Labeldebutde = New-Object System.Windows.Forms.Label
 $LabeldateFin = New-Object System.Windows.Forms.Label
-$LabelCodePlanning = New-Object System.Windows.Forms.Label
-$LabelCodeFormation = New-Object System.Windows.Forms.Label
-$LabelCodePromotion = New-Object System.Windows.Forms.Label
 $LabelEmailCampus = New-Object System.Windows.Forms.Label
-$LabelSAMAccountName = New-Object System.Windows.Forms.Label
+
+$labelPlateformes = New-Object System.Windows.Forms.Label
+$listBoxplateformes = New-Object System.Windows.Forms.checkedListBox
 
 function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol) {
     # creation de la datatable
@@ -56,6 +54,23 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
     $comboBox.DataSource = $table
 }
 
+Function validerData {
+    if ($TextBoxCodeStagiaire.TextLength -eq 0 -or $TextBoxNom.TextLength -eq 0 -or $script:TextBoxCodeStagiaire.TextLength -eq 0 -or $script:TextBoxNom.TextLength -eq 0 -or $script:TextBoxPrenom.TextLength -eq 0 -or $script:TextBoxDateNaissance.TextLength -eq 0 -or $script:TextBoxdebutde.TextLength -eq 0 -or $script:TextBoxdateFin.TextLength -eq 0 -or $script:TextBoxEmailCampus.TextLength -eq 0)
+    {
+        $erreur = 1
+        $labelDataNonValide.visible = $true
+    }
+    else
+    {
+        $labelDataNonValide.visible = $false
+        $script:labelSite.visible = $true
+        $script:comboboxSite.Visible = $true
+        FillComboBox $script:comboBoxSite $script:sites "nom"
+        $script:comboBoxSite.SelectedIndex = -1
+        $script:comboBoxSite.add_SelectedIndexChanged({FillFormation})
+    }
+}
+
 Function FillFormation {
     # on récupère la liste des formations filtrées en fonction du site sélectionné
     $reqSel = "select f.* from formation f"
@@ -69,7 +84,43 @@ Function FillFormation {
     $script:comboBoxFormation.Visible = $true
     FillComboBox $script:comboBoxFormation $script:formations "nom"
     $script:comboBoxFormation.SelectedIndex = -1
-    $script:comboBoxFormation.add_SelectedIndexChanged({FillDataGrid})
+    $script:comboBoxFormation.add_SelectedIndexChanged({$script:buttonCreerCompte.visible = $true;$script:listBoxPlateformes.visible = $true; $labelPlateformes.visible = $true ;FillPlateforme;FillPlateforme;})
+}
+
+Function FillPlateforme {
+    #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
+
+    # creation de la datatable
+    $table = New-Object system.Data.DataTable
+		
+    # definition des colonnes
+    $colId = New-Object system.Data.DataColumn "id",([string])
+    $colPlateforme = New-Object system.Data.DataColumn "nom",([string])
+ 
+    # table des colonnes à la datatable
+    $table.Columns.Add($colId)
+    $table.Columns.Add($colPlateforme)
+
+    # alimentation de la datatable avec les plateformes
+    $reqSel = "select pf.id, p.nom, pf.defaut from ass_plateforme_formation pf"
+    $reqSel += " join plateforme p on p.id = pf.plateforme where pf.formation = " + $script:ComboBoxFormation.SelectedItem.id + " order by pf.formation ;"
+
+    $listPlateformes = MakeRequest $reqSel
+    foreach($listPlateforme in $listPlateformes) {
+        $ligne = $table.NewRow()
+        $ligne.id = $listPlateforme.id
+        $ligne.nom = $listPlateforme.nom
+        $table.Rows.Add($ligne)
+    }
+
+    $script:listBoxPlateformes.DisplayMember = "nom"
+    $script:listBoxPlateformes.ValueMember = "id"
+    $script:listBoxPlateformes.DataSource = $table    
+
+    for($i=0;$i -lt $script:listBoxPlateformes.Items.Count; $i++) {
+        $dp = RetreiveRow $listPlateformes "id" $script:listBoxPlateformes.Items[$i].id
+        $script:listBoxPlateformes.SetItemChecked($i, $dp.defaut)
+    }
 }
 
 Function MakeForm {
@@ -78,9 +129,16 @@ Function MakeForm {
     $listForm.Size = New-Object System.Drawing.Size(1000,700)
     $listForm.StartPosition = "CenterScreen"
 
-    $placementHauteur = 100
-    $placementLargeurLabel = 10
-    $placementLargeurText = 120
+    $placementHauteur = 20
+    $placementLargeurLabel = 30
+    $placementLargeurText = 140
+
+    $labelData.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $labelData.Size = New-Object System.Drawing.Size(300,22)
+    $labelData.Text = "1. Entrez les informations concernant le stagiaire"
+    $labelData.Visible = $true
+
+    $placementHauteur = $placementHauteur + 40
     
     $script:labelCodeStagiaire.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
     $script:labelCodeStagiaire.Size = New-Object System.Drawing.Size(100,22)
@@ -148,39 +206,6 @@ Function MakeForm {
 
     $placementHauteur = $placementHauteur + 40
 
-    $script:labelCodePlanning.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $script:labelCodePlanning.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelCodePlanning.text = "CodePlanning"
-    $script:labelCodePlanning.Visible = $true
-
-    $script:textBoxCodePlanning.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxCodePlanning.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxCodePlanning.Visible = $true
-
-    $placementHauteur = $placementHauteur + 40
-
-    $script:labelCodeFormation.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $script:labelCodeFormation.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelCodeFormation.text = "CodeFormation"
-    $script:labelCodeFormation.Visible = $true
-
-    $script:textBoxCodeFormation.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxCodeFormation.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxCodeFormation.Visible = $true
-
-    $placementHauteur = $placementHauteur + 40
-
-    $script:labelCodePromotion.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $script:labelCodePromotion.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelCodePromotion.text = "CodePromotion"
-    $script:labelCodePromotion.Visible = $true
-
-    $script:textBoxCodePromotion.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxCodePromotion.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxCodePromotion.Visible = $true
-
-    $placementHauteur = $placementHauteur + 40
-
     $script:labelEmailCampus.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
     $script:labelEmailCampus.Size = New-Object System.Drawing.Size(100,22)
     $script:labelEmailCampus.text = "EmailCampus"
@@ -191,25 +216,30 @@ Function MakeForm {
     $script:textBoxEmailCampus.Visible = $true
 
     $placementHauteur = $placementHauteur + 40
+    $placementLargeurButton = $placementLargeurText + 130
 
-    $script:labelSAMAccountName.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
-    $script:labelSAMAccountName.Size = New-Object System.Drawing.Size(100,22)
-    $script:labelSAMAccountName.text = "SAMAccountName"
-    $script:labelSAMAccountName.Visible = $true
+    $script:buttonValider.Location = New-Object System.Drawing.Point($placementLargeurButton,$placementHauteur)
+    $script:buttonValider.Size = New-Object System.Drawing.Size(70,22)
+    $script:buttonValider.Text = "Valider"
+    $script:buttonValider.Add_Click({validerData})
+    $script:buttonValider.Visible = $true
 
-    $script:textBoxSAMAccountName.Location = New-Object System.Drawing.Point($placementLargeurText,$placementHauteur)
-    $script:textBoxSAMAccountName.Size = New-Object System.Drawing.Size(200,20)
-    $script:textBoxSAMAccountName.Visible = $true
+    $placementHauteur = $placementHauteur + 40
+
+    $labelDataNonValide.Location = New-Object System.Drawing.Point($placementLargeurLabel,$placementHauteur)
+    $labelDataNonValide.Size = New-Object System.Drawing.Size(200,22)
+    $labelDataNonValide.Text = "Erreur : Un champ est vide."
+    $labelDataNonValide.Visible = $false
 
     $labelSite.Location = New-Object System.Drawing.Point(500,20)
     $labelSite.Size = New-Object System.Drawing.Size(200,22)
     $labelSite.Text = "2. Choisir le site"
-    $labelSite.Visible = $true
+    $labelSite.Visible = $false
 
     $script:comboBoxSite.Location = New-Object System.Drawing.Point(500,45)
     $script:comboBoxSite.Size = New-Object System.Drawing.Size(200,22)
     $script:comboBoxSite.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
-    $script:comboBoxSite.Visible = $true
+    $script:comboBoxSite.Visible = $false
 
     $labelFormation.Location = New-Object System.Drawing.Point(705,20)
     $labelFormation.Size = New-Object System.Drawing.Size(200,22)
@@ -221,6 +251,17 @@ Function MakeForm {
     $script:comboBoxFormation.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $script:comboBoxFormation.Visible = $false
 
+    $labelPlateformes.Location = New-Object System.Drawing.Point(500,100)
+    $labelPlateformes.Size = New-Object System.Drawing.Size(200,22)
+    $labelPlateformes.Text = "4. Sélectionner les comptes a créer"
+    $labelPlateformes.Visible = $false
+    
+    $script:listBoxplateformes.Location = New-Object System.Drawing.Point(500,125)
+    $script:listBoxplateformes.Size = New-Object System.Drawing.Size(180,210)
+    $script:listBoxplateformes.CheckOnClick = $true
+    #$script:listBoxplateformes.Add_ItemCheck({ModifyFormationPlateformes})
+    $script:listBoxplateformes.visible = $false
+
     $ButtonRetour = New-Object System.Windows.Forms.Button
     $ButtonRetour.Location = New-Object System.Drawing.Point(20,580)
     $ButtonRetour.Size = New-Object System.Drawing.Size(150,60)
@@ -229,31 +270,44 @@ Function MakeForm {
     # la touche echap est mappée sur retour
     $listForm.CancelButton = $ButtonRetour
 
-    $script:buttonImporter.Location = New-Object System.Drawing.Point(815,580)
-    $script:buttonImporter.Size = New-Object System.Drawing.Size(150,60)
-    $script:buttonImporter.Text = "Importer"
-    $script:buttonImporter.Add_Click({ImporterCSV; $listForm.Close()})
-    $script:buttonImporter.Visible = $false
+    $script:buttonCreerCompte.Location = New-Object System.Drawing.Point(815,580)
+    $script:buttonCreerCompte.Size = New-Object System.Drawing.Size(150,60)
+    $script:buttonCreerCompte.Text = "Créer le compte"
+    $script:buttonCreerCompte.Add_Click({SelectPlateformes; $listForm.Close()})
+    $script:buttonCreerCompte.Visible = $false
     # la touche entrée est mappée sur importer
-    $listForm.AcceptButton = $script:buttonImporter
+    $listForm.AcceptButton = $script:buttonCreerCompte
+
+    # MonthCalendar
+#$monthCal = New-Object System.Windows.Forms.MonthCalendar
+#$monthCal.Location = "8,24"
+#$monthCal.MinDate = New-Object System.DateTime(2013, 1, 1)
+#$monthCal.MinDate = "01/01/2012"    # Minimum Date Dispalyed
+#$monthCal.MaxDate = "12/31/2013"    # Maximum Date Dispalyed
+#$monthCal.MaxSelectionCount = 1     # Max number of days that can be selected
+#$monthCal.ShowToday = $false        # Show the Today Banner at bottom
+#$monthCal.ShowTodayCircle = $true   # Circle Todays Date
+#$monthCal.FirstDayOfWeek = "Sunday" # Which Day of the Week in the First Column
+#$monthCal.ScrollChange = 1          # Move number of months at a time with arrows
+#$monthCal.ShowWeekNumbers = $false  # Show week numbers to the left of each week
 
     $listForm.Controls.Add($labelSite)
     $listForm.Controls.Add($script:comboBoxSite)
     $listForm.Controls.Add($labelFormation)
     $listForm.Controls.Add($script:comboBoxFormation)
     $listForm.Controls.Add($ButtonRetour)
-    $listForm.Controls.Add($script:buttonImporter)
+    $listForm.Controls.Add($script:buttonCreerCompte)
+
+    $listForm.Controls.Add($labelData)
+    $listForm.Controls.Add($labelDataNonValide)
+    $listForm.Controls.Add($script:LabelCodeStagiaire)
     $listForm.Controls.Add($script:LabelNom)
     $listForm.Controls.Add($script:LabelPrenom)
     $listForm.Controls.Add($script:LabelDateNaissance)
     $listForm.Controls.Add($script:Labeldebutde)
     $listForm.Controls.Add($script:LabeldateFin)
-    $listForm.Controls.Add($script:LabelCodePlanning)
-    $listForm.Controls.Add($script:LabelCodeFormation)
-    $listForm.Controls.Add($script:LabelCodePromotion)
     $listForm.Controls.Add($script:LabelEmailCampus)
-    $listForm.Controls.Add($script:LabelSAMAccountName)
-    $listForm.Controls.Add($script:LabelCodeStagiaire)
+
 
     $listForm.Controls.Add($script:TextBoxCodeStagiaire)
     $listForm.Controls.Add($script:TextBoxNom)
@@ -261,12 +315,12 @@ Function MakeForm {
     $listForm.Controls.Add($script:TextBoxDateNaissance)
     $listForm.Controls.Add($script:TextBoxdebutde)
     $listForm.Controls.Add($script:TextBoxdateFin)
-    $listForm.Controls.Add($script:TextBoxCodePlanning)
-    $listForm.Controls.Add($script:TextBoxCodeFormation)
-    $listForm.Controls.Add($script:TextBoxCodePromotion)
     $listForm.Controls.Add($script:TextBoxEmailCampus)
-    $listForm.Controls.Add($script:TextBoxSAMAccountName)
 
+    $listForm.Controls.Add($script:buttonValider)
+    $listForm.Controls.Add($script:labelPlateformes)
+    $listForm.Controls.Add($script:listBoxPlateformes)
+    
     # Afficher la fenetre
     $listForm.ShowDialog()
 }
