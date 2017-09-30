@@ -1,6 +1,11 @@
 ﻿Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+. "../ps/fg_1-1_DBUtils.ps1"
+. "../ps/fg_10-0_Authentification_PS.ps1"
+
+OpenDB
+
 # Initalisation des variables
 $return = 0
 $i = 0
@@ -68,6 +73,7 @@ $ListForm.Controls.Add($TextBoxUsername)
 $ListForm.Controls.Add($TextBoxPassword) 
 $ListForm.Controls.Add($ButtonOK) 
 $ListForm.Controls.Add($pictureBox)
+$listForm.AcceptButton = $script:ButtonOK
 #$ListForm.Add_Closing({$_.Cancel = $true})
 
 
@@ -82,15 +88,11 @@ do{
         ([System.Windows.Forms.DialogResult]::OK){
         echo "choix OK"
 
-        # Appel script FG
-        # Le point avant le chemin du script permet de définir la portée les variables du script fg_10-0_Authentification_PS.ps1.
+        $ADusername = $TextBoxUsername.text
+        $ADpassword = $TextBoxPassword.text
 
-        . "..\ps\fg_10-0_Authentification_PS.ps1 " $TextBoxUsername.text $TextBoxPassword.text
-
-        echo $("return = " + $return)
-        echo $("ADusername = " + $ADusername)
-        if ($return -like 'vrai'){
-            Invoke-Expression "..\GUI\GUI.ps1"
+        if ( controlUserCredentials -eq 'vrai'){
+            Invoke-Expression "..\GUI\fa_2_Accueil.ps1"
             $i = 1
             break
             }
@@ -105,3 +107,5 @@ do{
        } 
     }
 } while($i -eq 0)
+
+CloseDB
