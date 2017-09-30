@@ -4,6 +4,8 @@ Add-Type -AssemblyName System.Drawing
 . "../ps/droits.ps1"
 . "../ps/fg_1-1_DBUtils.ps1"
 
+OpenDB
+
 # Creation des composants dont on aura besoin plus tard
 $listForm = New-Object System.Windows.Forms.Form
 $listForm.Text = "Accueil"
@@ -25,10 +27,6 @@ Function MakeForm {
     $position += $largeur + $ecart
     $ButtonCreationCSV.Text = "Creation Comptes CSV"
     $ButtonCreationCSV.add_Click({.\fa_3_CreationComptesCSV.ps1})
-    $ButtonCreationCSV_Click = {
-	    $FenetreAccueil.Visible = $false
-	    $FenetreCreationCSV.ShowDialog()
-    }
     $toolTipButtonCreationCSV = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonCreationCSV.SetToolTip($ButtonCreationCSV, "création des comptes stagiaires à partir d'un CSV")
 
@@ -37,11 +35,8 @@ Function MakeForm {
     $ButtonUnit.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
     $ButtonUnit.Text = "Creation Compte Unitaire"
-    $ButtonUnit.add_Click({MakeMenuUnit})
-    $ButtonUnit_Click = {
-	    $FenetreAccueil.Visible = $false
-	    $FenetreCreationUnitaire.ShowDialog()
-    }
+    $ButtonUnit.add_Click({.\fa_3_CreationComptesCSV.ps1})
+
     $toolTipButtonUnit = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonUnit.SetToolTip($ButtonUnit, "création d'un compte stagiaire")
 
@@ -209,3 +204,4 @@ Function MakeMenuAPropos {
 ##############################################
 
 makeForm
+CloseDB
