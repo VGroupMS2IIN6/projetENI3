@@ -22,17 +22,6 @@ $clickModifySiteAdded = $false
 $buttonSupprimerSite = New-Object System.Windows.Forms.Button
 $clickDeleteSiteAdded = $false
 
-function RetreiveRow($rows, $field, $filter) {
-    # on parcourt les lignes une part une, pour trouver celle qui correspond
-    foreach($row in $rows)
-    {
-        if($row.$field -eq $filter)
-        {
-            return $row
-        }
-    }
-}
-
 function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol) {
     # creation de la datatable
     $table = New-Object system.Data.DataTable
