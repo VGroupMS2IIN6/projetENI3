@@ -1,5 +1,11 @@
 ﻿cls
 
+PARAM(
+$StagPrenom = "test"
+$StagNom = "ENI"
+$StagMAil = "testENI1@campus-gscls.com"
+$StagmdpTemp = "TATAYooy589"
+)
 # connexion à Office 365
 $user = "jblanchard@gsc49.fr"
 $password = "JbgFMsDL@"
@@ -12,10 +18,7 @@ Connect-MsolService -Credential $creds
 # Création des comptes
 
 ## init des variables
-$StagPrenom = "test"
-$StagNom = "ENI"
-$StagMAil = "testENI1@campus-gscls.com"
-$StagmdpTemp = "TATAYooy589"
+
 
 new-MSolUSER -DisplayNAme $($StagPrenom + $StagNom) -FirstName $StagPrenom -LastName $Stagnom -UserPrincipalName $StagMAil -Password $StagmdpTemp
 ## Licence !!!!!
