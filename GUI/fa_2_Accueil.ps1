@@ -2,6 +2,7 @@
 Add-Type -AssemblyName System.Drawing
 
 . "../ps/droits.ps1"
+. "../ps/fg_1-1_DBUtils.ps1"
 
 # Creation des composants dont on aura besoin plus tard
 $listForm = New-Object System.Windows.Forms.Form
@@ -48,7 +49,7 @@ Function MakeForm {
     $ButtonResetPWD.Location = New-Object System.Drawing.Point($position,30)
     $ButtonResetPWD.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
-    $ButtonResetPWD.Text = "Réinitialisation MDP"
+    $ButtonResetPWD.Text = "Réinisialisation MDP"
     $ButtonResetPWD.add_Click({MakeMenuResetPWD})
     $ButtonResetPWD_Click = {
 	    $FenetreAccueil.Visible = $false
@@ -62,12 +63,7 @@ Function MakeForm {
     $ButtonHistorique.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
     $ButtonHistorique.Text = 'Historique'
-    #$ButtonHistorique.add_Click({MakeMenuHistorique})
     $ButtonHistorique.add_Click({.\fa_6_historique.ps1})
-    $ButtonHistorique_Click = {
-	    $FenetreAccueil.Visible = $false
-	    $FenetreHistorique.ShowDialog()
-    }
     $toolTipButtonHistorique = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonHistorique.SetToolTip($ButtonHistorique, "Consulter l'historique de création de comptes")
 
@@ -107,7 +103,7 @@ Function MakeForm {
     $ButtonAPropos.Location = '30,580'
     $ButtonAPropos.Size = '150,60'
     $ButtonAPropos.Text = "A propos"
-    $ButtonAPropos.add_Click({})
+    $ButtonAPropos.add_Click({MakeMenuAPropos})
     $ButtonAPropos_CLick = {
 	    $FenetreAccueil.Visible = $false
 	    $FenetreAPropos.ShowDialog()
