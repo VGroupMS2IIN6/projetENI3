@@ -1,12 +1,26 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+
+$parametres = @{
+    "nom_domaine_ENI_Groupe" = "Nom domaine ENI Group";
+    "login_domaine_ENI_Group" = "Login domaine ENI Group";
+    "password_domaine_ENI_Group" = "Mot de passe domaine ENI Group";
+    "nom_domaine_stagiaire" = "Nom domaine stagiaire";
+    "login_domaine_stag" = "Login domaine stagiaire";
+    "password_domaine_stag" = "Mot de passe domaine stagiaire";
+    "ad_administratif_ip" = "IP AD Administratif";
+    "ad_administratif_user" = "Login AD Administratif";
+    "ad_administratif_password" = "Mot de passe AD Administratif";
+    "smtp_ip" = "IP SMTP";
+    "smtp_port" = "Port SMTP";
+    "smtp_expediteur" = "Expediteur SMTP"
+}
+
 $ListBoxAffichage = New-Object System.Windows.Forms.ListBox
 
-$textBoxAdURL = New-Object System.Windows.Forms.TextBox
-$textBoxAdUser = New-Object System.Windows.Forms.TextBox
-$textBoxAdMDP = New-Object System.Windows.Forms.TextBox
-    
+$dataGridParametres = New-Object System.Windows.Forms.DataGridView
+        
 $ComboBoxPlateformes = New-Object System.Windows.Forms.ComboBox
 $textBoxNom = New-Object System.Windows.Forms.TextBox
 $textBoxURL = New-Object System.Windows.Forms.TextBox
@@ -68,108 +82,80 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
     $comboBox.DataSource = $table
 }
 
-Function ModifyAd {
+Function ModifyParametres {
+    # on parcourt les parametres pour les enregistrer
+    for($i = 0;$i -lt $script:dataGridParametres.RowCount;$i++) {
+        $cle = $script:dataGridParametres.Rows[$i].Cells[0].Value
+        $valeur = $script:dataGridParametres.Rows[$i].Cells[2].Value
 
-    $paramIP = MakeRequest "select id from parametres where nom = 'ad_administratif_ip';"
-    
-    if($paramIP.id -ne $null) {
-        # le paramètre existe déjà, on le met à jour
-        $updateIp = "update parametres set param = '" + $script:textBoxAdURL.Text + "' where nom = 'ad_administratif_ip';"
-        MakeRequest $updateIp
-    } else {
-        # le paramètre n'existe pas, on l'insère
-        $insertIP = "insert into parametres(nom,param) values('ad_administratif_ip','" + $script:textBoxAdURL.Text + "');"
-        MakeRequest $insertIP
-    }
-
-    $paramUser = MakeRequest "select id from parametres where nom = 'ad_administratif_user';"
-    
-    if($paramUser.id -ne $null) {
-        # le paramètre existe déjà, on le met à jour
-        $updateUser = "update parametres set param = '"+ $script:textBoxAdUser.Text + "' where nom = 'ad_administratif_user';"
-        MakeRequest $updateUser
-    } else {
-        # le paramètre n'existe pas, on l'insère
-        $insertUser = "insert into parametres(nom,param) values('ad_administratif_user','" + $script:textBoxAdUser.Text + "');"
-        MakeRequest $insertUser
-    }
-
-    $paramPassword = MakeRequest "select id from parametres where nom = 'ad_administratif_password';"
-    
-    if($paramPassword.id -ne $null) {
-        # le paramètre existe déjà, on le met à jour
-        $updatePasswd = "update parametres set param = '" + $script:textBoxAdMDP.Text + "' where nom = 'ad_administratif_password';" 
-        MakeRequest $updatePasswd
-    } else {
-        # le paramètre n'existe pas, on l'insère
-        $insertPasswd = "insert into parametres(nom,param) values('ad_administratif_password','" + $script:textBoxAdMDP.Text + "');"
-        MakeRequest $insertPasswd
+        $reqSel = "select id from parametres where nom = '" + $cle + "'"
+        $param = MakeRequest $reqSel
+        if($param.id -ne $null) {
+            # le paramètre existe déjà, on le met à jour
+            $reqUpdate = "update parametres set param = '" + $valeur + "'"
+            $reqUpdate += " where id = " + $param.id
+            MakeRequest $reqUpdate
+        } else {
+            # le paramètre n'existe pas, on l'ajoute
+            $reqInsert = "insert into parametres(nom,param)"
+            $reqInsert += " values('" + $cle + "','" + $valeur + "')"
+            MakeRequest $reqInsert
+        }
     }
 }
 
-Function MakeMenuAd {
-    $labelTitreAd = New-Object System.Windows.Forms.Label
-    $labelTitreAd.Location = New-Object System.Drawing.Point(10,10)
-    $labelTitreAd.Size = New-Object System.Drawing.Size(200,20)
-    $labelTitreAd.Text = "Configuration Active Directory"
-    $labelTitreAd.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+Function MakeMenuParametres {
+    $labelTitreParametres = New-Object System.Windows.Forms.Label
+    $labelTitreParametres.Location = New-Object System.Drawing.Point(10,10)
+    $labelTitreParametres.Size = New-Object System.Drawing.Size(200,20)
+    $labelTitreParametres.Text = "Paramètres"
 
-    $labelAdURL = New-Object System.Windows.Forms.Label
-    $labelAdURL.Location = New-Object System.Drawing.Point(10,50)
-    $labelAdURL.Size = New-Object System.Drawing.Size(200,20)
-    $labelAdURL.Text = "Adresse IP ou nom du serveur"
-    $labelAdURL.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+    $script:dataGridParametres.Location = New-Object System.Drawing.Point(10,50)
+    $script:dataGridParametres.Size = New-Object System.Drawing.Size(655,450)
+    $script:dataGridParametres.AllowUserToAddRows = $false
+    $script:dataGridParametres.AllowUserToDeleteRows = $false
+    $script:dataGridParametres.MultiSelect = $false
+    $script:dataGridParametres.RowHeadersVisible = $false
+    $script:dataGridParametres.Rows.Clear()
+    $script:dataGridParametres.Columns.Clear()
 
-    $script:textBoxAdURL.Location = New-Object System.Drawing.Point(220,50)
-    $script:textBoxAdURL.Size = New-Object System.Drawing.Size(200,22)
+    # on ajoute une repmière colonne qui ne sera pas affichée
+    $colCle = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+    $colCle.Name = "Cle"
+    $colCle.Visible = $false
+    $script:dataGridParametres.Columns.Add($colCle)
 
-    $labelAdUser = New-Object System.Windows.Forms.Label
-    $labelAdUser.Location = New-Object System.Drawing.Point(10,90)
-    $labelAdUser.Size = New-Object System.Drawing.Size(200,20)
-    $labelAdUser.Text = "Nom d'utilisateur"
-    $labelAdUser.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+    # on ajoute la colonne nom en lecture seule
+    $colNom = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+    $colNom.Width = 300
+    $colNom.Name = "Nom"
+    $colNom.ReadOnly = $true
+    $script:dataGridParametres.Columns.Add($colNom)
 
-    $script:textBoxAdUser.Location = New-Object System.Drawing.Point(220,90)
-    $script:textBoxAdUser.Size = New-Object System.Drawing.Size(200,22)
-    
-    $labelAdMDP = New-Object System.Windows.Forms.Label
-    $labelAdMDP.Location = New-Object System.Drawing.Point(10,130)
-    $labelAdMDP.Size = New-Object System.Drawing.Size(200,20)
-    $labelAdMDP.Text = "Mot de passe"
-    $labelAdMDP.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
+    # on ajoute la colonne valeur
+    $colValeur = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+    $colValeur.Width = 350
+    $colValeur.Name = "Valeur"
+    $script:dataGridParametres.Columns.Add($colValeur)
 
-    $script:textBoxAdMDP.Location = New-Object System.Drawing.Point(220,130)
-    $script:textBoxAdMDP.Size = New-Object System.Drawing.Size(200,22)
+    # on alimente la table
+    foreach($key in $parametres.Keys) {
+        $reqSel = "select * from parametres where nom = '" + $key + "'"
+        $param = MakeRequest $reqSel
+        $script:dataGridParametres.Rows.Add($key, $parametres[$key], $param.param)
+    }
 
-    $buttonEnregistrerAd = New-Object System.Windows.Forms.Button
-    $buttonEnregistrerAd.Location = New-Object System.Drawing.Point(220,10)
-    $buttonEnregistrerAd.Size = New-Object System.Drawing.Size(70,22)
-    $buttonEnregistrerAd.Text = "Enregistrer"
-    $buttonEnregistrerAd.Add_Click({ModifyAd})
+    $buttonEnregistrerParam = New-Object System.Windows.Forms.Button
+    $buttonEnregistrerParam.Location = New-Object System.Drawing.Point(220,10)
+    $buttonEnregistrerParam.Size = New-Object System.Drawing.Size(70,22)
+    $buttonEnregistrerParam.Text = "Enregistrer"
+    $buttonEnregistrerParam.Add_Click({ModifyParametres})
 
     $script:listBoxAffichage.Controls.clear();
-    $script:listBoxAffichage.Controls.Add($labelTitreAd)
-    $script:listBoxAffichage.Controls.Add($buttonEnregistrerAd)
-    $script:listBoxAffichage.Controls.Add($labelAdURL)
-    $script:listBoxAffichage.Controls.Add($script:textBoxAdURL)
-    $script:listBoxAffichage.Controls.Add($labelAdUser)
-    $script:listBoxAffichage.Controls.Add($script:textBoxAdUser)
-    $script:listBoxAffichage.Controls.Add($labelAdMDP)
-    $script:listBoxAffichage.Controls.Add($script:textBoxAdMDP)
-
-    $requestIPAdAdministratif = "select * from parametres where nom = 'ad_administratif_ip';"
-    $IPAdAdministratif = makeRequest $requestIPAdAdministratif
-
-    $requestUserAdAdministratif = "select * from parametres where nom = 'ad_administratif_user';"
-    $UserAdAdministratif = makeRequest $requestUserAdAdministratif
-
-    $requestPasswordAdAdministratif = "select * from parametres where nom = 'ad_administratif_password';"
-    $PasswordAdAdministratif = makeRequest $requestPasswordAdAdministratif
-
-    $script:textBoxAdURL.Text = $IPAdAdministratif.param
-    $script:textBoxAdUser.Text = $UserAdAdministratif.param
-    $script:textBoxAdMDP.Text = $PasswordAdAdministratif.param
-    }
+    $script:listBoxAffichage.Controls.Add($labelTitreParametres)
+    $script:listBoxAffichage.Controls.Add($dataGridParametres)
+    $script:listBoxAffichage.Controls.Add($buttonEnregistrerParam)
+}
 
 Function FillPlateforme {
     if($script:ComboBoxPlateformes.SelectedIndex -ne -1) {
@@ -910,8 +896,8 @@ Function MakeForm {
     $ButtonADAdmin = New-Object System.Windows.Forms.Button
     $ButtonADAdmin.Location = New-Object System.Drawing.Point(40,40)
     $ButtonADAdmin.Size = New-Object System.Drawing.Size(200,50)
-    $ButtonADAdmin.Text = "Active Directory administratif"
-    $ButtonADAdmin.Add_Click({MakeMenuAd})
+    $ButtonADAdmin.Text = "Paramètres divers"
+    $ButtonADAdmin.Add_Click({MakeMenuParametres})
     $toolTipButtonADAdmin = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonADAdmin.SetToolTip($ButtonADAdmin, "Paramétrage de la connexion à l'annuaire Active Directory")
     
@@ -927,7 +913,7 @@ Function MakeForm {
     $ButtonDefProfils.Location = New-Object System.Drawing.Point(40,160)
     $ButtonDefProfils.Size = New-Object System.Drawing.Size(200,50)
     $ButtonDefProfils.Text = "profils"
-    $ButtonDefProfils.Add_Click({makeMenuDefProfils})
+    $ButtonDefProfils.Add_Click({MakeMenuDefProfils})
     $toolTipButtonDefProfils = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonDefProfils.SetToolTip($ButtonDefProfils, "création des profils et assignation des droits")
 
@@ -935,7 +921,7 @@ Function MakeForm {
     $ButtonAssProfils.Location = New-Object System.Drawing.Point(40,220)
     $ButtonAssProfils.Size = New-Object System.Drawing.Size(200,50)
     $ButtonAssProfils.Text = "utilisateurs"
-    $ButtonAssProfils.Add_Click({makeMenuAssProfils})
+    $ButtonAssProfils.Add_Click({MakeMenuAssProfils})
     $toolTipButtonAssProfils = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonAssProfils.SetToolTip($ButtonAssProfils, "création des comptes utilisateurs et assignation des profils")
 
