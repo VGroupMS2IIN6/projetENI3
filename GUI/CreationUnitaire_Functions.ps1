@@ -58,6 +58,17 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
     $comboBox.DataSource = $table
 }
 
+Function SelectPlateformes {
+    # création du compte ad
+    #TODO : création du compte avec vérification préalable de l'existence
+
+    # on parcourt la liste des plateformes cochées
+    foreach($item in $script:listBoxplateformes.CheckedItems) {
+        #TODO : appeler le script en fonction du nom de la plateforme -> $item.nom
+        $item.nom
+    }
+}
+
 Function validerData {
     $erreur = 0
     $largeur = $script:labelCodeNonValide.Location.X
@@ -337,17 +348,13 @@ Function MakeForm {
     $script:buttonCreerCompte.Location = New-Object System.Drawing.Point(815,580)
     $script:buttonCreerCompte.Size = New-Object System.Drawing.Size(150,60)
     $script:buttonCreerCompte.Text = "Créer le compte"
-    $script:buttonCreerCompte.Add_Click({SelectPlateformes; $listForm.Close()})
+    $script:buttonCreerCompte.Add_Click({
+        SelectPlateformes
+        $listForm.Close()
+    })
     $script:buttonCreerCompte.Visible = $false
     # la touche entrée est mappée sur importer
     $listForm.AcceptButton = $script:buttonCreerCompte
-
-    $listForm.Controls.Add($labelSite)
-    $listForm.Controls.Add($script:comboBoxSite)
-    $listForm.Controls.Add($labelFormation)
-    $listForm.Controls.Add($script:comboBoxFormation)
-    $listForm.Controls.Add($ButtonRetour)
-    $listForm.Controls.Add($script:buttonCreerCompte)
 
     $listForm.Controls.Add($labelData)
     $listForm.Controls.Add($script:LabelCodeStagiaire)
@@ -364,14 +371,22 @@ Function MakeForm {
     $listForm.Controls.Add($script:datePickerDebutContrat)
     $listForm.Controls.Add($script:datePickerFinContrat)
 
-    $listForm.Controls.Add($labelCodeNonValide)
-    $listForm.Controls.Add($labelNomNonValide)
-    $listForm.Controls.Add($labelPrenomNonValide)
-    $listForm.Controls.Add($labelDateNonValide)
-    
     $listForm.Controls.Add($script:buttonValider)
+    $listForm.Controls.Add($script:labelCodeNonValide)
+    $listForm.Controls.Add($script:labelNomNonValide)
+    $listForm.Controls.Add($script:labelPrenomNonValide)
+    $listForm.Controls.Add($script:labelDateNonValide)
+    
+    $listForm.Controls.Add($script:labelSite)
+    $listForm.Controls.Add($script:comboBoxSite)
+    $listForm.Controls.Add($script:labelFormation)
+    $listForm.Controls.Add($script:comboBoxFormation)
+    $listForm.Controls.Add($script:buttonCreerCompte)
+
     $listForm.Controls.Add($script:labelPlateformes)
     $listForm.Controls.Add($script:listBoxPlateformes)
+
+    $listForm.Controls.Add($ButtonRetour)
     
     # Afficher la fenetre
     $listForm.ShowDialog()
