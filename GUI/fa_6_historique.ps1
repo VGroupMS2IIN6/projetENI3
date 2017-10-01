@@ -4,6 +4,7 @@ Add-Type -AssemblyName System.Drawing
 . "../ps/fg_1-1_DBUtils.ps1"
 
 $dataGridHisto = New-Object System.Windows.Forms.DataGridView
+$pickerDateHeure = New-Object System.Windows.Forms.DateTimePicker
 $textBoxUser = New-Object System.Windows.Forms.TextBox
 $textBoxAction = New-Object System.Windows.Forms.TextBox
 $textBoxPrenomStagiaire = New-Object System.Windows.Forms.TextBox
@@ -11,27 +12,18 @@ $textBoxNomStagiaire = New-Object System.Windows.Forms.TextBox
 
 Function FillDataGrid {
     # construction du filtre
-    $filtre = " where"
+    $filtre = " where h.timestamp > '" + $script:pickerDateHeure.Value.ToString("yyy-MM-dd HH:mm:ss") + "'"
     if($script:textBoxUser.Text.Length -gt 0) {
-        $filtre += " u.login like '%" + $script:textBoxUser.Text + "%'"
+        $filtre += " and u.login like '%" + $script:textBoxUser.Text + "%'"
     }
     if($script:textBoxAction.Text.Length -gt 0) {
-        if($filtre -ne " where") {
-            $filtre += " and"
-        }
-        $filtre += " h.action like '%" + $script:textBoxAction.Text + "%'"
+        $filtre += " and h.action like '%" + $script:textBoxAction.Text + "%'"
     }
     if($script:textBoxPrenomStagiaire.Text.Length -gt 0) {
-        if($filtre -ne " where") {
-            $filtre += " and"
-        }
-        $filtre += " st.prenomStagiaire like '%" + $script:textBoxPrenomStagiaire.Text + "%'"
+        $filtre += " and st.prenomStagiaire like '%" + $script:textBoxPrenomStagiaire.Text + "%'"
     }
     if($script:textBoxNomStagiaire.Text.Length -gt 0) {
-        if($filtre -ne " where") {
-            $filtre += " and"
-        }
-        $filtre += " st.nomStagiaire like '%" + $script:textBoxNomStagiaire.Text + "%'"
+        $filtre += " and st.nomStagiaire like '%" + $script:textBoxNomStagiaire.Text + "%'"
     }
 
     # récupération de l'historique
@@ -42,10 +34,8 @@ Function FillDataGrid {
     $reqSel += " join plateforme p on h.typeCompte = p.ID"
     $reqSel += " join site s on h.site = s.ID"
     $reqSel += " join formation f on h.formation = f.ID"
-    if($filtre -ne " where") {
-        $reqSel += $filtre
-    }
-    $reqSel += " limit 100"
+    $reqSel += $filtre
+    $reqSel += " order by h.timestamp desc limit 100"
     $historiques = MakeRequest $reqSel
 
     # alimentation des lignes
@@ -65,41 +55,52 @@ Function MakeForm {
     $listForm.StartPosition = "CenterScreen"
     
     # ajout des filtres
+    $labelDateHeure = New-Object System.Windows.Forms.Label
+    $labelDateHeure.Location = New-Object System.Drawing.Point(20,20)
+    $labelDateHeure.Size = New-Object System.Drawing.Size(60,20)
+    $labelDateHeure.Text = "A partir de"
+
+    $script:pickerDateHeure.Location = New-Object System.Drawing.Point(80,18)
+    $script:pickerDateHeure.Size = New-Object System.Drawing.Size(130,20)
+    $script:pickerDateHeure.Format = [System.Windows.Forms.DateTimePickerFormat]::Custom
+    $script:pickerDateHeure.CustomFormat = "dd/MM/yy HH:mm:ss"
+    $script:pickerDateHeure.Value = [System.DateTime]::Today.AddMonths(-1)
+
     $labelUser = New-Object System.Windows.Forms.Label
-    $labelUser.Location = New-Object System.Drawing.Point(20,20)
+    $labelUser.Location = New-Object System.Drawing.Point(215,20)
     $labelUser.Size = New-Object System.Drawing.Size(55,20)
     $labelUser.Text = "Utilisateur"
 
-    $script:textBoxUser.Location = New-Object System.Drawing.Point(80,18)
+    $script:textBoxUser.Location = New-Object System.Drawing.Point(275,18)
     $script:textBoxUser.Size = New-Object System.Drawing.Size(70,20)
 
     $labelAction = New-Object System.Windows.Forms.Label
-    $labelAction.Location = New-Object System.Drawing.Point(155,20)
+    $labelAction.Location = New-Object System.Drawing.Point(350,20)
     $labelAction.Size = New-Object System.Drawing.Size(40,20)
     $labelAction.Text = "Action"
 
-    $script:textBoxAction.Location = New-Object System.Drawing.Point(200,18)
+    $script:textBoxAction.Location = New-Object System.Drawing.Point(395,18)
     $script:textBoxAction.Size = New-Object System.Drawing.Size(70,20)
 
     $labelPrenomStagiaire = New-Object System.Windows.Forms.Label
-    $labelPrenomStagiaire.Location = New-Object System.Drawing.Point(275,20)
+    $labelPrenomStagiaire.Location = New-Object System.Drawing.Point(470,20)
     $labelPrenomStagiaire.Size = New-Object System.Drawing.Size(90,20)
     $labelPrenomStagiaire.Text = "Prénom stagiaire"
 
-    $script:textBoxPrenomStagiaire.Location = New-Object System.Drawing.Point(370,18)
+    $script:textBoxPrenomStagiaire.Location = New-Object System.Drawing.Point(565,18)
     $script:textBoxPrenomStagiaire.Size = New-Object System.Drawing.Size(70,20)
 
     $labelNomStagiaire = New-Object System.Windows.Forms.Label
-    $labelNomStagiaire.Location = New-Object System.Drawing.Point(445,20)
+    $labelNomStagiaire.Location = New-Object System.Drawing.Point(640,20)
     $labelNomStagiaire.Size = New-Object System.Drawing.Size(75,20)
     $labelNomStagiaire.Text = "Nom stagiaire"
 
-    $script:textBoxNomStagiaire.Location = New-Object System.Drawing.Point(525,18)
+    $script:textBoxNomStagiaire.Location = New-Object System.Drawing.Point(720,18)
     $script:textBoxNomStagiaire.Size = New-Object System.Drawing.Size(70,20)
 
     # ajout du bouton pour filtrer
     $boutonFiltre = New-Object System.Windows.Forms.Button
-    $boutonFiltre.Location = New-Object System.Drawing.Point(600,18)
+    $boutonFiltre.Location = New-Object System.Drawing.Point(795,18)
     $boutonFiltre.Size = New-Object System.Drawing.Size(70,20)
     $boutonFiltre.Text = "Filtrer"
     $boutonFiltre.Add_Click({FillDataGrid})
@@ -110,6 +111,7 @@ Function MakeForm {
     $script:dataGridHisto.RowHeadersVisible = $false
     $script:dataGridHisto.AllowUserToAddRows = $false
     $script:dataGridHisto.ReadOnly = $true
+    $script:dataGridHisto.BackgroundColor = [System.Drawing.Color]::GhostWhite
 
     # ajout des colonnes date-heure, utilisateur, action, statut, stagiaire et récap
     $colDateHeure = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
@@ -152,6 +154,8 @@ Function MakeForm {
     # la touche echap est mappée sur retour
     $listForm.CancelButton = $ButtonRetour
 
+    $listForm.Controls.Add($labelDateHeure)
+    $listForm.Controls.Add($script:pickerDateHeure)
     $listForm.Controls.Add($labelUser)
     $listForm.Controls.Add($script:textBoxUser)
     $listForm.Controls.Add($labelAction)
