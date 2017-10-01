@@ -18,7 +18,10 @@ function creation_cisco
         )
 
         $stagiairesCisco | foreach { Add-Content -Path ../temp/cisco.csv -Value $_ }
-        RecordLog 'creation' 'ok' $utilisateur $Nom $prenom $plateforme $site $formation
+        $timestamp = Get-Date -Format "yyyy-MM-dd hh:mm:ss"
+        $reqinsertHist = "INSERT INTO projet_eni.historique (action, statut, timestamp, utilisateur, stagiaire, typeCompte, site, formation)"
+        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $nom + " " + $prenom + "', '" + $plateforme +"', '" + $site + "', '" + $formation + "');"
+        makeRequest $reqinsertHist
     }
     else
     {

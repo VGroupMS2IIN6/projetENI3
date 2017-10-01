@@ -34,8 +34,12 @@ function creation_active_directory
         echo $StagSAMAN
 
         New-ADUser -Name $($Prenom + $Nom) -description $("Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire)  -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStag -AccountPassword $SecStagPassTemp -Credential $creds
-
+        $status = "OK"
+        $action = "création"
         # on log ajoute les informations dans la base de données
-        RecordLog 'creation' 'ok' $utilisateur $Nom $prenom $plateforme $site $formation
+        $timestamp = Get-Date -Format "yyyy-MM-dd hh:mm:ss"
+        $reqinsertHist = "INSERT INTO projet_eni.historique (action, statut, timestamp, utilisateur, stagiaire, typeCompte, site, formation)"
+        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $nom + " " + $prenom + "', '" + $plateforme +"', '" + $site + "', '" + $formation + "');"
+        makeRequest $reqinsertHist
     }
 }

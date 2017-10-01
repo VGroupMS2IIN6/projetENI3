@@ -19,8 +19,11 @@ function creation_7speaking
             "'" + $nom + "','" + $prenom + "','" + $login + "'" + $CodeStagiaire + "','" + $DebutFormation + "','" + $duree + "'"
         )
 
-          $stagiaires7Sspeaking | foreach { Add-Content -Path ../temp/7speaking.csv -Value $_ }
-          RecordLog 'creation' 'ok' $utilisateur $Nom $prenom $plateforme $site $formation
+        $stagiaires7Sspeaking | foreach { Add-Content -Path ../temp/7speaking.csv -Value $_ }
+        $timestamp = Get-Date -Format "yyyy-MM-dd hh:mm:ss"
+        $reqinsertHist = "INSERT INTO projet_eni.historique (action, statut, timestamp, utilisateur, stagiaire, typeCompte, site, formation)"
+        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $nom + " " + $prenom + "', '" + $plateforme +"', '" + $site + "', '" + $formation + "');"
+        makeRequest $reqinsertHist
     }
     else
     {
