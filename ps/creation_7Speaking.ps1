@@ -20,6 +20,7 @@ function creation_7speaking
         )
 
           $stagiaires7Sspeaking | foreach { Add-Content -Path ../temp/7speaking.csv -Value $_ }
+          RecordLog 'creation' 'ok' $utilisateur $Nom $prenom $plateforme $site $formation
     }
     else
     {

@@ -54,3 +54,12 @@ function RetreiveRow($rows, $field, $filter) {
         }
     }
 }
+
+function RecordLog($action, $status, $utilisateur, $nom, $prenom, $typeCompte, $site, $formation)
+{
+
+$timestamp = get-date -Format "yyyy-MM-dd hh:mm:ss"
+$reqinsert = "INSERT INTO projet_eni.historique (`action`, statut, `timestamp`, utilisateur, stagiaire, typeCompte, site, formation)"
+$reqinsert += " VALUES(" + $action + ", '" + $status + "', '" + $timestamp +"', '" + $utilisateur + "', '" + $nom + " " + $prenom + "', '" + $typeCompte +"', '" + $site + "', '" + $formation + "');"
+makeRequest $reqinsert
+}

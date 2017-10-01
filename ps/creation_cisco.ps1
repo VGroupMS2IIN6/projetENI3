@@ -18,6 +18,7 @@ function creation_cisco
         )
 
         $stagiairesCisco | foreach { Add-Content -Path ../temp/cisco.csv -Value $_ }
+        RecordLog 'creation' 'ok' $utilisateur $Nom $prenom $plateforme $site $formation
     }
     else
     {

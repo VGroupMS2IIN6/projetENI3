@@ -26,5 +26,6 @@
 
 
         new-MSolUSER -DisplayNAme $($Prenom + $Nom) -FirstName $Prenom -LastName $Nom -UserPrincipalName $StagMAil -Password $StagmdpTemp
+        RecordLog 'creation' 'ok' $utilisateur $Nom $prenom $plateforme $site $formation
     }
 }

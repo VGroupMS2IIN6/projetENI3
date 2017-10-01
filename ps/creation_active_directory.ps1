@@ -33,6 +33,9 @@ function creation_active_directory
 
         echo $StagSAMAN
 
-        New-ADUser -Name $($Prenom + $Nom) -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStag -AccountPassword $SecStagPassTemp -Credential $creds
+        New-ADUser -Name $($Prenom + $Nom) -description $("Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire)  -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStag -AccountPassword $SecStagPassTemp -Credential $creds
+
+        # on log ajoute les informations dans la base de données
+        RecordLog 'creation' 'ok' $utilisateur $Nom $prenom $plateforme $site $formation
     }
 }
