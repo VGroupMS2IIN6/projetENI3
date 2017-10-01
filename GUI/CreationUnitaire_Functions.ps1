@@ -59,15 +59,23 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
 }
 
 Function SelectPlateformes {
-    # création du compte ad
+# mise en forme des variables
+    $CodeStagiaire = $TextBoxCodeStagiaire.Text
+    $Nom = Remove-StringDiacritic $TextBoxNom.Text
+    $Prenom = Remove-StringDiacritic $TextBoxPrenom.Text
+    $Naissance = $datePickerNaissance.Text
+    $DebutContrat = $datePickerDebutContrat.Text
+    $FinContrat = $datePickerFinContrat.Text
+    #$Mail = $prenom + $nom + "@" domaine stagiaire
     #TODO : création du compte avec vérification préalable de l'existence
 
     # on parcourt la liste des plateformes cochées
     foreach($item in $script:listBoxplateformes.CheckedItems) {
         #TODO : appeler le script en fonction du nom de la plateforme -> $item.nom
         $plateforme = $item.nom -replace  ' ','_'
-        $scriptCreationPlateforme = "../ps/creation_" + $plateforme + ".ps1"
-        $scriptCreationPlateforme
+        $scriptCreationPlateforme = "creation_" + $plateforme
+        #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance $plateforme
+        &"$scriptCreationPlateforme"
     }
 }
 
