@@ -13,9 +13,10 @@ function creation_7speaking
         }
 
         $login = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + $NomSSCaratSpec.ToLower())
+        $duree = $FinFormation.Substring(6,4) - $DebutFormation.Substring(6,4)
 
         $stagiaires7Sspeaking = @(
-        "'" + $nom + "','" + $prenom + "','" + $login + "'"
+            "'" + $nom + "','" + $prenom + "','" + $login + "'" + $CodeStagiaire + "','" + $DebutFormation + "','" + $duree + "'"
         )
 
           $stagiaires7Sspeaking | foreach { Add-Content -Path ../temp/7speaking.csv -Value $_ }
