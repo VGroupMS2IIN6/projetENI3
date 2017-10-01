@@ -140,7 +140,7 @@ Function MakeForm {
     $tmp = $script:dataGridHisto.Columns.Add($colStagiaire)
 
     $colRecap = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
-    $colRecap.Width = 400
+    $colRecap.Width = 530
     $colRecap.Name = "Récapitulatif"
     $tmp = $script:dataGridHisto.Columns.Add($colRecap)
 
