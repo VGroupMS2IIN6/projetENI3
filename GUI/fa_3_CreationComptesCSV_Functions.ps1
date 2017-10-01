@@ -184,8 +184,9 @@ Function ImporterCSV {
     {
         if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName')
         {
-            $scriptCreationPlateforme = "creation_" + $plateforme
+            $scriptCreationPlateforme = "creation_" + $plateforme.name -replace " ","_"
             for($i = 1;$i -lt $script:dataGridView.RowCount;$i++) {
+                $vide = $NULL
                 $Nom = $script:dataGridView.Rows[$i].Cells[1].Value
                 $NomSSCaratSpec = Remove-StringDiacritic $Nom
                 $Prenom = $script:dataGridView.Rows[$i].Cells[2].Value
@@ -212,6 +213,9 @@ Function ImporterCSV {
                 }
                 
             }
+            $vide = $true
+            &"$scriptCreationPlateforme"
+
         }
     }
     $typeBouton = [System.Windows.Forms.MessageBoxButtons]::OK
