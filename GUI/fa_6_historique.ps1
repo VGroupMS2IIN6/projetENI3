@@ -7,33 +7,23 @@ $dataGridHisto = New-Object System.Windows.Forms.DataGridView
 $pickerDateHeure = New-Object System.Windows.Forms.DateTimePicker
 $textBoxUser = New-Object System.Windows.Forms.TextBox
 $textBoxAction = New-Object System.Windows.Forms.TextBox
-$textBoxPrenomStagiaire = New-Object System.Windows.Forms.TextBox
-$textBoxNomStagiaire = New-Object System.Windows.Forms.TextBox
+$textBoxStagiaire = New-Object System.Windows.Forms.TextBox
 
 Function FillDataGrid {
     # construction du filtre
-    $filtre = " where h.timestamp > '" + $script:pickerDateHeure.Value.ToString("yyy-MM-dd HH:mm:ss") + "'"
+    $filtre = " where h.timestamp > '" + $script:pickerDateHeure.Value.ToString("yyyy-MM-dd HH:mm:ss") + "'"
     if($script:textBoxUser.Text.Length -gt 0) {
-        $filtre += " and u.login like '%" + $script:textBoxUser.Text + "%'"
+        $filtre += " and h.utilisateur like '%" + $script:textBoxUser.Text + "%'"
     }
     if($script:textBoxAction.Text.Length -gt 0) {
         $filtre += " and h.action like '%" + $script:textBoxAction.Text + "%'"
     }
-    if($script:textBoxPrenomStagiaire.Text.Length -gt 0) {
-        $filtre += " and st.prenomStagiaire like '%" + $script:textBoxPrenomStagiaire.Text + "%'"
-    }
-    if($script:textBoxNomStagiaire.Text.Length -gt 0) {
-        $filtre += " and st.nomStagiaire like '%" + $script:textBoxNomStagiaire.Text + "%'"
+    if($script:textBoxStagiaire.Text.Length -gt 0) {
+        $filtre += " and h.stagiaire like '%" + $script:textBoxStagiaire.Text + "%'"
     }
 
     # récupération de l'historique
-    $reqSel = "select h.timestamp, u.login, h.action, h.statut, st.nomStagiaire, st.prenomStagiaire,"
-    $reqSel += " p.nom as nomPlateforme, s.nom as nomSite, f.nom as nomFormation"
-    $reqSel += " from historique h join utilisateur u on h.utilisateur = u.ID"
-    $reqSel += " join stagiaire st on h.stagiaire = st.ID"
-    $reqSel += " join plateforme p on h.typeCompte = p.ID"
-    $reqSel += " join site s on h.site = s.ID"
-    $reqSel += " join formation f on h.formation = f.ID"
+    $reqSel = "select h.timestamp, h.utilisateur, h.action, h.statut, h.stagiaire, h.typeCompte, h.site, h.formation from historique h"
     $reqSel += $filtre
     $reqSel += " order by h.timestamp desc limit 100"
     $historiques = MakeRequest $reqSel
@@ -41,10 +31,9 @@ Function FillDataGrid {
     # alimentation des lignes
     $script:dataGridHisto.Rows.Clear()
     foreach($histo in $historiques) {
-        $stagiaire = $histo.prenomStagiaire + " " + $histo.nomStagiaire
-        $recap = $histo.action + " du compte " + $histo.nomPlateforme
-        $recap += " sur le site de " + $histo.nomSite + " pour la formation " + $histo.nomFormation
-        $tmp =$script:dataGridHisto.Rows.Add($histo.timestamp, $histo.login, $histo.action, $histo.statut, $stagiaire, $recap)
+        $recap = $histo.action + " du compte " + $histo.typeCompte
+        $recap += " sur le site de " + $histo.site + " pour la formation " + $histo.formation
+        $tmp =$script:dataGridHisto.Rows.Add($histo.timestamp, $histo.utilisateur, $histo.action, $histo.statut, $histo.stagiaire, $recap)
     }
 }
 
@@ -82,25 +71,17 @@ Function MakeForm {
     $script:textBoxAction.Location = New-Object System.Drawing.Point(395,18)
     $script:textBoxAction.Size = New-Object System.Drawing.Size(70,20)
 
-    $labelPrenomStagiaire = New-Object System.Windows.Forms.Label
-    $labelPrenomStagiaire.Location = New-Object System.Drawing.Point(470,20)
-    $labelPrenomStagiaire.Size = New-Object System.Drawing.Size(90,20)
-    $labelPrenomStagiaire.Text = "Prénom stagiaire"
+    $labelStagiaire = New-Object System.Windows.Forms.Label
+    $labelStagiaire.Location = New-Object System.Drawing.Point(470,20)
+    $labelStagiaire.Size = New-Object System.Drawing.Size(50,20)
+    $labelStagiaire.Text = "Stagiaire"
 
-    $script:textBoxPrenomStagiaire.Location = New-Object System.Drawing.Point(565,18)
-    $script:textBoxPrenomStagiaire.Size = New-Object System.Drawing.Size(70,20)
-
-    $labelNomStagiaire = New-Object System.Windows.Forms.Label
-    $labelNomStagiaire.Location = New-Object System.Drawing.Point(640,20)
-    $labelNomStagiaire.Size = New-Object System.Drawing.Size(75,20)
-    $labelNomStagiaire.Text = "Nom stagiaire"
-
-    $script:textBoxNomStagiaire.Location = New-Object System.Drawing.Point(720,18)
-    $script:textBoxNomStagiaire.Size = New-Object System.Drawing.Size(70,20)
+    $script:textBoxStagiaire.Location = New-Object System.Drawing.Point(525,18)
+    $script:textBoxStagiaire.Size = New-Object System.Drawing.Size(70,20)
 
     # ajout du bouton pour filtrer
     $boutonFiltre = New-Object System.Windows.Forms.Button
-    $boutonFiltre.Location = New-Object System.Drawing.Point(795,18)
+    $boutonFiltre.Location = New-Object System.Drawing.Point(600,18)
     $boutonFiltre.Size = New-Object System.Drawing.Size(70,20)
     $boutonFiltre.Text = "Filtrer"
     $boutonFiltre.Add_Click({FillDataGrid})
@@ -160,8 +141,8 @@ Function MakeForm {
     $listForm.Controls.Add($script:textBoxUser)
     $listForm.Controls.Add($labelAction)
     $listForm.Controls.Add($script:textBoxAction)
-    $listForm.Controls.Add($labelPrenomStagiaire)
-    $listForm.Controls.Add($script:textBoxPrenomStagiaire)
+    $listForm.Controls.Add($labelStagiaire)
+    $listForm.Controls.Add($script:textBoxStagiaire)
     $listForm.Controls.Add($labelNomStagiaire)
     $listForm.Controls.Add($script:textBoxNomStagiaire)
     $listForm.Controls.Add($boutonFiltre)
