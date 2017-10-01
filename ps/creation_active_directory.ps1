@@ -21,7 +21,7 @@ function creation_active_directory
         $StagPassTemp = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance
 
         # Génération SAMAcount NAme
-        $StagSAMAN = $($Prenom.Substring(0,1).ToLower() + $Nom.ToLower())
+        $StagSAMAN = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee)
 
         If ($StagSAMAN.length -ge 18) 
         {

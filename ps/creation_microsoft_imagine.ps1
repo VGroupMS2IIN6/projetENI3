@@ -18,14 +18,13 @@
 
         
         # Génération SAMAcount NAme
-        $StagSAMAN = $($Prenom.Substring(0,1).ToLower() + $Nom.ToLower())
+        $StagSAMAN = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee)
 
         If ($StagSAMAN.length -ge 18) 
         {
             $StagSAMAN=$StagSAMAN.Substring(0,18) 
         }
 
-        New-ADUser 
         $GroupMicrosoftImagine = "Microsoft_Imagine"
 
         Add-ADGroupMember -identity $GroupKivuto -Members $StagSAMAN -Server NomDomainStag -Credential $creds
