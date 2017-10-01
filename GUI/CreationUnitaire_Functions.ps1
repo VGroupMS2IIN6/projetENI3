@@ -61,14 +61,22 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
 Function SelectPlateformes {
 # mise en forme des variables
     $CodeStagiaire = $TextBoxCodeStagiaire.Text
-    $Nom = Remove-StringDiacritic $TextBoxNom.Text
-    $Prenom = Remove-StringDiacritic $TextBoxPrenom.Text
+    $NomSSCaratSpec = Remove-StringDiacritic $TextBoxNom.Text
+    $PrenomSSCaratSpec = Remove-StringDiacritic $TextBoxPrenom.Text
+    $Nom = $TextBoxNom.Text
+    $Prenom = $TextBoxPrenom.Text
     $Naissance = $datePickerNaissance.Text
     $DebutContrat = $datePickerDebutContrat.Text
     $FinContrat = $datePickerFinContrat.Text
     #$Mail = $prenom + $nom + "@" domaine stagiaire
     #TODO : création du compte avec vérification préalable de l'existence
 
+    # on vérifie l'existence du rép temporaire
+    $tempExist = test-path ../temp
+    if ($tempExist -eq $false)
+    {
+        mkdir ../temp
+    }
     # on parcourt la liste des plateformes cochées
     $vide = $null
     foreach($item in $script:listBoxplateformes.CheckedItems) {
