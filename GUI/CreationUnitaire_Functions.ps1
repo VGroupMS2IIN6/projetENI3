@@ -80,7 +80,6 @@ Function SelectPlateformes {
     # on parcourt la liste des plateformes cochées
     $vide = $null
     foreach($item in $script:listBoxplateformes.CheckedItems) {
-        #TODO : appeler le script en fonction du nom de la plateforme -> $item.nom
         $plateforme = $item.nom -replace  ' ','_'
         $scriptCreationPlateforme = "creation_" + $plateforme
         #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance $plateforme
@@ -89,7 +88,6 @@ Function SelectPlateformes {
     # on parcourt a nouveau les plateformes cochées pour générer les envois de mails
     $vide = $true
     foreach($item in $script:listBoxplateformes.CheckedItems) {
-        #TODO : appeler le script en fonction du nom de la plateforme -> $item.nom
         $plateforme = $item.nom -replace  ' ','_'
         $scriptCreationPlateforme = "creation_" + $plateforme
         #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance $plateforme
