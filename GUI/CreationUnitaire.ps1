@@ -5,6 +5,8 @@ Add-Type -AssemblyName System.Drawing
 . "../GUI/CreationUnitaire_Functions.ps1"
 #chargement de la fonction de mise en forme des variables
 . "../ps/RemoveStrangeChar.ps1"
+# chargement de la fonction de génération de mdp temp
+. "../ps/fg_3-0_GenerationMdpTemp_PS.ps1"
 #chargement des fonctions pour les créations
 . "../ps/creation_active_directory.ps1"
 . "../ps/creation_7speaking.ps1"

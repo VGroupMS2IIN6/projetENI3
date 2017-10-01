@@ -66,9 +66,19 @@ Function SelectPlateformes {
     $Nom = $TextBoxNom.Text
     $Prenom = $TextBoxPrenom.Text
     $Naissance = $datePickerNaissance.Text
-    $DebutContrat = $datePickerDebutContrat.Text
-    $FinContrat = $datePickerFinContrat.Text
-    #$Mail = $prenom + $nom + "@" domaine stagiaire
+    $DebutFormation = $datePickerDebutContrat.Text
+    $FinFormation = $datePickerFinContrat.Text
+    $formation = $comboBoxFormation.Text
+    $site = $comboBoxSite.Text
+    $annee = get-date -Format yyyy
+    $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
+    $domaine = makeRequest $reqsel
+    $email = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine.domaine)
+
+    # on ajoute les infos du stagiaire dans la base de données
+    $reqinsert = "INSERT INTO projet_eni.stagiaire (nomStagiaire, prenomStagiaire, mailStagiaire, identifiantCrm)"
+    $reqinsert += " VALUES('" + $Nom + "', '" + $Prenom + "', '" + $email + "', '" + $CodeStagiaire + "');"
+    makeRequest $reqinsert
     #TODO : création du compte avec vérification préalable de l'existence
 
     # on vérifie l'existence du rép temporaire
@@ -83,6 +93,7 @@ Function SelectPlateformes {
         $plateforme = $item.nom -replace  ' ','_'
         $scriptCreationPlateforme = "creation_" + $plateforme
         #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance $plateforme
+        $password = GenerationMdpTemp
         &"$scriptCreationPlateforme"
     }
     # on parcourt a nouveau les plateformes cochées pour générer les envois de mails
