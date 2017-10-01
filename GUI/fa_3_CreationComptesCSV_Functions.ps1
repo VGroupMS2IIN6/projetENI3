@@ -99,10 +99,9 @@ Function FillDataGrid {
         # ajout des colonnes à partir de la liste des plateformes
         foreach($plateforme in $plateformes) {
             $col = New-Object System.Windows.Forms.DataGridViewCheckBoxColumn
-            $col.Width = 85
+            $col.Width = 100
             $col.Name = $plateforme.nom
             $script:dataGridView.Columns.Add($col)
-            #TODO gérer l'espace dans la dernière colonne
         }
 
         # on ajoute une première ligne pour permettre de cocher les colonnes
@@ -114,6 +113,14 @@ Function FillDataGrid {
         $reqSel += " where pf.defaut = 1"
         $reqSel += " and pf.formation = " + $script:comboBoxFormation.SelectedItem.id
         $plateformesDefaut = MakeRequest $reqSel
+        foreach($plateformeDefault in $plateformesDefaut) {
+            for($i=9;$i -lt $script:dataGridView.ColumnCount;$i++) {
+                # on parcourt les colonnes qui contiennent les plateformes
+                if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom) {
+                    $script:dataGridView.Rows[0].Cells[$i].Value = $true
+                }
+            }
+        }
 
         #conversion du CSV en unicode pour traitement et import
         Get-Content $script:textBoxFichier.Text -encoding string | Out-File -FilePath ..\temp\import.csv -Encoding Unicode
@@ -125,7 +132,8 @@ Function FillDataGrid {
         foreach($row in $fichier) {
             $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom, $row.CodeStagiaire, $row.DateNaissance, $row.debutde, $row.dateFin, $row.EmailCampus, $row.SAMAccountName)        
             foreach($plateformeDefault in $plateformesDefaut) {
-                for($i=0;$i -lt $script:dataGridView.ColumnCount;$i++) {
+                for($i=9;$i -lt $script:dataGridView.ColumnCount;$i++) {
+                    # on parcourt les colonnes qui contiennent les plateformes
                     if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom) {
                         $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $true
                     }

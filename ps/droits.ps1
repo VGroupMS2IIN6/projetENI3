@@ -1,5 +1,5 @@
 Function CheckDroitPlateforme {
-    $request = "select count(distinct pdp.accord) accord"
+    $request = "select max(pdp.accord) accord"
     $request += " from utilisateur u"
     $request += " join ass_profil_utilisateur pu on pu.utilisateur = u.id"
     $request += " join profil pr on pr.id = pu.profil"
@@ -7,7 +7,7 @@ Function CheckDroitPlateforme {
     $request += " join ass_droit_plateforme dp on dp.droit = pdp.droit_plateforme"
     $request += " join plateforme pl on pl.ID = dp.plateforme"
     $request += " join droit d on dp.droit = d.ID"
-    $request += " where d.nom = '$nomDroit' and pl.nom = '$nomPlateforme' and u.login = '$ADusername';"
+    $request += " where d.nom = '$nomDroit' and pl.nom = '" + $plateforme.nom + "' and u.login = '$ADusername';"
     $result = makeRequest $request
     return $result.accord
 }

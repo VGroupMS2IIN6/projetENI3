@@ -3,6 +3,8 @@ Add-Type -AssemblyName System.Drawing
 
 . "../ps/fg_1-1_DBUtils.ps1"
 . "../GUI/CreationUnitaire_Functions.ps1"
+#chargement de la fonction s'occupant de la gestion des droits
+. "../ps/droits.ps1"
 #chargement de la fonction de mise en forme des variables
 . "../ps/RemoveStrangeChar.ps1"
 # chargement de la fonction de génération de mdp temp
@@ -25,7 +27,6 @@ OpenDB
 
 $formations = MakeRequest "select * from formation"
 $sites = MakeRequest "select * from site"
-$plateformes = MakeRequest "select * from plateforme"
 
 MakeForm
 

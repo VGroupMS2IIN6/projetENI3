@@ -31,9 +31,12 @@ function CloseDB() {
     }
 }
 
-function MakeRequest($request) {
+function MakeRequest([string] $request) {
     if(-not $script:connexionOK) {
         throw "Connexion non ouverte"
+    }
+    if($request.Length -eq 0) {
+        throw "Requête absente"
     }
 
     $command = New-Object Mysql.Data.MysqlClient.MySqlCommand($request,$script:mysql)  

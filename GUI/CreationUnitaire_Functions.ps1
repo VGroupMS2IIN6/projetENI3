@@ -209,15 +209,23 @@ Function FillPlateforme {
         $table.Columns.Add($colPlateforme)
 
         # alimentation de la datatable avec les plateformes
-        $reqSel = "select pf.id, p.nom, pf.defaut from ass_plateforme_formation pf"
-        $reqSel += " join plateforme p on p.id = pf.plateforme where pf.formation = " + $script:ComboBoxFormation.SelectedItem.id + " order by pf.formation ;"
+        $reqSel = "select distinct pf.id, p.nom, pf.defaut from ass_plateforme_formation pf"
+        $reqSel += " join plateforme p on p.id = pf.plateforme"
+        $reqSel += " join ass_droit_plateforme dp on dp.plateforme = p.ID"
+        $reqSel += " join ass_profil_droit_plateforme pdp on pdp.droit_plateforme = dp.ID and pdp.accord = 1"
+        $reqSel += " join profil pl on pdp.profil = pl.ID"
+        $reqSel += " join ass_profil_utilisateur pu on pu.profil = pl.ID and pu.accord = 1"
+        $reqSel += " join utilisateur u on pu.utilisateur = u.ID"
+        $reqSel += " where u.login = '" + $ADusername + "'"
+        $reqSel += " and pf.formation = " + $script:ComboBoxFormation.SelectedItem.id
+        $reqSel += " order by pf.formation"
 
         $listPlateformes = MakeRequest $reqSel
-        foreach($listPlateforme in $listPlateformes) {
-            $ligne = $table.NewRow()
-            $ligne.id = $listPlateforme.id
-            $ligne.nom = $listPlateforme.nom
-            $table.Rows.Add($ligne)
+        foreach($Plateforme in $listPlateformes) {
+                $ligne = $table.NewRow()
+                $ligne.id = $Plateforme.id
+                $ligne.nom = $Plateforme.nom
+                $table.Rows.Add($ligne)
         }
 
         $script:listBoxPlateformes.DisplayMember = "nom"
