@@ -99,7 +99,7 @@ Function FillDataGrid {
         # ajout des colonnes à partir de la liste des plateformes
         foreach($plateforme in $plateformes) {
             $col = New-Object System.Windows.Forms.DataGridViewCheckBoxColumn
-            $col.Width = 70
+            $col.Width = 85
             $col.Name = $plateforme.nom
             $script:dataGridView.Columns.Add($col)
             #TODO gérer l'espace dans la dernière colonne
@@ -180,11 +180,14 @@ Function FillFormation {
 }
 
 Function ImporterCSV {
+    # pour chaque plateforme existante
     foreach ($plateforme in $dataGridView.Columns )
     {
+        # si il s'agit d'une colonne avec le nom d'une plateforme
         if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName')
         {
             $scriptCreationPlateforme = "creation_" + $plateforme.name -replace " ","_"
+            # pour chaque stagiaire dans dans la datagridview
             for($i = 1;$i -lt $script:dataGridView.RowCount;$i++) {
                 $vide = $NULL
                 $Nom = $script:dataGridView.Rows[$i].Cells[1].Value
@@ -198,13 +201,18 @@ Function ImporterCSV {
                 $Email = $script:dataGridView.Rows[$i].Cells[7].Value
                 $SamAccountName = $script:dataGridView.Rows[$i].Cells[8].Value
                 $creation = $script:dataGridView.Rows[$i].Cells[$plateforme.DisplayIndex].Value
-
+                $formation = $comboBoxFormation.Text
+                $site = $comboBoxSite.Text
+                # on ajoute les infos du stagiaire dans la base de données
+                $reqinsert = "INSERT INTO projet_eni.stagiaire (nomStagiaire, prenomStagiaire, mailStagiaire, identifiantCrm)"
+                $reqinsert += " VALUES('" + $Nom + "', '" + $Prenom + "', '" + $email + "', '" + $CodeStagiaire + "');"
+                makeRequest $reqinsert
                 if ($Email -eq '')
                 {
                     $annee = get-date -Format yyyy
                     $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
                     $domaine = makeRequest $reqsel
-                    $email = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine)
+                    $email = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine.domaine)
                 }
 
                 if ($creation -eq $true)
@@ -251,7 +259,7 @@ Function MakeForm {
     $labelFichier.Text = "1. Sélectionner le CSV provenant du CRM de l'ENI"
 
     $ButtonParcourir = New-Object System.Windows.Forms.Button
-    $ButtonParcourir.Location = New-Object System.Drawing.Point(20,45)
+    $ButtonParcourir.Location = New-Object System.Drawing.Point(20,43)
     $ButtonParcourir.Size = New-Object System.Drawing.Size(70,22)
     $ButtonParcourir.Text = 'Parcourir'
     $ButtonParcourir.add_Click({Parcourir})
