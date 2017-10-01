@@ -10,12 +10,11 @@ function creation_cisco
         if ($fileExist -eq $false)
         {
             # Génération d'un CSV pour cisco
-            Add-Content -Path ../temp/cisco.csv  -Value '"Nom","Prenom","email","ID interne","Date debut de formation","duree"'  
+            Add-Content -Path ../temp/cisco.csv  -Value '"Nom","Prenom","email"'
         }
-        $login = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + $NomSSCaratSpec.ToLower())
-
+        
         $stagiairesCisco = @(
-        "'" + $nom + "','" + $prenom + "','" + $login + "'"
+        "'" + $nom + "','" + $prenom + "','" + $Email + "'"
         )
 
         $stagiairesCisco | foreach { Add-Content -Path ../temp/cisco.csv -Value $_ }
