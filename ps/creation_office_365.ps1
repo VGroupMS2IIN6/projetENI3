@@ -1,24 +1,26 @@
-﻿cls
+﻿function creation_office365
+{
+    $Mail = "testENI1@campus-gscls.com"
+    $password = "TATAYooy589"
+    
+    # connexion à Office 365
+    #$LoginOffice = "jblanchard@gsc49.fr"
+    #$PasswordOffice = "JbgFMsDL@"
 
-PARAM(
-$StagPrenom = "test"
-$StagNom = "ENI"
-$StagMAil = "testENI1@campus-gscls.com"
-$StagmdpTemp = "TATAYooy589"
-)
-# connexion à Office 365
-$user = "jblanchard@gsc49.fr"
-$password = "JbgFMsDL@"
-$secureStringPwd = $password | ConvertTo-SecureString -AsPlainText -Force 
+    $result = makeRequest ("Select * FROM plateforme WHERE nom = 'Office 365';")
+    $LoginOffice = $result.identifiant
+    $PasswordOffice = $result.MDP
 
-$creds = New-Object System.Management.Automation.PSCredential -ArgumentList $user, $secureStringPwd
+    $secureStringPwd = $PasswordOffice | ConvertTo-SecureString -AsPlainText -Force 
 
-Connect-MsolService -Credential $creds
+    $creds = New-Object System.Management.Automation.PSCredential -ArgumentList $LoginOffice, $secureStringPwd
 
-# Création des comptes
+    Connect-MsolService -Credential $creds
 
-## init des variables
+    # Création des comptes
+
+    ## init des variables
 
 
-new-MSolUSER -DisplayNAme $($StagPrenom + $StagNom) -FirstName $StagPrenom -LastName $Stagnom -UserPrincipalName $StagMAil -Password $StagmdpTemp
-## Licence !!!!!
+    new-MSolUSER -DisplayNAme $($Prenom + $Nom) -FirstName $Prenom -LastName $Nom -UserPrincipalName $StagMAil -Password $StagmdpTemp
+}
