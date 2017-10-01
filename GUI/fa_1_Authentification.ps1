@@ -91,7 +91,8 @@ do{
         $ADusername = $TextBoxUsername.text
         $ADpassword = $TextBoxPassword.text
 
-        if ( controlUserCredentials -eq 'vrai'){
+        $authenticated = controlUserCredentials
+        if ( $authenticated -eq 'vrai'){
             Invoke-Expression "..\GUI\fa_2_Accueil.ps1"
             $i = 1
             break

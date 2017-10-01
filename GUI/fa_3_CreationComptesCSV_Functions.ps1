@@ -225,6 +225,7 @@ Function ImporterCSV {
 
                 if ($creation -eq $true)
                 {
+                    $plateforme = $plateforme.name
                     &"$scriptCreationPlateforme"
                 }
                 

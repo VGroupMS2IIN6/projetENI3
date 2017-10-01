@@ -27,7 +27,7 @@
 
         $GroupMicrosoftImagine = "Microsoft_Imagine"
 
-        Add-ADGroupMember -identity $GroupKivuto -Members $StagSAMAN -Server NomDomainStag -Credential $creds
+        Add-ADGroupMember -identity $GroupMicrosoftImagine -Members $StagSAMAN -Server NomDomainStag -Credential $creds
         $status = "OK"
         $action = "création"
         # on log ajoute les informations dans la base de données

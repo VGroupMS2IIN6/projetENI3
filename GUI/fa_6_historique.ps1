@@ -3,6 +3,11 @@ Add-Type -AssemblyName System.Drawing
 
 . "../ps/fg_1-1_DBUtils.ps1"
 
+if ($ADusername -eq $NULL)
+{
+    exit
+}
+
 $dataGridHisto = New-Object System.Windows.Forms.DataGridView
 $pickerDateHeure = New-Object System.Windows.Forms.DateTimePicker
 $textBoxUser = New-Object System.Windows.Forms.TextBox

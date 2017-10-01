@@ -110,6 +110,7 @@ Function MakeMenuParametres {
 
     $script:dataGridParametres.Location = New-Object System.Drawing.Point(10,50)
     $script:dataGridParametres.Size = New-Object System.Drawing.Size(655,450)
+    $script:dataGridParametres.BackgroundColor = [System.Drawing.Color]::GhostWhite
     $script:dataGridParametres.AllowUserToAddRows = $false
     $script:dataGridParametres.AllowUserToDeleteRows = $false
     $script:dataGridParametres.MultiSelect = $false

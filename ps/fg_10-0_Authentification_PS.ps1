@@ -26,7 +26,7 @@ function controlUserCredentials
         $pc = New-Object System.DirectoryServices.AccountManagement.PrincipalContext $ct,$nomDomaineGroupeENI
         if($pc.ValidateCredentials($ADusername,$ADpassword) -eq $true)
             {
-            echo 'VRAI3'
+            echo 'vrai'
             $global:return = 'vrai'
             }
         else

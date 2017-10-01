@@ -6,10 +6,9 @@ Add-Type -AssemblyName System.Drawing
 
 OpenDB
 
-if ($ADusername -eq $NULL)
+if ($ADusername.length -eq 0)
 {
-    #exit
-    $ADusername = "sartu"
+    exit
 }
 
 # Creation des composants dont on aura besoin plus tard
@@ -20,7 +19,7 @@ $dataGridHisto = New-Object System.Windows.Forms.DataGridView
 Function FillDataGrid {
     # récupération de l'historique
     $reqSel = "select h.timestamp, h.utilisateur, h.action, h.statut, h.stagiaire, h.typeCompte, h.site, h.formation from historique h"
-    $reqSel += " order by h.timestamp desc limit 20"
+    $reqSel += " order by h.timestamp desc limit 18"
     $historiques = MakeRequest $reqSel
 
     # alimentation des lignes
