@@ -59,6 +59,42 @@ Function FillDataGrid {
         $colPrenom.Name = "Prénom"
         $colPrenom.ReadOnly = $true
         $script:dataGridView.Columns.Add($colPrenom)
+        $colCodeStagiaire = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colCodeStagiaire.Width = 120
+        $colCodeStagiaire.Name = "CodeStagiaire"
+        $colCodeStagiaire.ReadOnly = $true
+        $colCodeStagiaire.Visible = $false
+        $script:dataGridView.Columns.Add($colCodeStagiaire)
+        $colDateNaissance = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colDateNaissance.Width = 120
+        $colDateNaissance.Name = "DateNaissance"
+        $colDateNaissance.ReadOnly = $true
+        $colDateNaissance.Visible = $false
+        $script:dataGridView.Columns.Add($colDateNaissance)
+        $colDebutFormation = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colDebutFormation.Width = 120
+        $colDebutFormation.Name = "DebutFormation"
+        $colDebutFormation.ReadOnly = $true
+        $colDebutFormation.Visible = $false
+        $script:dataGridView.Columns.Add($colDebutFormation)
+        $colFinFormation = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colFinFormation.Width = 120
+        $colFinFormation.Name = "FinFormation"
+        $colFinFormation.ReadOnly = $true
+        $colFinFormation.Visible = $false
+        $script:dataGridView.Columns.Add($colFinFormation)
+        $ColEmail = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $ColEmail.Width = 120
+        $ColEmail.Name = "Email"
+        $ColEmail.ReadOnly = $true
+        $ColEmail.Visible = $false
+        $script:dataGridView.Columns.Add($ColEmail)
+        $colSamAccountName = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colSamAccountName.Width = 120
+        $colSamAccountName.Name = "SamAccountName"
+        $colSamAccountName.ReadOnly = $true
+        $colSamAccountName.Visible = $false
+        $script:dataGridView.Columns.Add($colSamAccountName)
     
         # ajout des colonnes à partir de la liste des plateformes
         foreach($plateforme in $plateformes) {
@@ -66,6 +102,7 @@ Function FillDataGrid {
             $col.Width = 70
             $col.Name = $plateforme.nom
             $script:dataGridView.Columns.Add($col)
+            #TODO gérer l'espace dans la dernière colonne
         }
 
         # on ajoute une première ligne pour permettre de cocher les colonnes
@@ -86,8 +123,7 @@ Function FillDataGrid {
         $fichier = Import-Csv ..\temp\import_traite.csv
         rm ..\temp\import.csv
         foreach($row in $fichier) {
-            $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom)
-        
+            $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom, $row.CodeStagiaire, $row.DateNaissance, $row.debutde, $row.dateFin, $row.EmailCampus, $row.SAMAccountName)        
             foreach($plateformeDefault in $plateformesDefaut) {
                 for($i=0;$i -lt $script:dataGridView.ColumnCount;$i++) {
                     if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom) {
@@ -144,8 +180,40 @@ Function FillFormation {
 }
 
 Function ImporterCSV {
-    #TODO : réaliser les différentes moulinettes
+    foreach ($plateforme in $dataGridView.Columns )
+    {
+        if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName')
+        {
+            $scriptCreationPlateforme = "creation_" + $plateforme
+            for($i = 1;$i -lt $script:dataGridView.RowCount;$i++) {
+                $Nom = $script:dataGridView.Rows[$i].Cells[1].Value
+                $NomSSCaratSpec = Remove-StringDiacritic $Nom
+                $Prenom = $script:dataGridView.Rows[$i].Cells[2].Value
+                $PrenomSSCaratSpec = Remove-StringDiacritic $Prenom
+                $CodeStagiaire = $script:dataGridView.Rows[$i].Cells[3].Value
+                $DateNaissance = $script:dataGridView.Rows[$i].Cells[4].Value
+                $DebutFormation = $script:dataGridView.Rows[$i].Cells[5].Value
+                $FinFormation = $script:dataGridView.Rows[$i].Cells[6].Value
+                $Email = $script:dataGridView.Rows[$i].Cells[7].Value
+                $SamAccountName = $script:dataGridView.Rows[$i].Cells[8].Value
+                $creation = $script:dataGridView.Rows[$i].Cells[$plateforme.DisplayIndex].Value
 
+                if ($Email -eq '')
+                {
+                    $annee = get-date -Format yyyy
+                    $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
+                    $domaine = makeRequest $reqsel
+                    $email = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine)
+                }
+
+                if ($creation -eq $true)
+                {
+                    &"$scriptCreationPlateforme"
+                }
+                
+            }
+        }
+    }
     $typeBouton = [System.Windows.Forms.MessageBoxButtons]::OK
     $typeIcone = [System.Windows.Forms.MessageBoxIcon]::Information
     [System.Windows.Forms.MessageBox]::Show("L'import est terminé", "Information", $typeBouton, $typeIcone)
