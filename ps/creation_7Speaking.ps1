@@ -9,7 +9,7 @@ function creation_7speaking
         $fileExist = test-path ../temp/7speaking.csv
         if ($fileExist -eq $false)
         {
-            Add-Content -Path ../temp/7Speaking.csv  -Value '"Nom","Prenom","email","ID interne","Date debut de formation","duree"'  
+            Add-Content -Path ../temp/7speaking.csv  -Value '"Nom","Prenom","email","ID interne","Date debut de formation","duree"'  
         }
 
         $login = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + $NomSSCaratSpec.ToLower())
@@ -18,22 +18,31 @@ function creation_7speaking
         "'" + $nom + "','" + $prenom + "','" + $login + "'"
         )
 
-          $stagiaires7Sspeaking | foreach { Add-Content -Path ../temp/7Speaking.csv -Value $_ }
+          $stagiaires7Sspeaking | foreach { Add-Content -Path ../temp/7speaking.csv -Value $_ }
     }
     else
     {
-        $result = makeRequest ("Select nom, mail FROM plateforme WHERE nom = '7Speaking';")
-        $mail7Speaking = $result.mail
+        # on vérifie l'existence d'un CSV
+        $fileExist = test-path ../temp/7speaking.csv
+        if ($fileExist -eq $true)
+        {
+            $result = makeRequest ("Select nom, mail FROM plateforme WHERE nom = '7Speaking';")
+            $mail7Speaking = $result.mail
 
-        # Récupération de l'adresse du SMTP de l'ENI
-        $result = makeRequest ("Select nom, param FROM parametres WHERE nom = 'smtp_ip';")
-        $IPSmtp = $result.param
-        $result = makeRequest ("Select nom, param FROM parametres WHERE nom = 'smtp_port';")
-        $PortSmtp = $result.param
-        $result = makeRequest ("Select nom, param FROM parametres WHERE nom = 'smtp_expediteur';")
-        $EmetteurSmtp = $result.param
-        #Envoi du mail avec le CSV
-        Send-MailMessage -From $EmetteurSmtp -To $mail7Speaking -Subject "ENI Ecole - Creation de comptes 7Speaking" -Body "Bonjour, veuillez trouver ci joint le fichier CSV contenant les comptes 7Speaking" -Attachments "../temp/7Speaking.csv" -SmtpServer $IPSmtp
-        rm ../temp/7Speaking.csv
+            # Récupération de l'adresse du SMTP de l'ENI
+            $result = makeRequest ("Select nom, param FROM parametres WHERE nom = 'smtp_ip';")
+            $IPSmtp = $result.param
+            $result = makeRequest ("Select nom, param FROM parametres WHERE nom = 'smtp_port';")
+            $PortSmtp = $result.param
+            $result = makeRequest ("Select nom, param FROM parametres WHERE nom = 'smtp_expediteur';")
+            $EmetteurSmtp = $result.param
+
+            #Conversion du CSV en unicode
+            Get-Content ..\temp\7speaking.csv -encoding string | Out-File -FilePath ..\temp\creation_7speaking.csv -Encoding Unicode
+            rm ../temp/7speaking.csv
+            #Envoi du mail avec le CSV
+            Send-MailMessage -From $EmetteurSmtp -To $mail7Speaking -Subject "ENI Ecole - Creation de comptes 7Speaking" -Body "Bonjour, veuillez trouver ci joint le fichier CSV contenant les comptes 7Speaking" -Attachments "../temp/creation_7speaking.csv" -SmtpServer $IPSmtp
+            rm ../temp/creation_7speaking.csv
+        }
     }
 }
