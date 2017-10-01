@@ -258,6 +258,11 @@ Function ModifyPlateforme {
             $reqInsertProfilDroitsPlateformes += " where ass_droit_plateforme.plateforme = " + $idNewPlateforme.id
             MakeRequest $reqInsertProfilDroitsPlateformes
 
+            # on ajoute les droits pour les plateformes
+            $reqInsertPlateformesFormations = "INSERT INTO ass_plateforme_formation(plateforme, formation, defaut)"
+            $reqInsertPlateformesFormations += " select " + $idNewPlateforme.id + ", formation.ID, 0 from formation"
+            MakeRequest $reqInsertPlateformesFormations
+
             # on cache le champ nom et on affiche la combo-box
             $script:textBoxNom.Visible = $false
             $script:ComboBoxPlateformes.Visible = $true
