@@ -18,7 +18,6 @@ function creation_active_directory
         Import-Module ActiveDirectory
 
         # Génération du mot de passe temporaire
-        $StagPassTemp = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance
 
         # Génération SAMAcount NAme
         $StagSAMAN = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee)
@@ -29,11 +28,10 @@ function creation_active_directory
         }
 
         # Génération de la Secure String pour le mdp stagiaire
-        $SecStagPassTemp = $StagPassTemp | ConvertTo-SecureString -AsPlainText -Force 
+        $SecPasswordStagiaire = $password | ConvertTo-SecureString -AsPlainText -Force 
 
-        echo $StagSAMAN
 
-        New-ADUser -Name $($Prenom + $Nom) -description $("Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire)  -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStag -AccountPassword $SecStagPassTemp -Credential $creds
+        New-ADUser -Name $($Prenom + $Nom) -description $("Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire)  -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStag -AccountPassword $SecPasswordStagiaire -Credential $creds
         $status = "OK"
         $action = "création"
         # on log ajoute les informations dans la base de données
