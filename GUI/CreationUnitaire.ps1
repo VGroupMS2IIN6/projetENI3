@@ -13,6 +13,7 @@ Add-Type -AssemblyName System.Drawing
 . "../ps/creation_office_365.ps1"
 . "../ps/creation_cisco.ps1"
 . "../ps/creation_mediaplus.ps1"
+. "../ps/creation_microsoft_imagine.ps1"
 
 
 #if ($ADusername -eq $NULL)

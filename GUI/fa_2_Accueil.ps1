@@ -97,7 +97,7 @@ Function MakeForm {
     $ButtonUnit.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
     $ButtonUnit.Text = "Creation Compte Unitaire"
-    $ButtonUnit.add_Click({.\CreationUnitaire.ps1})
+    $ButtonUnit.add_Click({.\CreationUnitaire.ps1;FillDataGrid})
 
     $toolTipButtonUnit = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonUnit.SetToolTip($ButtonUnit, "création d'un compte stagiaire")
