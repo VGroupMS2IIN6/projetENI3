@@ -11,11 +11,11 @@ function creation_7speaking
         $mail7Speaking = $result.mail
 
         # Récupération de l'adresse du SMTP de l'ENI
-        $result = SQLRequest ("Select nom, param FROM parametre WHERE nom = 'smtp_ip';")
+        $result = makeRequest ("Select nom, param FROM parametre WHERE nom = 'smtp_ip';")
         $IPSmtp = $result.param
-        $result = SQLRequest ("Select nom, param FROM parametre WHERE nom = 'smtp_port';")
+        $result = makeRequest ("Select nom, param FROM parametre WHERE nom = 'smtp_port';")
         $PortSmtp = $result.param
-        $result = SQLRequest ("Select nom, param FROM parametre WHERE nom = 'smtp_expediteur';")
+        $result = makeRequest ("Select nom, param FROM parametre WHERE nom = 'smtp_expediteur';")
         $EmetteurSmtp = $result.param
 
         # Génération d'un CSV pour 7Speaking
