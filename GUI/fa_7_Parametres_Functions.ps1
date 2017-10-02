@@ -932,7 +932,7 @@ Function MakeForm {
     $ButtonDefProfils = New-Object System.Windows.Forms.Button
     $ButtonDefProfils.Location = New-Object System.Drawing.Point(40,160)
     $ButtonDefProfils.Size = New-Object System.Drawing.Size(200,50)
-    $ButtonDefProfils.Text = "profils"
+    $ButtonDefProfils.Text = "Profils"
     $ButtonDefProfils.Add_Click({MakeMenuDefProfils})
     $toolTipButtonDefProfils = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonDefProfils.SetToolTip($ButtonDefProfils, "création des profils et assignation des droits")
@@ -940,7 +940,7 @@ Function MakeForm {
     $ButtonAssProfils = New-Object System.Windows.Forms.Button
     $ButtonAssProfils.Location = New-Object System.Drawing.Point(40,220)
     $ButtonAssProfils.Size = New-Object System.Drawing.Size(200,50)
-    $ButtonAssProfils.Text = "utilisateurs"
+    $ButtonAssProfils.Text = "Utilisateurs"
     $ButtonAssProfils.Add_Click({MakeMenuAssProfils})
     $toolTipButtonAssProfils = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonAssProfils.SetToolTip($ButtonAssProfils, "création des comptes utilisateurs et assignation des profils")
