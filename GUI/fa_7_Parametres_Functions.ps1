@@ -370,6 +370,7 @@ Function MakeMenuPlateformes {
 
     $script:textBoxMdp.Location = New-Object System.Drawing.Point(220,210)
     $script:textBoxMdp.Size = New-Object System.Drawing.Size(200,22)
+    $script:textBoxMdp.PasswordChar = '•'
 
     $labelRegexMdp = New-Object System.Windows.Forms.Label
     $labelRegexMdp.Location = New-Object System.Drawing.Point(10,250)

@@ -44,7 +44,7 @@ $LabelPassword.Text = "Mot de passe"
 $LabelPassword.Location = New-Object System.Drawing.Point(110,160)
 $LabelPassword.Size = New-Object System.Drawing.Size(100,20)
 
-# Champ texte Nom d'utilisateur
+# Champ texte password
 $TextBoxPassword = New-Object System.Windows.Forms.TextBox 
 $TextBoxPassword.Location = New-Object System.Drawing.Size(110,180) 
 $TextBoxPassword.Size = New-Object System.Drawing.Size(250,20)
@@ -91,8 +91,7 @@ do{
         $ADusername = $TextBoxUsername.text
         $ADpassword = $TextBoxPassword.text
 
-        $authenticated = controlUserCredentials
-        if ( $authenticated -eq 'vrai'){
+        if ( controlUserCredentials -eq 'vrai'){
             Invoke-Expression "..\GUI\fa_2_Accueil.ps1"
             $i = 1
             break
