@@ -7,7 +7,6 @@ function GenerationMdpTemp
     $nomPlateforme = $plateformeBase -replace "_"," "
     $reqRegexMdp = 'select regexMDP from plateforme where nom = "' + $nomPlateforme + '";'
     $regexmdp = makeRequest $reqRegexMdp
-    $testeu = $($prenom.Substring(0,2).ToLower() + $nom.Substring(0,2).ToUpper() + $DateNaissance.Substring(0,2).ToUpper() + "@")
     if ($regexmdp.regexMDP.Length -gt 0)
     {
         # Génération du mot de passe

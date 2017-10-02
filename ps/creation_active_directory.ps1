@@ -8,7 +8,8 @@ function creation_active_directory
         $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
         $LoginDomainStag = $result.identifiant
         $PasswordDomainStag = $result.MDP
-        $NomDomainStag = $result.domaine + ":389"
+        $NomDomainStag = $result.domaine
+        $NomDomainStagPort = $NomDomainStag + ":389"
 
 
         $SecPassDomainStag = $PasswordDomainStag | ConvertTo-SecureString -AsPlainText -Force 
@@ -28,10 +29,13 @@ function creation_active_directory
         }
 
         # Génération de la Secure String pour le mdp stagiaire
-        $SecPasswordStagiaire = $password | ConvertTo-SecureString -AsPlainText -Force 
-
-
-        New-ADUser -Name $($Prenom + $Nom) -description $("Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire)  -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStag -AccountPassword $SecPasswordStagiaire -Credential $creds
+        $PasswordStagiaireSecure = $password | ConvertTo-SecureString -AsPlainText -Force 
+        $groupe = "GG_" + $formation + "_" + $site
+        $description = "Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire
+        $name = $Prenom + $Nom
+        $UserPrincipalName = $StagSAMAN + "@" + $NomDomainStag
+        New-ADUser -Name $name -description $description  -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStagPort -UserPrincipalName $UserPrincipalName -AccountPassword $PasswordStagiaireSecure -Credential $creds
+        Add-ADGroupMember -identity $groupe -Member $StagSAMAN -Server $NomDomainStagPort -Credential $creds
         $status = "OK"
         $action = "création"
         # on log ajoute les informations dans la base de données
