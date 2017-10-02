@@ -34,8 +34,10 @@ function creation_active_directory
         $description = "Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire
         $name = $Prenom + $Nom
         $UserPrincipalName = $StagSAMAN + "@" + $NomDomainStag
+        $UserLDAP = 'CN=' + $prenom + $nom + ',CN=Users,DC=campus-eni,DC=ovh'
         New-ADUser -Name $name -description $description  -surname $Nom -GivenName $Prenom -SamAccountName $StagSAMAN -Server $NomDomainStagPort -UserPrincipalName $UserPrincipalName -AccountPassword $PasswordStagiaireSecure -Credential $creds -PassThru | Enable-ADAccount
         Add-ADGroupMember -identity $groupe -Member $StagSAMAN -Server $NomDomainStagPort -Credential $creds
+        Move-ADObject $UserLDAP -TargetPath 'OU=ComptesUtilisateurs,DC=campus-eni,DC=ovh' -Server $NomDomainStagPort -Credential $creds
         $status = "OK"
         $action = "création"
         # on log ajoute les informations dans la base de données
