@@ -225,7 +225,8 @@ Function ImporterCSV {
 
                 if ($creation -eq $true)
                 {
-                    $plateforme = $plateforme.name
+                    $plateformeBase = $plateforme.name
+                    $password = GenerationMdpTemp
                     &"$scriptCreationPlateforme"
                 }
                 

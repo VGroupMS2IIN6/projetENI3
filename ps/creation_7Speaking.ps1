@@ -14,9 +14,13 @@ function creation_7speaking
 
         $login = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + $NomSSCaratSpec.ToLower())
         $duree = $FinFormation.Substring(6,4) - $DebutFormation.Substring(6,4)
+        if ($duree = 0)
+        {
+            $duree = 1
+        }
 
         $stagiaires7Sspeaking = @(
-            "'" + $nom + "','" + $prenom + "','" + $login + "'" + $CodeStagiaire + "','" + $DebutFormation + "','" + $duree + "'"
+            "'" + $nom + "','" + $prenom + "','" + $email + "','" + $CodeStagiaire + "','" + $DebutFormation + "','" + $duree + "'"
         )
 
         $stagiaires7Sspeaking | foreach { Add-Content -Path ../temp/7speaking.csv -Value $_ }
@@ -25,7 +29,7 @@ function creation_7speaking
         # on log ajoute les informations dans la base de données
         $timestamp = Get-Date -Format "yyyy-MM-dd hh:mm:ss"
         $reqinsertHist = "INSERT INTO projet_eni.historique (action, statut, timestamp, utilisateur, stagiaire, typeCompte, site, formation)"
-        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $nom + " " + $prenom + "', '" + $plateforme +"', '" + $site + "', '" + $formation + "');"
+        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $nom + " " + $prenom + "', '" + $plateformeBase +"', '" + $site + "', '" + $formation + "');"
         makeRequest $reqinsertHist
     }
     else

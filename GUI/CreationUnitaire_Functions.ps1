@@ -65,14 +65,14 @@ Function SelectPlateformes {
     $PrenomSSCaratSpec = Remove-StringDiacritic $TextBoxPrenom.Text
     $Nom = $TextBoxNom.Text
     $Prenom = $TextBoxPrenom.Text
-    $Naissance = $datePickerNaissance.Text
+    $DateNaissance = $datePickerNaissance.Text
     $DebutFormation = $datePickerDebutContrat.Text
     $FinFormation = $datePickerFinContrat.Text
     $formation = $comboBoxFormation.Text
     $site = $comboBoxSite.Text
     $annee = get-date -Format yyyy
-    $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
-    $domaine = makeRequest $reqsel
+    $reqselDomaine = "select domaine from plateforme where nom = 'Active Directory';"
+    $domaine = makeRequest $reqselDomaine
     $email = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine.domaine)
 
     # on ajoute les infos du stagiaire dans la base de données
@@ -91,8 +91,9 @@ Function SelectPlateformes {
     $vide = $null
     foreach($item in $script:listBoxplateformes.CheckedItems) {
         $plateforme = $item.nom -replace  ' ','_'
+        $plateformeBase = $item.nom
         $scriptCreationPlateforme = "creation_" + $plateforme
-        #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance $plateforme
+        #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $DateNaissance $plateforme
         $password = GenerationMdpTemp
         &"$scriptCreationPlateforme"
     }
@@ -100,8 +101,9 @@ Function SelectPlateformes {
     $vide = $true
     foreach($item in $script:listBoxplateformes.CheckedItems) {
         $plateforme = $item.nom -replace  ' ','_'
+        $plateformeBase = $item.nom
         $scriptCreationPlateforme = "creation_" + $plateforme
-        #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $Naissance $plateforme
+        #$Password = . "..\ps\fg_3-0_GenerationMdpTemp_PS.ps1" $Prenom $Nom $DateNaissance $plateforme
         &"$scriptCreationPlateforme"
     }
 }
