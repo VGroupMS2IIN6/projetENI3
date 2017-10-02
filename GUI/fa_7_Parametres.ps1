@@ -6,7 +6,8 @@ Add-Type -AssemblyName System.Drawing
 
 if ($ADusername -eq $NULL)
 {
-    exit
+    #exit
+    $ADusername = "sartu"
 }
 
 OpenDB

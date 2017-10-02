@@ -5,7 +5,8 @@ Add-Type -AssemblyName System.Drawing
 . "../GUI/fa_4_GestionFormationSite_Functions.ps1"
 if ($ADusername -eq $NULL)
 {
-    exit
+    #exit
+    $ADusername = "sartu"
 }
 OpenDB
 

@@ -5,7 +5,8 @@ Add-Type -AssemblyName System.Drawing
 
 if ($ADusername -eq $NULL)
 {
-    exit
+    #exit
+    $ADusername = "sartu"
 }
 
 $dataGridHisto = New-Object System.Windows.Forms.DataGridView

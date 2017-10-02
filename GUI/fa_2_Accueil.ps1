@@ -8,7 +8,8 @@ OpenDB
 
 if ($ADusername.length -eq 0)
 {
-    exit
+    #exit
+    $ADusername = "sartu"
 }
 
 # Creation des composants dont on aura besoin plus tard

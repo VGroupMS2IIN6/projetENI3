@@ -18,10 +18,11 @@ Add-Type -AssemblyName System.Drawing
 . "../ps/creation_microsoft_imagine.ps1"
 
 
-#if ($ADusername -eq $NULL)
-#{
-#    exit'
-#}
+if ($ADusername -eq $NULL)
+{
+    #exit
+    $ADusername = "sartu"
+}
 
 OpenDB
 
