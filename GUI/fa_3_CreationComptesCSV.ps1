@@ -9,14 +9,6 @@ Add-Type -AssemblyName System.Drawing
 . "../ps/RemoveStrangeChar.ps1"
 # chargement de la fonction de génération de mdp temp
 . "../ps/fg_3-0_GenerationMdpTemp_PS.ps1"
-#chargement des fonctions pour les créations
-. "../ps/creation_active_directory.ps1"
-. "../ps/creation_7speaking.ps1"
-. "../ps/creation_office_365.ps1"
-. "../ps/creation_cisco.ps1"
-. "../ps/creation_mediaplus.ps1"
-. "../ps/creation_microsoft_imagine.ps1"
-
 
 if ($ADusername -eq $NULL)
 {
@@ -24,6 +16,16 @@ if ($ADusername -eq $NULL)
     $ADusername = "sartu"
 }
 OpenDB
+
+#chargement des fonctions pour les créations
+$reqsel = "select nom from plateforme;"
+$scriptsPlateformes = makeRequest $reqsel
+$scriptsPlateformes = $scriptsplateformes.nom -replace " ","_"
+foreach ($scriptPlateforme in $scriptsPlateformes)
+{
+    $scriptPlateforme = "creation_" + $scriptplateforme + ".ps1"
+    . "../ps/$scriptPlateforme"
+}
 
 $formations = MakeRequest "select * from formation"
 $sites = MakeRequest "select * from site"
