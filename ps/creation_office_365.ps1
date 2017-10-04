@@ -6,12 +6,14 @@
         $Mail = "testENI1@campus-gscls.com"
        
         # connexion à Office 365
-        #$LoginOffice = "jblanchard@gsc49.fr"
-        #$PasswordOffice = "JbgFMsDL@"
 
         $result = makeRequest ("Select * FROM plateforme WHERE nom = 'Office 365';")
         $LoginOffice = $result.identifiant
         $PasswordOffice = $result.MDP
+
+        #### DEBUG
+        $LoginOffice = "adminENI@gsc49.fr"
+        $PasswordOffice = "vgrouproxx@1"
 
         $secureStringPwd = $PasswordOffice | ConvertTo-SecureString -AsPlainText -Force 
 
@@ -24,7 +26,17 @@
         ## init des variables
         $SecPasswordStagiaire = $password | ConvertTo-SecureString -AsPlainText -Force
 
-        new-MSolUSER -DisplayNAme $($Prenom + $Nom) -FirstName $Prenom -LastName $Nom -UserPrincipalName $StagMAil -Password $SecPasswordStagiaire
+
+        ## Pour démo uniquement
+        ### Sélection du groupe pour démo ENI (JB)
+        $GroupId = Get-MsolGroup -SearchString "S_ENI_TEST"
+
+        $O365usernew = new-MSolUSER -DisplayNAme $($Prenom + $Nom) -FirstName $Prenom -LastName $Nom -UserPrincipalName $StagMAil -Password $SecPasswordStagiaire
+
+        ## Pour démo uniquement
+        ### Ajout du compte dans le groupe de sécurité pour démo ENI (JB)
+        Add-MsolGroupMember -GroupObjectId $GroupId.ObjectId -GroupMemberType User -GroupMemberObjectId $O365usernew.ObjectId
+
         $status = "OK"
         $action = "création"
         # on log ajoute les informations dans la base de données
