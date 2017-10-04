@@ -1,4 +1,4 @@
-function foo
+function creation_foo
 {
     [System.Windows.Forms.MessageBox]::Show("Bar `n Super facile de rajouter une plateforme !!!")
 }
