@@ -1,6 +1,8 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+. "../ps/chiffrement_mdp.ps1"
+. "../ps/dechiffrement_mdp.ps1"
 
 $parametres = @{
     "nom_domaine_ENI_Groupe" = "Nom domaine ENI Group";
@@ -228,7 +230,7 @@ Function ModifyPlateforme {
                 $reqInsert += "identifiant,"
                 $reqValues += "'" + $script:textBoxUser.Text + "',"
             }
-             if(-not [string]::IsNullOrEmpty($script:textBoxMDP.Text)) {
+            if(-not [string]::IsNullOrEmpty($script:textBoxMDP.Text)) {
                 $reqInsert += "MDP,"
                 $reqValues += "'" + $script:textBoxMDP.Text + "',"
             }
@@ -285,7 +287,11 @@ Function ModifyPlateforme {
         $reqUpdate += " URL='" + $script:textBoxURL.Text + "',"
         $reqUpdate += " mail='" + $script:textBoxMail.Text + "',"
         $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
-        $reqUpdate += " MDP='" + $script:textBoxMdp.Text + "',"
+
+        ##### Chiffrement mot de passe #####
+        $MDPSecure = Chiffrement $script:textBoxMDP.Text
+
+        $reqUpdate += " MDP='" + $MDPSecure  + "',"
         $reqUpdate += " RegexMDP='" + $script:textBoxRegexMdp.Text + "',"
         $reqUpdate += " obligatoire=" + $script:checkBoxObligatoire.Checked
         $reqUpdate += " where id=" + $script:ComboBoxPlateformes.SelectedItem.id
