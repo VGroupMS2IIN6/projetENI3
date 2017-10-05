@@ -36,6 +36,8 @@ $reqSel += " join profil pf on pdp.profil = pf.ID"
 $reqSel += " join ass_profil_utilisateur pu on pu.profil = pf.ID and pu.accord = 1"
 $reqSel += " join utilisateur u on pu.utilisateur = u.ID"
 $reqSel += " where u.login = '" + $ADusername + "'"
+$reqSel += " order by p.nom"
+$reqSel += " not in (select p.nom from plateforme p where p.nom = 'active directory');"
 $plateformes = MakeRequest $reqSel
 
 MakeForm

@@ -221,7 +221,7 @@ Function FillDataGrid {
 
 Function ImporterCSV {
     # pour chaque plateforme existante
-    foreach ($plateforme in $dataGridView.Columns )
+    foreach ($plateforme in $dataGridView.Columns)
     {
         # si il s'agit d'une colonne avec le nom d'une plateforme
         if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'CodePromotion' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName')
