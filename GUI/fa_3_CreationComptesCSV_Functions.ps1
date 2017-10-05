@@ -2,8 +2,6 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $textBoxFichier = New-Object System.Windows.Forms.TextBox
-$labelFormation = New-Object System.Windows.Forms.Label
-$comboBoxFormation = New-Object System.Windows.Forms.ComboBox
 $labelSite = New-Object System.Windows.Forms.Label
 $comboBoxSite = New-Object System.Windows.Forms.ComboBox
 $dataGridView = New-Object System.Windows.Forms.DataGridView
@@ -83,6 +81,12 @@ Function FillDataGrid {
         $colFinFormation.ReadOnly = $true
         $colFinFormation.Visible = $false
         $script:dataGridView.Columns.Add($colFinFormation)
+        $colCodePromotion = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
+        $colCodePromotion.Width = 120
+        $colCodePromotion.Name = "formation"
+        $colCodePromotion.ReadOnly = $true
+        $colCodePromotion.Visible = $true
+        $script:dataGridView.Columns.Add($colCodePromotion)
         $ColEmail = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $ColEmail.Width = 120
         $ColEmail.Name = "Email"
@@ -107,35 +111,52 @@ Function FillDataGrid {
         # on ajoute une première ligne pour permettre de cocher les colonnes
         $script:dataGridView.Rows.Add($false,"","")
 
-        # on récupère la liste des plateformes filtrées en fonction de la formation sélectionnée
-        $reqSel = "select p.* from plateforme p"
-        $reqSel += " join ass_plateforme_formation pf on pf.plateforme = p.id"
-        $reqSel += " where pf.defaut = 1"
-        $reqSel += " and pf.formation = " + $script:comboBoxFormation.SelectedItem.id
+        #on requête pour relever les plateformes par défaut
+        $reqsel = "select p.*, f.nom nomformation, pf.formation idformation, pf.defaut"
+        $reqsel += " from plateforme p"
+        $reqsel += " join ass_plateforme_formation pf on pf.plateforme = p.id"
+        $reqsel += " join formation f on f.id = pf.formation"
         $plateformesDefaut = MakeRequest $reqSel
-        foreach($plateformeDefault in $plateformesDefaut) {
-            for($i=9;$i -lt $script:dataGridView.ColumnCount;$i++) {
-                # on parcourt les colonnes qui contiennent les plateformes
-                if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom) {
-                    $script:dataGridView.Rows[0].Cells[$i].Value = $true
-                }
-            }
-        }
-
         #conversion du CSV en unicode pour traitement et import
         Get-Content $script:textBoxFichier.Text -encoding string | Out-File -FilePath ..\temp\import.csv -Encoding Unicode
         # retrait des doublons
-        Import-Csv ..\temp\import.csv | Sort-Object CodeStagiaire -Unique | Sort-Object Nom | Export-Csv ..\temp\import_traite.csv -NoTypeInformation -encoding "unicode"
+        Import-Csv ..\temp\import.csv | Sort-Object CodeStagiaire -Unique | Sort-Object Nom | Sort-Object CodePromotion | Export-Csv ..\temp\import_traite.csv -NoTypeInformation -encoding "unicode"
         # lecture du fichier csv
         $fichier = Import-Csv ..\temp\import_traite.csv
         rm ..\temp\import.csv
         foreach($row in $fichier) {
-            $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom, $row.CodeStagiaire, $row.DateNaissance, $row.debutde, $row.dateFin, $row.EmailCampus, $row.SAMAccountName)        
+            $reqsel = "select nom from formation"
+            $result = makeRequest $reqsel
+            $formations = $result.nom
+            $formationValide = "non valide"
+            foreach ($formation in $formations)
+            {
+                if ($row.CodePromotion.length -eq 0)
+                {
+                    $formationValide = "aucune formation"
+                }
+                elseif ($row.CodePromotion -like $formation + "*")
+                {
+                    # formation reconnue
+                    $formationValide = "$formation"
+                }
+                elseif ($formationValide -eq "non valide")
+                {
+                    $formationValide = "formation inconnue"
+                }
+            }
+            #on ajoute les valeurs de chaque stagiaire dans la datagridview
+            $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom, $row.CodeStagiaire, $row.DateNaissance, $row.debutde, $row.dateFin, $formationValide, $row.EmailCampus, $row.SAMAccountName)
+
             foreach($plateformeDefault in $plateformesDefaut) {
                 for($i=9;$i -lt $script:dataGridView.ColumnCount;$i++) {
                     # on parcourt les colonnes qui contiennent les plateformes
-                    if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom) {
+                    if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom -and $plateformeDefault.nomformation -eq $formationValide -and $plateformeDefault.defaut -eq 1) {
                         $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $true
+                    }
+                    if($formationValide -eq "aucune formation" -or $formationValide -eq "formation inconnue" )
+                    {
+                        $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].ReadOnly = $true
                     }
                 }
             }
@@ -158,7 +179,10 @@ Function FillDataGrid {
             if($EventArgs.RowIndex -eq 0 -and $EventArgs.ColumnIndex -gt 2) {
                 # on veut modifier l'état de toute une colonne
                 for($i = 1;$i -lt $script:dataGridView.RowCount;$i++) {
-                    $script:dataGridView.Rows[$i].Cells[$EventArgs.ColumnIndex].Value = $etat
+                    if($script:dataGridView.Rows[$i].Cells[$EventArgs.ColumnIndex].ReadOnly -eq $false)
+                    {
+                        $script:dataGridView.Rows[$i].Cells[$EventArgs.ColumnIndex].Value = $etat
+                    }
                 }
             }
             if($EventArgs.ColumnIndex -eq 0 -and $EventArgs.RowIndex -gt 0) {
@@ -171,28 +195,12 @@ Function FillDataGrid {
     }
 }
 
-Function FillFormation {
-    # on récupère la liste des formations filtrées en fonction du site sélectionné
-    $reqSel = "select f.* from formation f"
-    $reqSel += " join ass_formation_site fs on fs.formation = f.id"
-    $reqSel += " where fs.existe = 1"
-    $reqSel += " and fs.site = " + $script:comboBoxSite.SelectedItem.id
-    $script:formations = MakeRequest $reqSel
-
-    # on affiche la sélection du site
-    $script:labelFormation.Visible = $true
-    $script:comboBoxFormation.Visible = $true
-    FillComboBox $script:comboBoxFormation $script:formations "nom"
-    $script:comboBoxFormation.SelectedIndex = -1
-    $script:comboBoxFormation.add_SelectedIndexChanged({FillDataGrid})
-}
-
 Function ImporterCSV {
     # pour chaque plateforme existante
     foreach ($plateforme in $dataGridView.Columns )
     {
         # si il s'agit d'une colonne avec le nom d'une plateforme
-        if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName')
+        if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'CodePromotion' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName')
         {
             $scriptCreationPlateforme = "creation_" + $plateforme.name -replace " ","_"
             # pour chaque stagiaire dans dans la datagridview
@@ -206,8 +214,9 @@ Function ImporterCSV {
                 $DateNaissance = $script:dataGridView.Rows[$i].Cells[4].Value
                 $DebutFormation = $script:dataGridView.Rows[$i].Cells[5].Value
                 $FinFormation = $script:dataGridView.Rows[$i].Cells[6].Value
-                $Email = $script:dataGridView.Rows[$i].Cells[7].Value
-                $SamAccountName = $script:dataGridView.Rows[$i].Cells[8].Value
+                $FinFormation = $script:dataGridView.Rows[$i].Cells[7].Value
+                $Email = $script:dataGridView.Rows[$i].Cells[8].Value
+                $SamAccountName = $script:dataGridView.Rows[$i].Cells[9].Value
                 $creation = $script:dataGridView.Rows[$i].Cells[$plateforme.DisplayIndex].Value
                 $formation = $comboBoxFormation.Text
                 $site = $comboBoxSite.Text
@@ -254,7 +263,7 @@ Function Parcourir {
     $script:comboBoxSite.Visible = $true
     FillComboBox $script:comboBoxSite $script:sites "nom"
     $script:comboBoxSite.SelectedIndex = -1
-    $script:comboBoxSite.add_SelectedIndexChanged({FillFormation})
+    $script:comboBoxSite.add_SelectedIndexChanged({FillDataGrid})
 }
 
 Function MakeForm {
@@ -286,16 +295,6 @@ Function MakeForm {
     $script:comboBoxSite.Size = New-Object System.Drawing.Size(200,22)
     $script:comboBoxSite.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
     $script:comboBoxSite.Visible = $false
-
-    $labelFormation.Location = New-Object System.Drawing.Point(705,20)
-    $labelFormation.Size = New-Object System.Drawing.Size(200,22)
-    $labelFormation.Text = "3. Choisir la formation"
-    $labelFormation.Visible = $false
-    
-    $script:comboBoxFormation.Location = New-Object System.Drawing.Point(705,45)
-    $script:comboBoxFormation.Size = New-Object System.Drawing.Size(200,22)
-    $script:comboBoxFormation.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
-    $script:comboBoxFormation.Visible = $false
 
     $script:dataGridView.Location = New-Object System.Drawing.Point(20,80)
     $script:dataGridView.Size = New-Object System.Drawing.Size(940,485)
