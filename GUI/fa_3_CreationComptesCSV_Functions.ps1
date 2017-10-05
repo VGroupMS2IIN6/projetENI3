@@ -124,22 +124,27 @@ Function FillDataGrid {
         # lecture du fichier csv
         $fichier = Import-Csv ..\temp\import_traite.csv
         rm ..\temp\import.csv
+        $reqsel = "select nom from formation"
+        $result = makeRequest $reqsel
+        $formations = $result.nom
+        # pour chaque ligne dans le CSV
         foreach($row in $fichier) {
-            $reqsel = "select nom from formation"
-            $result = makeRequest $reqsel
-            $formations = $result.nom
             $formationValide = "non valide"
+            # pour chaque formation
             foreach ($formation in $formations)
             {
+                # on vérifie la longueur du champ CodePromotion dans le CSV
                 if ($row.CodePromotion.length -eq 0)
                 {
                     $formationValide = "aucune formation"
                 }
+                # on vérifie que la formation du CSV existe dans l'application
                 elseif ($row.CodePromotion -like $formation + "*")
                 {
                     # formation reconnue
                     $formationValide = "$formation"
                 }
+                # si la formation du CSV n'est pas reconnue
                 elseif ($formationValide -eq "non valide")
                 {
                     $formationValide = "formation inconnue"
@@ -147,16 +152,35 @@ Function FillDataGrid {
             }
             #on ajoute les valeurs de chaque stagiaire dans la datagridview
             $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom, $row.CodeStagiaire, $row.DateNaissance, $row.debutde, $row.dateFin, $formationValide, $row.EmailCampus, $row.SAMAccountName)
-
+            # pour chaque plateforme
             foreach($plateformeDefault in $plateformesDefaut) {
-                for($i=9;$i -lt $script:dataGridView.ColumnCount;$i++) {
-                    # on parcourt les colonnes qui contiennent les plateformes
-                    if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom -and $plateformeDefault.nomformation -eq $formationValide -and $plateformeDefault.defaut -eq 1) {
-                        $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $true
-                    }
+                # on parcourt les colonnes de la datagridview qui contiennent les plateformes
+                for($i=10;$i -lt $script:dataGridView.ColumnCount;$i++) {
+                    # si la formation n'est pas connue, on empêche de créer les comptes d'une plateforme.
                     if($formationValide -eq "aucune formation" -or $formationValide -eq "formation inconnue" )
                     {
-                        $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].ReadOnly = $true
+                        $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $false
+                        $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].ReadOnly = $true
+                    }
+                    else
+                    {
+                        # on vérifie que le nom de la colonne correspond a la plateforme
+                        if($script:dataGridView.Columns[$i].Name -eq $plateformeDefault.nom -and $plateformeDefault.nomformation -eq $formationValide)
+                        {
+                        # si le nom de formation est une formation valide et que la plateforme est une plateforme par défaut
+                            if ($plateformeDefault.defaut -eq $true) 
+                            {
+                            # on s'occupe des formations valides en cochant les plateformes par défaut
+                                $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $true
+                                $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].ReadOnly = $false
+                            }
+                            # si la plateforme est notée comme obligatoire, on force les plateformes obligatoires avec impossibilité de décocher.
+                            if ($plateformeDefault.obligatoire -eq $true)
+                            {
+                                $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $true
+                                $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].ReadOnly = $true
+                            }
+                        }
                     }
                 }
             }
