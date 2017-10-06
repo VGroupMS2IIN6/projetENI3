@@ -174,7 +174,7 @@ Function FillPlateforme {
         $script:textBoxURL.Text = $plateforme.URL
         $script:textBoxMail.Text = $plateforme.mail
         $script:textBoxUser.Text = $plateforme.identifiant
-        $script:textBoxMdp.Text = $plateforme.MDP
+        $script:textBoxMdp.Text = "******"
         $script:textBoxRegexMdp.Text = $plateforme.regexMDP
         $script:checkBoxObligatoire.Checked = $plateforme.obligatoire
     }
@@ -307,7 +307,7 @@ Function ModifyPlateforme {
         $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
 
         ##### Chiffrement mot de passe #####
-        if ($script:textBoxMDP -like "01000000*")
+        if ($script:textBoxMDP.Text -ne "******")
         {
             $MDPSecure = Chiffrement $script:textBoxMDP.Text
             $reqUpdate += " MDP='" + $MDPSecure  + "',"
