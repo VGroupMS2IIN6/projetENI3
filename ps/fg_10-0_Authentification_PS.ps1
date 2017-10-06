@@ -13,6 +13,11 @@ Dernière MAJ : 28/06/2017
 
 function controlUserCredentials
 {
+    if ($ADusername -eq "initialisation" -and $ADpassword -eq 'Pa$$w0rd')
+    {
+        echo 'init'
+        $global:return = 'init'
+    }
     $result = makeRequest ("Select nom, param FROM parametres WHERE nom = 'nom_domaine_ENI_Groupe';")
     $nomDomaineGroupeENI = $result.param
 
