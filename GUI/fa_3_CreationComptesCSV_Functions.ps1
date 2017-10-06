@@ -126,28 +126,28 @@ Function FillDataGrid {
         rm ..\temp\import.csv
         $reqsel = "select nom from formation"
         $result = makeRequest $reqsel
-        $formations = $result.nom
+        $script:formations = $result.nom
         # pour chaque ligne dans le CSV
         foreach($row in $fichier) {
-            $formationValide = "non valide"
+            $script:formationValide = "non valide"
             # pour chaque formation
-            foreach ($formation in $formations)
+            foreach ($script:formation in $script:formations)
             {
                 # on vérifie la longueur du champ CodePromotion dans le CSV
                 if ($row.CodePromotion.length -eq 0)
                 {
-                    $formationValide = "aucune formation"
+                    $script:formationValide = "aucune formation"
                 }
                 # on vérifie que la formation du CSV existe dans l'application
-                elseif ($row.CodePromotion -like $formation + "*")
+                elseif ($row.CodePromotion -like $script:formation + "*")
                 {
                     # formation reconnue
-                    $formationValide = "$formation"
+                    $script:formationValide = "$script:formation"
                 }
                 # si la formation du CSV n'est pas reconnue
-                elseif ($formationValide -eq "non valide")
+                elseif ($script:formationValide -eq "non valide")
                 {
-                    $formationValide = "formation inconnue"
+                    $script:formationValide = "formation inconnue"
                 }
             }
 
@@ -265,7 +265,7 @@ Function ImporterCSV {
     foreach ($plateforme in $dataGridView.Columns)
     {
         # si il s'agit d'une colonne avec le nom d'une plateforme
-        if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'CodePromotion' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName')
+        if ($plateforme.name -ne '' -and $plateforme.name -ne 'Nom' -and $plateforme.name -ne 'Prénom' -and $plateforme.name -ne 'CodeStagiaire' -and $plateforme.name -ne 'DateNaissance' -and $plateforme.name -ne 'DebutFormation' -and $plateforme.name -ne 'FinFormation' -and $plateforme.name -ne 'CodePromotion' -and $plateforme.name -ne 'Email' -and $plateforme.name -ne 'SamAccountName' -and $plateforme.name -ne 'Formation')
         {
             $scriptCreationPlateforme = "creation_" + $plateforme.name -replace " ","_"
             # pour chaque stagiaire dans dans la datagridview
@@ -284,10 +284,11 @@ Function ImporterCSV {
                 $Email = $script:dataGridView.Rows[$i].Cells[8].Value
                 $SamAccountName = $script:dataGridView.Rows[$i].Cells[9].Value
                 $UserPrincipalName = $email
-                $creation = $script:dataGridView.Rows[$i].Cells[$plateforme.DisplayIndex].Value
+                $creation = $script:dataGridView.Rows[$i].Cells[$plateforme.index].Value
                 $site = $comboBoxSite.Text
                 $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
                 $domaine = $result.domaine
+                $script:creation = $script:dataGridView.Rows[$i].Cells[$plateforme.index].Value
                 # Génération SAMAcount NAme
                 
                 # on ajoute les infos du stagiaire dans la base de données
