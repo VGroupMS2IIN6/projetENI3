@@ -94,12 +94,17 @@ do{
 
         $ADusername = $TextBoxUsername.text
         $ADpassword = $TextBoxPassword.text
-
-        if ( controlUserCredentials -eq 'vrai'){
+        $UserCredentials = controlUserCredentials
+        if ( $UserCredentials -eq 'vrai'){
             Invoke-Expression "..\GUI\fa_2_Accueil.ps1"
             $i = 1
             break
-            }
+        }
+        elseif ( $UserCredentials -eq 'init'){
+            Invoke-Expression "..\GUI\fa_7_Parametres.ps1"
+            $i = 1
+            break
+        }
         else
             {[System.Windows.Forms.MessageBox]::Show("Nom d'utilisateur ou mot de passe incorect.", "Erreur")}
             break
