@@ -2,7 +2,7 @@
 function creation_cisco
 {
     # on vérifie que ce n'est pas la dernière exécution
-    if ($vide -eq $NULL)
+    if ($vide -eq $NULL -and $script:creationTotale -eq $true)
     {
 
         # on vérifie que le fichier n'existe pas déjà

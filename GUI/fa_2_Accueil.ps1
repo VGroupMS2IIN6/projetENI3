@@ -87,7 +87,7 @@ Function MakeForm {
     $ButtonCreationCSV.Location = New-Object System.Drawing.Point($position,30)
     $ButtonCreationCSV.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
-    $ButtonCreationCSV.Text = "Creation Comptes CSV"
+    $ButtonCreationCSV.Text = "Création Comptes CSV"
     $ButtonCreationCSV.add_Click({.\fa_3_CreationComptesCSV.ps1;FillDataGrid})
     $toolTipButtonCreationCSV = New-Object System.Windows.Forms.ToolTip
     $toolTipButtonCreationCSV.SetToolTip($ButtonCreationCSV, "création des comptes stagiaires à partir d'un CSV")
@@ -96,7 +96,7 @@ Function MakeForm {
     $ButtonUnit.Location = New-Object System.Drawing.Point($position,30)
     $ButtonUnit.Size = New-Object System.Drawing.Size($largeur,60)
     $position += $largeur + $ecart
-    $ButtonUnit.Text = "Creation Compte Unitaire"
+    $ButtonUnit.Text = "Création Compte Unitaire"
     $ButtonUnit.add_Click({.\CreationUnitaire.ps1;FillDataGrid})
 
     $toolTipButtonUnit = New-Object System.Windows.Forms.ToolTip

@@ -3,6 +3,10 @@ Add-Type -AssemblyName System.Drawing
 
 . "../ps/fg_1-1_DBUtils.ps1"
 . "../ps/fg_10-0_Authentification_PS.ps1"
+. "../ps/chiffrement_mdp.ps1"
+. "../ps/dechiffrement_mdp.ps1"
+
+[System.Windows.Forms.Application]::EnableVisualStyles()
 
 OpenDB
 

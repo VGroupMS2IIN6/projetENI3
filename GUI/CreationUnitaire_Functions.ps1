@@ -60,26 +60,44 @@ function FillComboBox([System.Windows.Forms.ComboBox] $comboBox, $elems, $nomCol
 
 Function SelectPlateformes {
 # mise en forme des variables
-    $CodeStagiaire = $TextBoxCodeStagiaire.Text
-    $NomSSCaratSpec = Remove-StringDiacritic $TextBoxNom.Text
-    $PrenomSSCaratSpec = Remove-StringDiacritic $TextBoxPrenom.Text
-    $Nom = $TextBoxNom.Text
-    $Prenom = $TextBoxPrenom.Text
-    $DateNaissance = $datePickerNaissance.Text
-    $DebutFormation = $datePickerDebutContrat.Text
-    $FinFormation = $datePickerFinContrat.Text
-    $formation = $comboBoxFormation.Text
-    $site = $comboBoxSite.Text
-    $annee = get-date -Format yyyy
+    $script:creationTotale = $true
+    $script:creationAD = $true
+    $script:CodeStagiaire = $TextBoxCodeStagiaire.Text
+    $script:NomSSCaratSpec = Remove-StringDiacritic $TextBoxNom.Text
+    $script:PrenomSSCaratSpec = Remove-StringDiacritic $TextBoxPrenom.Text
+    $script:Nom = $TextBoxNom.Text
+    $script:Prenom = $TextBoxPrenom.Text
+    $script:DateNaissance = $datePickerNaissance.Text
+    $script:DebutFormation = $datePickerDebutContrat.Text
+    $script:FinFormation = $datePickerFinContrat.Text
+    $script:formation = $comboBoxFormation.Text
+    $script:site = $comboBoxSite.Text
+    $script:annee = get-date -Format yyyy
     $reqselDomaine = "select domaine from plateforme where nom = 'Active Directory';"
-    $domaine = makeRequest $reqselDomaine
-    $email = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine.domaine)
-
+    $script:domaine = makeRequest $reqselDomaine
+    $script:email = $($script:PrenomSSCaratSpec.ToLower() + "." + $script:NomSSCaratSpec.ToLower() + $script:annee + "@" + $script:domaine.domaine)
+    if ($script:Email -eq '')
+    {
+        $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
+        $script:domaine = makeRequest $reqsel
+        $script:email = $($script:PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $script:NomSSCaratSpec.ToLower() + $script:annee + "@" + $script:domaine.domaine)
+    }
+    $script:SamAccountName = $script:PrenomSSCaratSpec.ToLower().Substring(0,1) + $script:NomSSCaratSpec.ToLower()
+    If ($script:SamAccountName.length -ge 14) 
+    {
+        $script:SamAccountName=$script:SamAccountName.Substring(0,14) 
+    }
+    $script:SamAccountName = $script:SamAccountName + $script:annee
+    $script:UserPrincipalName = $script:PrenomSSCaratSpec + "." + $script:NomSSCaratSpec + $script:annee + "@" + $script:NomDomainStag
+    $script:UserPrincipalName = $script:email
+    verification_active_directory
+    if ($script:Email -ne $script:UserPrincipalName){
+        $script:Email = $script:UserPrincipalName
+    }
     # on ajoute les infos du stagiaire dans la base de données
     $reqinsert = "INSERT INTO projet_eni.stagiaire (nomStagiaire, prenomStagiaire, mailStagiaire, identifiantCrm)"
-    $reqinsert += " VALUES('" + $Nom + "', '" + $Prenom + "', '" + $email + "', '" + $CodeStagiaire + "');"
+    $reqinsert += " VALUES('" + $script:Nom + "', '" + $script:Prenom + "', '" + $script:email + "', '" + $script:CodeStagiaire + "');"
     makeRequest $reqinsert
-    #TODO : création du compte avec vérification préalable de l'existence
 
     # on vérifie l'existence du rép temporaire
     $tempExist = test-path ../temp
@@ -230,7 +248,9 @@ Function FillPlateforme {
         $reqSel += " join utilisateur u on pu.utilisateur = u.ID"
         $reqSel += " where u.login = '" + $ADusername + "'"
         $reqSel += " and pf.formation = " + $script:ComboBoxFormation.SelectedItem.id
-        $reqSel += " order by pf.formation"
+        $reqSel += " order by p.nom"
+        $reqSel += " not in (select p.nom from plateforme p where p.nom = 'active directory');"
+
 
         $listPlateformes = MakeRequest $reqSel
         foreach($Plateforme in $listPlateformes) {

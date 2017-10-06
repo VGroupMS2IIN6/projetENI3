@@ -2,7 +2,7 @@
 function creation_active_directory
 {
     # on vérifie que ce n'est pas la dernière exécution
-    if ($vide -eq $NULL)
+    if ($vide -eq $NULL -and $script:creationAD -eq $true)
     {
         # Récupération des paramètres du domaine stagiaire ENI
         $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")

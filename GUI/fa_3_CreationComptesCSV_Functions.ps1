@@ -61,25 +61,25 @@ Function FillDataGrid {
         $colCodeStagiaire.Width = 120
         $colCodeStagiaire.Name = "CodeStagiaire"
         $colCodeStagiaire.ReadOnly = $true
-        $colCodeStagiaire.Visible = $true
+        $colCodeStagiaire.Visible = $false
         $script:dataGridView.Columns.Add($colCodeStagiaire)
         $colDateNaissance = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colDateNaissance.Width = 120
         $colDateNaissance.Name = "DateNaissance"
         $colDateNaissance.ReadOnly = $true
-        $colDateNaissance.Visible = $true
+        $colDateNaissance.Visible = $false
         $script:dataGridView.Columns.Add($colDateNaissance)
         $colDebutFormation = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colDebutFormation.Width = 120
         $colDebutFormation.Name = "DebutFormation"
         $colDebutFormation.ReadOnly = $true
-        $colDebutFormation.Visible = $true
+        $colDebutFormation.Visible = $false
         $script:dataGridView.Columns.Add($colDebutFormation)
         $colFinFormation = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colFinFormation.Width = 120
         $colFinFormation.Name = "FinFormation"
         $colFinFormation.ReadOnly = $true
-        $colFinFormation.Visible = $true
+        $colFinFormation.Visible = $false
         $script:dataGridView.Columns.Add($colFinFormation)
         $colCodePromotion = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colCodePromotion.Width = 120
@@ -91,13 +91,13 @@ Function FillDataGrid {
         $ColEmail.Width = 120
         $ColEmail.Name = "Email"
         $ColEmail.ReadOnly = $true
-        $ColEmail.Visible = $true
+        $ColEmail.Visible = $false
         $script:dataGridView.Columns.Add($ColEmail)
         $colSamAccountName = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colSamAccountName.Width = 120
         $colSamAccountName.Name = "SamAccountName"
         $colSamAccountName.ReadOnly = $true
-        $colSamAccountName.Visible = $true
+        $colSamAccountName.Visible = $false
         $script:dataGridView.Columns.Add($colSamAccountName)
     
         # ajout des colonnes à partir de la liste des plateformes
@@ -152,38 +152,41 @@ Function FillDataGrid {
             }
 
             # on créé les variables pour préparer l'import du CSV
-            $Nom = $row.nom
-            $NomSSCaratSpec = Remove-StringDiacritic $Nom
-            $Prenom = $row.prenom
-            $PrenomSSCaratSpec = Remove-StringDiacritic $Prenom
-            $CodeStagiaire = $row.CodeStagiaire
-            $DateNaissance = $row.DateNaissance
-            $DebutFormation = $row.debutde
-            $FinFormation = $row.dateFin
-            $formation = $formationValide
-            $Email = $row.EmailCampus
-            $annee = get-date -Format yyyy
-            if ($Email -eq '')
+            $script:Nom = $row.nom
+            $script:NomSSCaratSpec = Remove-StringDiacritic $Nom
+            $script:Prenom = $row.prenom
+            $script:PrenomSSCaratSpec = Remove-StringDiacritic $Prenom
+            $script:CodeStagiaire = $row.CodeStagiaire
+            $script:DateNaissance = $row.DateNaissance
+            $script:DebutFormation = $row.debutde
+            $script:FinFormation = $row.dateFin
+            $script:formation = $formationValide
+            $script:Email = $row.EmailCampus
+            $script:annee = get-date -Format yyyy
+            if ($script:Email -eq '')
             {
                 $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
-                $domaine = makeRequest $reqsel
-                $email = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine.domaine)
+                $script:domaine = makeRequest $reqsel
+                $script:email = $($script:PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $script:NomSSCaratSpec.ToLower() + $script:annee + "@" + $script:domaine.domaine)
             }
             
-            $SamAccountName = $PrenomSSCaratSpec.ToLower().Substring(0,1) + $NomSSCaratSpec.ToLower()
-            If ($SamAccountName.length -ge 14) 
+            $script:SamAccountName = $script:PrenomSSCaratSpec.ToLower().Substring(0,1) + $script:NomSSCaratSpec.ToLower()
+            If ($script:SamAccountName.length -ge 14) 
             {
-                $SamAccountName=$SamAccountName.Substring(0,14) 
+                $script:SamAccountName=$script:SamAccountName.Substring(0,14) 
             }
-            $SamAccountName = $SamAccountName + $annee
-            $UserPrincipalName = $PrenomSSCaratSpec + "." + $NomSSCaratSpec + $annee + "@" + $NomDomainStag
-            $UserPrincipalName = $email
-            $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
-            $domaine = $result.domaine
+            $script:SamAccountName = $script:SamAccountName + $script:annee
+            $script:UserPrincipalName = $script:PrenomSSCaratSpec + "." + $script:NomSSCaratSpec + $script:annee + "@" + $script:NomDomainStag
+            $script:UserPrincipalName = $script:email
+            $script:result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
+            $script:domaine = $script:result.domaine
             verification_active_directory
+            if ($script:Email -ne $script:UserPrincipalName){
+                $script:Email = $script:UserPrincipalName
+            }
             #on ajoute les valeurs de chaque stagiaire dans la datagridview
 
-            $script:dataGridView.Rows.Add($false, $nom, $prenom, $CodeStagiaire, $DateNaissance, $DebutFormation, $FinFormation, $formationValide, $Email, $SAMAccountName)
+            $script:dataGridView.Rows.Add($false, $script:nom, $script:prenom, $script:CodeStagiaire, $script:DateNaissance, $script:DebutFormation, $script:FinFormation, $script:formationValide, $script:Email, $script:SAMAccountName)
             # pour chaque plateforme
             foreach($plateformeDefault in $plateformesDefaut) {
                 # on parcourt les colonnes de la datagridview qui contiennent les plateformes
@@ -191,6 +194,10 @@ Function FillDataGrid {
                     # si la formation n'est pas connue, on empêche de créer les comptes d'une plateforme.
                     if($formationValide -eq "aucune formation" -or $formationValide -eq "formation inconnue" )
                     {
+                        $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $false
+                        $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].ReadOnly = $true
+                    }
+                    elseif($script:creationTotale -eq $false){
                         $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].Value = $false
                         $script:dataGridView.Rows[$script:dataGridView.Rows.Count - 1].Cells[$i].ReadOnly = $true
                     }
@@ -253,7 +260,8 @@ Function FillDataGrid {
 
 Function ImporterCSV {
     # pour chaque plateforme existante
-    $creationTotale = $true
+    $script:creationTotale = $true
+    $script:creationAD = $true
     foreach ($plateforme in $dataGridView.Columns)
     {
         # si il s'agit d'une colonne avec le nom d'une plateforme
@@ -287,7 +295,7 @@ Function ImporterCSV {
                 $reqinsert += " VALUES('" + $Nom + "', '" + $Prenom + "', '" + $email + "', '" + $CodeStagiaire + "');"
                 makeRequest $reqinsert
                 
-                if ($creation -eq $true)
+                if ($script:creation -eq $true)
                 {
                     $plateformeBase = $plateforme.name
                     $password = GenerationMdpTemp

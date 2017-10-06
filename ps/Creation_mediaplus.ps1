@@ -1,13 +1,14 @@
 ﻿function creation_mediaplus
 {3
     # on vérifie que ce n'est pas la dernière exécution
-    if ($vide -eq $NULL)
+    if ($vide -eq $NULL -and $script:creationTotale -eq $true)
     {
         $reqsel = "select * from plateforme where nom = 'mediaplus'"
         $result = makeRequest $reqsel
         $urlMediaPlus = $result.url
         $loginAPI = $result.identifiant
-        $passwordAPI = $result.mdp
+        $passwordSecureAPI = $result.mdp
+        $passwordAPI = Dechiffrement $passwordSecureAPI 
 
         $login = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee)
         $sexe = 2

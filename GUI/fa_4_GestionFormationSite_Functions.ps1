@@ -348,11 +348,16 @@ Function ModifySiteFormations {
 
 Function ModifyFormationPlateformes {
     if($script:saveEnabled) {
-        # la case n'est pas encore décochée quand l'événement est déclenché, d'où le -not
-        $defaut = -not $script:listBoxPlateformes.GetItemChecked($script:listBoxPlateformes.SelectedIndex)
-        $reqUpdate = "update ass_plateforme_formation set defaut = " + $defaut
-        $reqUpdate += " where id = " + $script:listBoxPlateformes.SelectedItem.id
-        MakeRequest $reqUpdate
+        $plateforme = RetreiveRow $script:plateformes "nom" $script:listBoxPlateformes.Items[$script:listBoxPlateformes.SelectedIndex].nom
+        if($plateforme.obligatoire -and $script:listBoxPlateformes.GetItemChecked($script:listBoxPlateformes.SelectedIndex)) {
+            $_.NewValue = [System.Windows.Forms.CheckState]::Checked
+        } else {
+            # la case n'est pas encore décochée quand l'événement est déclenché, d'où le -not
+            $defaut = -not $script:listBoxPlateformes.GetItemChecked($script:listBoxPlateformes.SelectedIndex)
+            $reqUpdate = "update ass_plateforme_formation set defaut = " + $defaut
+            $reqUpdate += " where id = " + $script:listBoxPlateformes.SelectedItem.id
+            MakeRequest $reqUpdate
+        }
     }
 }
 

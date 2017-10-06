@@ -3,6 +3,8 @@ Add-Type -AssemblyName System.Drawing
 
 . "../ps/fg_1-1_DBUtils.ps1"
 . "../GUI/fa_7_Parametres_Functions.ps1"
+. "../ps/chiffrement_mdp.ps1"
+. "../ps/dechiffrement_mdp.ps1"
 
 if ($ADusername -eq $NULL)
 {
@@ -43,6 +45,3 @@ $listBoxProfils.Add_ItemCheck({ModifyProfilUtilisateur})
 MakeForm
 
 CloseDB
-
-
-

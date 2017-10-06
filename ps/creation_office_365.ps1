@@ -1,13 +1,14 @@
 ﻿function creation_Office_365
 {
     # on vérifie que ce n'est pas la dernière exécution
-    if ($vide -eq $NULL)
+    if ($vide -eq $NULL -and $script:creationTotale -eq $true)
     {
        # connexion à Office 365
 
         $result = makeRequest ("Select * FROM plateforme WHERE nom = 'Office 365';")
         $LoginOffice = $result.identifiant
-        $PasswordOffice = $result.MDP
+        $PasswordSecureOffice = $result.MDP
+        $PasswordDomainStag = Dechiffrement $PasswordSecureDomainStag
 
         $secureStringPwd = $PasswordOffice | ConvertTo-SecureString -AsPlainText -Force 
 
@@ -18,10 +19,10 @@
         ## Pour démo uniquement
         ### Sélection du groupe pour démo ENI (JB)
 
-        $email = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@gsc49.fr")
+        $email = $($script:PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $script:NomSSCaratSpec.ToLower() + $script:annee + "@gsc49.fr")
         $GroupId = Get-MsolGroup -SearchString "S_ENI_TEST"
 
-        $O365usernew = new-MSolUSER -DisplayNAme $($Prenom + $Nom) -FirstName $Prenom -LastName $Nom -UserPrincipalName $email -Password $password -UsageLocation "FR"
+        $O365usernew = new-MSolUSER -DisplayNAme $($script:Prenom + $script:Nom) -FirstName $script:Prenom -LastName $script:Nom -UserPrincipalName $email -Password $script:password -UsageLocation "FR"
 
         ### Ajout du compte dans le groupe de sécurité pour démo ENI (JB)
         Add-MsolGroupMember -GroupObjectId $GroupId.ObjectId -GroupMemberType User -GroupMemberObjectId $O365usernew.ObjectId
@@ -35,7 +36,7 @@
         # on log ajoute les informations dans la base de données
         $timestamp = Get-Date -Format "yyyy-MM-dd hh:mm:ss"
         $reqinsertHist = "INSERT INTO projet_eni.historique (action, statut, timestamp, utilisateur, stagiaire, typeCompte, site, formation)"
-        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $nom + " " + $prenom + "', '" + $plateformeBase +"', '" + $site + "', '" + $formation + "');"
+        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $script:nom + " " + $script:prenom + "', '" + $plateformeBase +"', '" + $site + "', '" + $formation + "');"
         makeRequest $reqinsertHist
     }
 }

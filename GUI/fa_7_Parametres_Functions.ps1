@@ -1,9 +1,6 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-. "../ps/chiffrement_mdp.ps1"
-. "../ps/dechiffrement_mdp.ps1"
-
 $parametres = @{
     "nom_domaine_ENI_Groupe" = "Nom domaine ENI Group";
     "login_domaine_ENI_Group" = "Login domaine ENI Group";
@@ -85,12 +82,23 @@ Function ModifyParametres {
         $cle = $script:dataGridParametres.Rows[$i].Cells[0].Value
         $valeur = $script:dataGridParametres.Rows[$i].Cells[2].Value
 
+        # on vérifie s'il s'agit du mdp
+        if($cle -eq "password_domaine_ENI_Group" -and $valeur -eq "**********") {
+            # c'est le mot de passe, il n'a pas été modifié, il ne faut pas l'enregistrer
+            continue
+        }
+        elseif($cle -eq "password_domaine_ENI_Group"){
+            ##### Chiffrement mot de passe #####
+            $MDPSecure = Chiffrement $valeur
+            $valeur = $MDPSecure
+        }
+
         $reqSel = "select id from parametres where nom = '" + $cle + "'"
-        $param = MakeRequest $reqSel
-        if($param.id -ne $null) {
+        $parametre = MakeRequest $reqSel
+        if($parametre.id -ne $null) {
             # le paramètre existe déjà, on le met à jour
             $reqUpdate = "update parametres set param = '" + $valeur + "'"
-            $reqUpdate += " where id = " + $param.id
+            $reqUpdate += " where id = " + $parametre.id
             MakeRequest $reqUpdate
         } else {
             # le paramètre n'existe pas, on l'ajoute
@@ -140,7 +148,11 @@ Function MakeMenuParametres {
     foreach($key in $parametres.Keys) {
         $reqSel = "select * from parametres where nom = '" + $key + "'"
         $param = MakeRequest $reqSel
-        $script:dataGridParametres.Rows.Add($key, $parametres[$key], $param.param)
+        if($key -eq "password_domaine_ENI_Group") {
+            $script:dataGridParametres.Rows.Add($key, $parametres[$key], "**********")
+        } else {
+            $script:dataGridParametres.Rows.Add($key, $parametres[$key], $param.param)
+        }
     }
 
     $buttonEnregistrerParam = New-Object System.Windows.Forms.Button
@@ -258,10 +270,16 @@ Function ModifyPlateforme {
             $reqInsertProfilDroitsPlateformes += " where ass_droit_plateforme.plateforme = " + $idNewPlateforme.id
             MakeRequest $reqInsertProfilDroitsPlateformes
 
+            if ($script:checkBoxObligatoire.Checked -eq $true){
+                $obligatoire = $true
+            }else{
+                $obligatoire = $false
+            }
             # on ajoute les droits pour les plateformes
             $reqInsertPlateformesFormations = "INSERT INTO ass_plateforme_formation(plateforme, formation, defaut)"
-            $reqInsertPlateformesFormations += " select " + $idNewPlateforme.id + ", formation.ID, 0 from formation"
+            $reqInsertPlateformesFormations += " select " + $idNewPlateforme.id + ", formation.ID, " + $obligatoire + " from formation"
             MakeRequest $reqInsertPlateformesFormations
+            
 
             # on cache le champ nom et on affiche la combo-box
             $script:textBoxNom.Visible = $false
@@ -289,13 +307,22 @@ Function ModifyPlateforme {
         $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
 
         ##### Chiffrement mot de passe #####
-        $MDPSecure = Chiffrement $script:textBoxMDP.Text
-
-        $reqUpdate += " MDP='" + $MDPSecure  + "',"
+        if ($script:textBoxMDP -like "01000000*")
+        {
+            $MDPSecure = Chiffrement $script:textBoxMDP.Text
+            $reqUpdate += " MDP='" + $MDPSecure  + "',"
+        }
         $reqUpdate += " RegexMDP='" + $script:textBoxRegexMdp.Text + "',"
         $reqUpdate += " obligatoire=" + $script:checkBoxObligatoire.Checked
         $reqUpdate += " where id=" + $script:ComboBoxPlateformes.SelectedItem.id
         MakeRequest $reqUpdate
+        if ($script:checkBoxObligatoire.Checked -eq $true){
+                $obligatoire = $true
+                $reqUpdatePlateformesFormations = "UPDATE ass_plateforme_formation set"
+                $reqUpdatePlateformesFormations += " defaut='" + $obligatoire + "'"
+                $reqUpdatePlateformesFormations += " where plateforme=" + $script:ComboBoxPlateformes.SelectedItem.id
+                MakeRequest $reqUpdatePlateformesFormations
+        }
     }
 }
 
@@ -306,6 +333,10 @@ Function DeletePlateforme {
     $reqDeleteProfilDroitsPlateformes += " where droit_plateforme in "
     $reqDeleteProfilDroitsPlateformes += "  (select ID from ass_droit_plateforme where plateforme = " + $idPlateforme + ")"
     MakeRequest $reqDeleteProfilDroitsPlateformes
+
+    $reqDeletePlateformeFormation = "delete from ass_plateforme_formation"
+    $reqDeletePlateformeFormation += " where plateforme = " + $idPlateforme
+    MakeRequest $reqDeletePlateformeFormation
 
     $reqDeleteDroitsPlateformes = "delete from ass_droit_plateforme"
     $reqDeleteDroitsPlateformes += " where plateforme = " + $idPlateforme

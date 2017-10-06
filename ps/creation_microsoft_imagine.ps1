@@ -1,13 +1,14 @@
 ﻿function creation_microsoft_imagine
 {
     # on vérifie que ce n'est pas la dernière exécution
-    if ($vide -eq $NULL)
+    if ($vide -eq $NULL -and $script:creationTotale -eq $true)
     {
         # Récupération des paramètres du domaine stagiaire ENI
         $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
         $LoginDomainStag = $result.identifiant
-        $PasswordDomainStag = $result.MDP
+        $PasswordSecureDomainStag = $result.MDP
         $NomDomainStag = $result.domaine + ":389"
+        $PasswordDomainStag = Dechiffrement $PasswordSecureDomainStag 
 
 
         $SecPassDomainStag = $PasswordDomainStag | ConvertTo-SecureString -AsPlainText -Force 
