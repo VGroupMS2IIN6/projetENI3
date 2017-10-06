@@ -42,10 +42,4 @@ function controlUserCredentials
         }
 }
 
-##### DEBUG
-#$ADusername = "sartu"
-#$ADpassword = "admin123@"
-#[System.Windows.Forms.MessageBox]::Show($ADusername, "ADusername")
-#[System.Windows.Forms.MessageBox]::Show($ADpassword, "ADpassword")
-
 return $return

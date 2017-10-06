@@ -61,25 +61,25 @@ Function FillDataGrid {
         $colCodeStagiaire.Width = 120
         $colCodeStagiaire.Name = "CodeStagiaire"
         $colCodeStagiaire.ReadOnly = $true
-        $colCodeStagiaire.Visible = $false
+        $colCodeStagiaire.Visible = $true
         $script:dataGridView.Columns.Add($colCodeStagiaire)
         $colDateNaissance = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colDateNaissance.Width = 120
         $colDateNaissance.Name = "DateNaissance"
         $colDateNaissance.ReadOnly = $true
-        $colDateNaissance.Visible = $false
+        $colDateNaissance.Visible = $true
         $script:dataGridView.Columns.Add($colDateNaissance)
         $colDebutFormation = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colDebutFormation.Width = 120
         $colDebutFormation.Name = "DebutFormation"
         $colDebutFormation.ReadOnly = $true
-        $colDebutFormation.Visible = $false
+        $colDebutFormation.Visible = $true
         $script:dataGridView.Columns.Add($colDebutFormation)
         $colFinFormation = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colFinFormation.Width = 120
         $colFinFormation.Name = "FinFormation"
         $colFinFormation.ReadOnly = $true
-        $colFinFormation.Visible = $false
+        $colFinFormation.Visible = $true
         $script:dataGridView.Columns.Add($colFinFormation)
         $colCodePromotion = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colCodePromotion.Width = 120
@@ -91,13 +91,13 @@ Function FillDataGrid {
         $ColEmail.Width = 120
         $ColEmail.Name = "Email"
         $ColEmail.ReadOnly = $true
-        $ColEmail.Visible = $false
+        $ColEmail.Visible = $true
         $script:dataGridView.Columns.Add($ColEmail)
         $colSamAccountName = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
         $colSamAccountName.Width = 120
         $colSamAccountName.Name = "SamAccountName"
         $colSamAccountName.ReadOnly = $true
-        $colSamAccountName.Visible = $false
+        $colSamAccountName.Visible = $true
         $script:dataGridView.Columns.Add($colSamAccountName)
     
         # ajout des colonnes à partir de la liste des plateformes
@@ -150,8 +150,40 @@ Function FillDataGrid {
                     $formationValide = "formation inconnue"
                 }
             }
+
+            # on créé les variables pour préparer l'import du CSV
+            $Nom = $row.nom
+            $NomSSCaratSpec = Remove-StringDiacritic $Nom
+            $Prenom = $row.prenom
+            $PrenomSSCaratSpec = Remove-StringDiacritic $Prenom
+            $CodeStagiaire = $row.CodeStagiaire
+            $DateNaissance = $row.DateNaissance
+            $DebutFormation = $row.debutde
+            $FinFormation = $row.dateFin
+            $formation = $formationValide
+            $Email = $row.EmailCampus
+            $annee = get-date -Format yyyy
+            if ($Email -eq '')
+            {
+                $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
+                $domaine = makeRequest $reqsel
+                $email = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine.domaine)
+            }
+            
+            $SamAccountName = $PrenomSSCaratSpec.ToLower().Substring(0,1) + $NomSSCaratSpec.ToLower()
+            If ($SamAccountName.length -ge 14) 
+            {
+                $SamAccountName=$SamAccountName.Substring(0,14) 
+            }
+            $SamAccountName = $SamAccountName + $annee
+            $UserPrincipalName = $PrenomSSCaratSpec + "." + $NomSSCaratSpec + $annee + "@" + $NomDomainStag
+            $UserPrincipalName = $email
+            $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
+            $domaine = $result.domaine
+            verification_active_directory
             #on ajoute les valeurs de chaque stagiaire dans la datagridview
-            $script:dataGridView.Rows.Add($false, $row.nom, $row.prenom, $row.CodeStagiaire, $row.DateNaissance, $row.debutde, $row.dateFin, $formationValide, $row.EmailCampus, $row.SAMAccountName)
+
+            $script:dataGridView.Rows.Add($false, $nom, $prenom, $CodeStagiaire, $DateNaissance, $DebutFormation, $FinFormation, $formationValide, $Email, $SAMAccountName)
             # pour chaque plateforme
             foreach($plateformeDefault in $plateformesDefaut) {
                 # on parcourt les colonnes de la datagridview qui contiennent les plateformes
@@ -211,7 +243,7 @@ Function FillDataGrid {
             }
             if($EventArgs.ColumnIndex -eq 0 -and $EventArgs.RowIndex -gt 0) {
                 # on veut modifier l'état de toute une ligne
-                for($j = 3;$j -lt $script:dataGridView.ColumnCount;$j++) {
+                for($j = 10;$j -lt $script:dataGridView.ColumnCount;$j++) {
                     $script:dataGridView.Rows[$EventArgs.RowIndex].Cells[$j].Value = $etat
                 }
             }
@@ -221,6 +253,7 @@ Function FillDataGrid {
 
 Function ImporterCSV {
     # pour chaque plateforme existante
+    $creationTotale = $true
     foreach ($plateforme in $dataGridView.Columns)
     {
         # si il s'agit d'une colonne avec le nom d'une plateforme
@@ -229,6 +262,7 @@ Function ImporterCSV {
             $scriptCreationPlateforme = "creation_" + $plateforme.name -replace " ","_"
             # pour chaque stagiaire dans dans la datagridview
             for($i = 1;$i -lt $script:dataGridView.RowCount;$i++) {
+            # mise en forme initiale des variables
                 $vide = $NULL
                 $Nom = $script:dataGridView.Rows[$i].Cells[1].Value
                 $NomSSCaratSpec = Remove-StringDiacritic $Nom
@@ -238,24 +272,21 @@ Function ImporterCSV {
                 $DateNaissance = $script:dataGridView.Rows[$i].Cells[4].Value
                 $DebutFormation = $script:dataGridView.Rows[$i].Cells[5].Value
                 $FinFormation = $script:dataGridView.Rows[$i].Cells[6].Value
-                $FinFormation = $script:dataGridView.Rows[$i].Cells[7].Value
+                $formation = $script:dataGridView.Rows[$i].Cells[7].Value
                 $Email = $script:dataGridView.Rows[$i].Cells[8].Value
                 $SamAccountName = $script:dataGridView.Rows[$i].Cells[9].Value
+                $UserPrincipalName = $email
                 $creation = $script:dataGridView.Rows[$i].Cells[$plateforme.DisplayIndex].Value
-                $formation = $comboBoxFormation.Text
                 $site = $comboBoxSite.Text
+                $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
+                $domaine = $result.domaine
+                # Génération SAMAcount NAme
+                
                 # on ajoute les infos du stagiaire dans la base de données
                 $reqinsert = "INSERT INTO projet_eni.stagiaire (nomStagiaire, prenomStagiaire, mailStagiaire, identifiantCrm)"
                 $reqinsert += " VALUES('" + $Nom + "', '" + $Prenom + "', '" + $email + "', '" + $CodeStagiaire + "');"
                 makeRequest $reqinsert
-                if ($Email -eq '')
-                {
-                    $annee = get-date -Format yyyy
-                    $reqsel = "select domaine from plateforme where nom = 'Active Directory';"
-                    $domaine = makeRequest $reqsel
-                    $email = $($PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee + "@" + $domaine.domaine)
-                }
-
+                
                 if ($creation -eq $true)
                 {
                     $plateformeBase = $plateforme.name
@@ -283,11 +314,13 @@ Function Parcourir {
     $script:textBoxFichier.Text = $openFileDialog.filename
 
     # on affiche la sélection du site
-    $script:labelSite.Visible = $true
-    $script:comboBoxSite.Visible = $true
-    FillComboBox $script:comboBoxSite $script:sites "nom"
-    $script:comboBoxSite.SelectedIndex = -1
-    $script:comboBoxSite.add_SelectedIndexChanged({FillDataGrid})
+    if($script:textBoxFichier.Text.Length -gt 0) {
+        $script:labelSite.Visible = $true
+        $script:comboBoxSite.Visible = $true
+        FillComboBox $script:comboBoxSite $script:sites "nom"
+        $script:comboBoxSite.SelectedIndex = -1
+        $script:comboBoxSite.add_SelectedIndexChanged({FillDataGrid})
+    }
 }
 
 Function MakeForm {
@@ -350,8 +383,6 @@ Function MakeForm {
     $listForm.Controls.Add($ButtonParcourir)
     $listForm.Controls.Add($labelSite)
     $listForm.Controls.Add($script:comboBoxSite)
-    $listForm.Controls.Add($labelFormation)
-    $listForm.Controls.Add($script:comboBoxFormation)
     $listForm.Controls.Add($script:dataGridView)
     $listForm.Controls.Add($ButtonRetour)
     $listForm.Controls.Add($script:buttonImporter)

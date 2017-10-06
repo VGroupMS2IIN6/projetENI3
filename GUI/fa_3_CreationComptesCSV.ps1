@@ -9,6 +9,11 @@ Add-Type -AssemblyName System.Drawing
 . "../ps/RemoveStrangeChar.ps1"
 # chargement de la fonction de génération de mdp temp
 . "../ps/fg_3-0_GenerationMdpTemp_PS.ps1"
+# chargement de la fonction de vérification AD
+. "../ps/verification_active_directory.ps1"
+
+. "../ps/chiffrement_mdp.ps1"
+. "../ps/dechiffrement_mdp.ps1"
 
 if ($ADusername -eq $NULL)
 {

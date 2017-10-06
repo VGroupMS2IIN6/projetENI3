@@ -195,6 +195,16 @@ Function FillFormation {
     }
 }
 
+Function ModifyListboxPlateformes {
+    $reqsel = "select p.nom, p.obligatoire, pf.defaut from plateforme p"
+    $reqsel += " join ass_plateforme_formation pf on pf.plateforme = p.id"
+    $plateformes = makeRequest $reqsel
+    $plateforme = RetreiveRow $plateformes "nom" $script:listBoxPlateformes.Items[$script:listBoxPlateformes.SelectedIndex].nom
+    if($plateforme.obligatoire -and $script:listBoxPlateformes.GetItemChecked($script:listBoxPlateformes.SelectedIndex)) {
+        $_.NewValue = [System.Windows.Forms.CheckState]::Checked
+    }
+}
+
 Function FillPlateforme {
     if($script:ComboBoxFormation.Visible -and $script:ComboBoxFormation.SelectedIndex -ne -1) {
         #afficher les droits de création et réinitialisation de compte en lien avec le profil et en fonction du nombre de plateformes
@@ -381,7 +391,7 @@ Function MakeForm {
     $script:listBoxplateformes.Location = New-Object System.Drawing.Point(500,125)
     $script:listBoxplateformes.Size = New-Object System.Drawing.Size(180,210)
     $script:listBoxplateformes.CheckOnClick = $true
-    #$script:listBoxplateformes.Add_ItemCheck({ModifyFormationPlateformes})
+    $script:listBoxplateformes.Add_ItemCheck({ModifyListboxPlateformes})
     $script:listBoxplateformes.visible = $false
 
     $ButtonRetour = New-Object System.Windows.Forms.Button
