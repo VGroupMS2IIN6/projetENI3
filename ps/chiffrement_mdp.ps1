@@ -2,6 +2,9 @@ Param($MDP)
 
 Function Chiffrement ($MDP)
 {
-$MDPchiffre = $MDP | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString
+[Byte[]] $key = (1..16)
+
+$MDPsecure = $MDP | ConvertTo-SecureString -AsPlainText -Force
+$MDPchiffre = ConvertFrom-SecureString -key $key -SecureString $MDPSecure
 return $MDPchiffre
 }
