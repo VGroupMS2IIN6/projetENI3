@@ -1,8 +1,9 @@
-﻿Param($MDP)
+﻿Param($MDPchiffre)
 
-Function Dechiffrement ($MDP)
+Function Dechiffrement ($MDPchiffre)
 {
-$MDPSecure = $MDP | ConvertTo-SecureString
+[Byte[]] $key = (1..16)
+$MDPSecure = $MDPchiffre | ConvertTo-SecureString -Key $key
 $MDPdechiffre = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($MDPSecure))
 return $MDPdechiffre
 }
