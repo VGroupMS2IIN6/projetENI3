@@ -8,9 +8,9 @@
         $result = makeRequest ("Select * FROM plateforme WHERE nom = 'Office 365';")
         $LoginOffice = $result.identifiant
         $PasswordSecureOffice = $result.MDP
-        $PasswordDomainStag = Dechiffrement $PasswordSecureDomainStag
+        $PasswordDomainStag = Dechiffrement $PasswordSecureOffice
 
-        $secureStringPwd = $PasswordOffice | ConvertTo-SecureString -AsPlainText -Force 
+        $secureStringPwd = $PasswordDomainStag | ConvertTo-SecureString -AsPlainText -Force 
 
         $creds = New-Object System.Management.Automation.PSCredential -ArgumentList $LoginOffice, $secureStringPwd
 

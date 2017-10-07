@@ -18,6 +18,8 @@
 #$creation
 
 function verification_active_directory {
+    $script:creationTotale = $true
+    $script:creationAD = $true
     $result = makeRequest ("Select * FROM plateforme WHERE nom = 'active directory';")
     $LoginDomainStag = $result.identifiant
     $PasswordSecureDomainStag = $result.MDP

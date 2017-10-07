@@ -23,7 +23,7 @@
         $requeteSoap = $requeteSoap -replace "SOAPEMAIL","$email"
         
 
-        ..\bin\curl.exe -i -s -k -X 'POST' -H 'Content-Type: text/xml;charset=UTF-8' -H 'SOAPAction: \"http://ENI.Editions.MEDIAplus.Web.Services/User_WriteInfos\"' -H 'User-Agent: Apache-HttpClient/4.1.1 (java 1.5)' --data-binary "$requeteSoap" "$urlMediaPlus"
+        ..\bin\curl.exe -i -s -k -X 'POST' -H 'Content-Type: text/xml;charset=UTF-8' -H 'SOAPAction: \"http://ENI.Editions.MEDIAplus.Web.Services/User_WriteInfos\"' -H 'User-Agent: Apache-HttpClient/4.1.1 (java 1.5)' --data-binary $requeteSoap $urlMediaPlus
 
         $status = "OK"
         $action = "création"

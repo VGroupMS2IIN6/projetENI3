@@ -17,18 +17,9 @@
 
         Import-Module ActiveDirectory
 
-        
-        # Génération SAMAcount NAme
-        $StagSAMAN = $($PrenomSSCaratSpec.ToLower() + "." + $NomSSCaratSpec.ToLower() + $annee)
-
-        If ($StagSAMAN.length -ge 18) 
-        {
-            $StagSAMAN=$StagSAMAN.Substring(0,18) 
-        }
-
         $GroupMicrosoftImagine = "Microsoft_Imagine"
 
-        Add-ADGroupMember -identity $GroupMicrosoftImagine -Members $StagSAMAN -Server $NomDomainStag -Credential $creds
+        Add-ADGroupMember -identity $GroupMicrosoftImagine -Members $SamAccountName -Server $NomDomainStag -Credential $creds
         $status = "OK"
         $action = "création"
         # on log ajoute les informations dans la base de données
