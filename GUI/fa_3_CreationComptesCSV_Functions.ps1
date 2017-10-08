@@ -140,12 +140,12 @@ Function FillDataGrid {
             foreach ($script:formation in $script:formations)
             {
                 # on vérifie la longueur du champ CodePromotion dans le CSV
-                if ($row.CodePromotion.length -eq 0)
+                if ($row.CodeFormation.length -eq 0)
                 {
                     $script:formationValide = "aucune formation"
                 }
                 # on vérifie que la formation du CSV existe dans l'application
-                elseif ($row.CodePromotion -like $script:formation + "*")
+                elseif ($row.CodeFormation -like "*" + $script:formation + "*")
                 {
                     # formation reconnue
                     $script:formationValide = "$script:formation"
@@ -306,7 +306,7 @@ Function ImporterCSV {
                 
                 # on ajoute les infos du stagiaire dans la base de données
                 $reqinsert = "INSERT INTO projet_eni.stagiaire (nomStagiaire, prenomStagiaire, mailStagiaire, identifiantCrm)"
-                $reqinsert += " VALUES('" + $Nom + "', '" + $Prenom + "', '" + $email + "', '" + $CodeStagiaire + "');"
+                $reqinsert += " VALUES('" + $script:NomSSCaratSpec + "', '" + $script:PrenomSSCaratSpec + "', '" + $script:Email + "', '" + $script:CodeStagiaire + "');"
                 makeRequest $reqinsert
                 
                 if ($script:creation -eq $true)

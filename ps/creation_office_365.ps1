@@ -19,10 +19,10 @@
         ## Pour démo uniquement
         ### Sélection du groupe pour démo ENI (JB)
 
-        $email = $($script:PrenomSSCaratSpec.Substring(0,1).ToLower() + "." + $script:NomSSCaratSpec.ToLower() + $script:annee + "@gsc49.fr")
+        $email = $($script:PrenomSSCaratSpec.ToLower() + "." + $script:NomSSCaratSpec.ToLower() + $script:annee + "@gsc49.fr")
         $GroupId = Get-MsolGroup -SearchString "S_ENI_TEST"
 
-        $O365usernew = new-MSolUSER -DisplayNAme $($script:Prenom + $script:Nom) -FirstName $script:Prenom -LastName $script:Nom -UserPrincipalName $email -Password $script:password -UsageLocation "FR"
+        $O365usernew = new-MSolUSER -DisplayNAme $($script:Prenom + " " + $script:Nom) -FirstName $script:Prenom -LastName $script:Nom -UserPrincipalName $email -Password $script:password -UsageLocation "FR"
 
         ### Ajout du compte dans le groupe de sécurité pour démo ENI (JB)
         Add-MsolGroupMember -GroupObjectId $GroupId.ObjectId -GroupMemberType User -GroupMemberObjectId $O365usernew.ObjectId
@@ -36,7 +36,7 @@
         # on log ajoute les informations dans la base de données
         $timestamp = Get-Date -Format "yyyy-MM-dd hh:mm:ss"
         $reqinsertHist = "INSERT INTO projet_eni.historique (action, statut, timestamp, utilisateur, stagiaire, typeCompte, site, formation)"
-        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $script:nom + " " + $script:prenom + "', '" + $plateformeBase +"', '" + $site + "', '" + $formation + "');"
+        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $script:NomSSCaratSpec + " " + $script:PrenomSSCaratSpec + "', '" + $script:plateformeBase +"', '" + $script:site + "', '" + $script:formation + "');"
         makeRequest $reqinsertHist
     }
 }

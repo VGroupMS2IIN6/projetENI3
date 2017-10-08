@@ -96,7 +96,7 @@ Function SelectPlateformes {
     }
     # on ajoute les infos du stagiaire dans la base de données
     $reqinsert = "INSERT INTO projet_eni.stagiaire (nomStagiaire, prenomStagiaire, mailStagiaire, identifiantCrm)"
-    $reqinsert += " VALUES('" + $script:Nom + "', '" + $script:Prenom + "', '" + $script:email + "', '" + $script:CodeStagiaire + "');"
+    $reqinsert += " VALUES('" + $script:NomSSCaratSpec + "', '" + $script:PrenomSSCaratSpec + "', '" + $script:email + "', '" + $script:CodeStagiaire + "');"
     makeRequest $reqinsert
 
     # on vérifie l'existence du rép temporaire

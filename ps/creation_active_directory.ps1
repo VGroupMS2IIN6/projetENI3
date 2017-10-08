@@ -21,10 +21,10 @@ function creation_active_directory
 
         # Génération de la Secure String pour le mdp stagiaire
         $PasswordStagiaireSecure = $password | ConvertTo-SecureString -AsPlainText -Force 
-        $groupe = "GG_" + $formation + "_" + $site
+        $groupe = "GG_" + $script:formation + "-" + $script:site
         $description = "Rentree " + $DebutFormation.Substring(6,4) + $DebutFormation.Substring(3,2) + $DebutFormation.Substring(0,2) + " IDCRM " + $CodeStagiaire
-        $name = $Prenom + $Nom
-        $UserLDAP = 'CN=' + $prenom + $nom + ',CN=Users,DC=campus-eni,DC=ovh'
+        $name = $Prenom + " " + $Nom
+        $UserLDAP = 'CN=' + $name + ',CN=Users,DC=campus-eni,DC=ovh'
         New-ADUser -Name $name -description $description  -surname $Nom -GivenName $Prenom -SamAccountName $SamAccountName -Server $NomDomainStagPort -UserPrincipalName $UserPrincipalName -AccountPassword $PasswordStagiaireSecure -Credential $creds -PassThru | Enable-ADAccount
         Add-ADGroupMember -identity $groupe -Member $SamAccountName -Server $NomDomainStagPort -Credential $creds
         Move-ADObject $UserLDAP -TargetPath 'OU=ComptesUtilisateurs,DC=campus-eni,DC=ovh' -Server $NomDomainStagPort -Credential $creds
@@ -33,7 +33,7 @@ function creation_active_directory
         # on log ajoute les informations dans la base de données
         $timestamp = Get-Date -Format "yyyy-MM-dd hh:mm:ss"
         $reqinsertHist = "INSERT INTO projet_eni.historique (action, statut, timestamp, utilisateur, stagiaire, typeCompte, site, formation)"
-        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $nom + " " + $prenom + "', '" + $plateformeBase +"', '" + $site + "', '" + $formation + "');"
+        $reqinsertHist += " VALUES('" + $action + "', '" + $status + "', '" + $timestamp +"', '" + $ADusername + "', '" + $script:NomSSCaratSpec + " " + $script:PrenomSSCaratSpec + "', '" + $script:plateformeBase +"', '" + $script:site + "', '" + $script:formation + "');"
         makeRequest $reqinsertHist
     }
 }

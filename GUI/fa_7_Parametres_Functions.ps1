@@ -22,6 +22,7 @@ $textBoxMail = New-Object System.Windows.Forms.TextBox
 $textBoxUser = New-Object System.Windows.Forms.TextBox
 $textBoxMdp = New-Object System.Windows.Forms.TextBox
 $textBoxRegexMdp = New-Object System.Windows.Forms.TextBox
+$textBoxRegexMdp.Enabled = $false
 $checkBoxObligatoire = New-Object System.Windows.Forms.CheckBox
 
 $ComboBoxProfil = New-Object System.Windows.Forms.ComboBox
@@ -174,7 +175,11 @@ Function FillPlateforme {
         $script:textBoxURL.Text = $plateforme.URL
         $script:textBoxMail.Text = $plateforme.mail
         $script:textBoxUser.Text = $plateforme.identifiant
-        $script:textBoxMdp.Text = "******"
+        if ($plateforme.mdp.length -ne "0"){
+            $script:textBoxMdp.Text = "******"
+        }else{
+            $script:textBoxMdp.Text = ""
+        }
         $script:textBoxRegexMdp.Text = $plateforme.regexMDP
         $script:checkBoxObligatoire.Checked = $plateforme.obligatoire
     }
@@ -307,10 +312,12 @@ Function ModifyPlateforme {
         $reqUpdate += " identifiant='" + $script:textBoxUser.Text + "',"
 
         ##### Chiffrement mot de passe #####
-        if ($script:textBoxMDP.Text -ne "******")
+        if ($script:textBoxMDP.Text -ne "******" -and $script:textBoxMDP.Text -ne "")
         {
             $MDPSecure = Chiffrement $script:textBoxMDP.Text
             $reqUpdate += " MDP='" + $MDPSecure  + "',"
+        }elseif ($script:textBoxMDP.Text -eq ""){
+            $reqUpdate += " MDP='',"
         }
         $reqUpdate += " RegexMDP='" + $script:textBoxRegexMdp.Text + "',"
         $reqUpdate += " obligatoire=" + $script:checkBoxObligatoire.Checked
@@ -362,69 +369,71 @@ Function MakeMenuPlateformes {
     $script:textBoxNom.Location = New-Object System.Drawing.Point(10,10)
     $script:textBoxNom.Size = New-Object System.Drawing.Size(200,20)
     $script:textBoxNom.Visible = $false
-
+    
+    $locationTextboxHorizontal = 310
+    $sizeLabelHorizontal = 290
     $labelDomaine = New-Object System.Windows.Forms.Label
     $labelDomaine.Location = New-Object System.Drawing.Point(10,50)
-    $labelDomaine.Size = New-Object System.Drawing.Size(200,20)
+    $labelDomaine.Size = New-Object System.Drawing.Size($sizeLabelHorizontal,20)
     $labelDomaine.Text = "Domaine"
     $labelDomaine.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxDomaine.Location = New-Object System.Drawing.Point(220,50)
+    $script:textBoxDomaine.Location = New-Object System.Drawing.Point($locationTextboxHorizontal,50)
     $script:textBoxDomaine.Size = New-Object System.Drawing.Size(200,22)
 
     $labelURL = New-Object System.Windows.Forms.Label
     $labelURL.Location = New-Object System.Drawing.Point(10,90)
-    $labelURL.Size = New-Object System.Drawing.Size(200,20)
+    $labelURL.Size = New-Object System.Drawing.Size($sizeLabelHorizontal,20)
     $labelURL.Text = "Adresse IP ou nom du serveur"
     $labelURL.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxURL.Location = New-Object System.Drawing.Point(220,90)
+    $script:textBoxURL.Location = New-Object System.Drawing.Point($locationTextboxHorizontal,90)
     $script:textBoxURL.Size = New-Object System.Drawing.Size(200,22)
 
     $labelMail = New-Object System.Windows.Forms.Label
     $labelMail.Location = New-Object System.Drawing.Point(10,130)
-    $labelMail.Size = New-Object System.Drawing.Size(200,20)
+    $labelMail.Size = New-Object System.Drawing.Size($sizeLabelHorizontal,20)
     $labelMail.Text = "Adresse mail destinataire"
     $labelMail.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxMail.Location = New-Object System.Drawing.Point(220,130)
+    $script:textBoxMail.Location = New-Object System.Drawing.Point($locationTextboxHorizontal,130)
     $script:textBoxMail.Size = New-Object System.Drawing.Size(200,22)
     
     $labelUser = New-Object System.Windows.Forms.Label
     $labelUser.Location = New-Object System.Drawing.Point(10,170)
-    $labelUser.Size = New-Object System.Drawing.Size(200,20)
+    $labelUser.Size = New-Object System.Drawing.Size($sizeLabelHorizontal,20)
     $labelUser.Text = "Nom d'utilisateur"
     $labelUser.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxUser.Location = New-Object System.Drawing.Point(220,170)
+    $script:textBoxUser.Location = New-Object System.Drawing.Point($locationTextboxHorizontal,170)
     $script:textBoxUser.Size = New-Object System.Drawing.Size(200,22)
 
     $labelMdp = New-Object System.Windows.Forms.Label
     $labelMdp.Location = New-Object System.Drawing.Point(10,210)
-    $labelMdp.Size = New-Object System.Drawing.Size(200,20)
+    $labelMdp.Size = New-Object System.Drawing.Size($sizeLabelHorizontal,20)
     $labelMdp.Text = "Mot de passe"
     $labelMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxMdp.Location = New-Object System.Drawing.Point(220,210)
+    $script:textBoxMdp.Location = New-Object System.Drawing.Point($locationTextboxHorizontal,210)
     $script:textBoxMdp.Size = New-Object System.Drawing.Size(200,22)
     $script:textBoxMdp.PasswordChar = '•'
 
     $labelRegexMdp = New-Object System.Windows.Forms.Label
     $labelRegexMdp.Location = New-Object System.Drawing.Point(10,250)
-    $labelRegexMdp.Size = New-Object System.Drawing.Size(200,20)
-    $labelRegexMdp.Text = "Regex de génération du mot de passe"
+    $labelRegexMdp.Size = New-Object System.Drawing.Size($sizeLabelHorizontal,20)
+    $labelRegexMdp.Text = "Commande de génération du mot de passe temporaire"
     $labelRegexMdp.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:textBoxRegexMdp.Location = New-Object System.Drawing.Point(220,250)
+    $script:textBoxRegexMdp.Location = New-Object System.Drawing.Point($locationTextboxHorizontal,250)
     $script:textBoxRegexMdp.Size = New-Object System.Drawing.Size(200,22)
     
     $labelObligatoire = New-Object System.Windows.Forms.Label
     $labelObligatoire.Location = New-Object System.Drawing.Point(10,290)
-    $labelObligatoire.Size = New-Object System.Drawing.Size(200,20)
-    $labelObligatoire.Text = "Compte obligatoire"
+    $labelObligatoire.Size = New-Object System.Drawing.Size($sizeLabelHorizontal,20)
+    $labelObligatoire.Text = "Plateforme obligatoire pour tous les stagiaires"
     $labelObligatoire.RightToLeft = [System.Windows.Forms.RightToLeft]::Yes
 
-    $script:checkBoxObligatoire.Location = New-Object System.Drawing.Point(220,290)
+    $script:checkBoxObligatoire.Location = New-Object System.Drawing.Point($locationTextboxHorizontal,290)
     $script:checkBoxObligatoire.Size = New-Object System.Drawing.Size(200,22)
     
     $script:buttonAjouterPlateforme.Location = New-Object System.Drawing.Point(220,10)
